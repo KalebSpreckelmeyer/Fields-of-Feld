@@ -13,18 +13,23 @@ class Item {
 public:
 	string name;
 	string description;
-	enum item_types { WEAPON, HOLYTOOL, ARCANETOOL, SHIELD, ARMOR, TRINKET, POTION, LOOT };
+	enum item_types { WEAPON, HOLYTOOL, ARCANETOOL, SHIELD, ARMOR, TRINKET, POTION, LOOT, LIGHT };
 	enum weapon_types {
-		DAGGER, STRAIGHTSWORD, GREATSWORD, FIST, MACE, GREATMACE, 
-		HATCHET, AXE, GREATAXE, THRUSTINGSWORD, SPEAR, GREATSPEAR, 
-		PARRYSHIELD, MEDIUMSHIELD, GREATSHIELD, 
+		NOTAWEAPON, DAGGER, STRAIGHTSWORD, GREATSWORD, FIST, MACE, GREATMACE,
+		HATCHET, AXE, GREATAXE, THRUSTINGSWORD, SPEAR, GREATSPEAR,
+		PARRYSHIELD, MEDIUMSHIELD, GREATSHIELD,
 		LONGBOW, COMPOUNDBOW, GREATBOW, MINICROSSBOW, CROSSBOW, BALLISTA,
 		TALISMAN, CHIME, TOME, WAND, STAFF, ORB
 	};
-	enum physical_damage_types { SLASH, BLUNT, PIERCE };
-	enum magic_damage_types { FIRE, FROST, SHOCK, NONE };
-	enum equip_slots { HEAD, CHEST, LEGS, ARMS, AMULET, RING, MAINHAND1, MAINHAND2, OFFHAND1, OFFHAND2, BAREHAND, MISC };
-	int storedSlot;
+	enum physical_damage_types { SLASH, BLUNT, PIERCE, NODAMAGE};
+	enum magic_damage_types { FIRE, FROST, SHOCK, MAGIC, NOMAGICDAMAGE };
+	enum equip_slots { HEAD, CHEST, LEGS, ARMS, AMULET, RING, MAINHAND1, MAINHAND2, OFFHAND1, OFFHAND2, BAREHAND, MISC, BACKPACK};
+	item_types itemType;
+	weapon_types weaponType;
+	physical_damage_types physicalDamageType;
+	magic_damage_types magicDamageType;
+	equip_slots slot;
+	/*int storedSlot;*/
 	int defense;
 	int damage;
 	int value;
@@ -34,16 +39,17 @@ public:
 	int reach;
 	int attackSpeed;
 
-	Item(string name, string description, enum item_types itemType, enum weapon_types weaponType, enum physical_damage_types physicalDamageType,
-		enum magic_damage_types magicDamageType, enum equip_slots slot, int storedSlot, int defense, int damage, int value, int weight, int quantity, bool twoHanded, int reach, int attackSpeed) {
+	Item(string name, string description, item_types itemType, weapon_types weaponType, physical_damage_types physicalDamageType,
+		magic_damage_types magicDamageType, equip_slots slot, int defense, int damage, int value, int weight,
+		int quantity, bool twoHanded, int reach, int attackSpeed) {
 		this->name = name;
 		this->description = description;
-		itemType = itemType;
-		weaponType = weaponType;
-		physicalDamageType = physicalDamageType;
-		magicDamageType = magicDamageType;
-		slot = slot;
-		this->storedSlot = storedSlot;
+		this->itemType = itemType;
+		this->weaponType = weaponType;
+		this->physicalDamageType = physicalDamageType;
+		this->magicDamageType = magicDamageType;
+		this->slot = slot;
+		/*this->storedSlot = storedSlot;*/
 		this->defense = defense;
 		this->damage = damage;
 		this->value = value;
@@ -57,7 +63,7 @@ public:
 
 class Inventory {
 public:
-	//stored as a list of items
+	//stored as a vector of items
 	vector<Item> items;
 
 	void addItem(const Item& item) {
@@ -71,6 +77,9 @@ public:
 			}
 		}
 		cout << "Item not found in inventory" << endl;
+	}
+	void removeAllItems() {
+		items.clear();
 	}
 	void updateItemQuantity(const string& itemName, int newQuantity) {
 		for (Item& item : items) {
@@ -89,15 +98,127 @@ public:
 		}
 		cout << "Item not found in inventory" << endl;
 	}
-	void printInventory() {
+	void printInventory()
+	{
+		cout << dye::light_yellow("->Weapon(s): ") << endl;
 		for (Item& item : items) {
-			cout << "Name: " << item.name << endl;
-			cout << "Damage: " << item.damage << endl;
-			cout << "Value: " << item.value << endl;
-			cout << "Weight: " << item.weight << endl;
-			cout << "Quantity: " << item.quantity << endl;
-			cout << "Stackable: " << item.twoHanded << endl;
-			cout << endl;
+			if (item.itemType == Item::WEAPON)
+			{
+				cout << dye::light_yellow("  Name: ") << item.name << endl;
+				cout << dye::light_yellow("  Damage: ") << item.damage << endl;
+				cout << dye::light_yellow("  Attack Speed: ") << item.attackSpeed << endl;
+				cout << dye::light_yellow("  Reach: ") << item.reach << endl;
+				if (item.physicalDamageType == Item::BLUNT) 
+				{
+					cout << dye::light_yellow("  Physical Damage Type: ") << "Blunt" << endl;
+				}
+				if (item.physicalDamageType == Item::SLASH)
+				{
+					cout << dye::light_yellow("  Physical Damage Type: ") << "Slash" << endl;
+				}
+				if (item.physicalDamageType == Item::PIERCE)
+				{
+					cout << dye::light_yellow("  Physical Damage Type: ") << "Pierce" << endl;
+				}
+
+				if (item.magicDamageType == Item::FIRE)
+				{
+					cout << dye::light_yellow("  Magic Damage Type: ") << "Fire" << endl;
+				}
+				if (item.magicDamageType == Item::FROST)
+				{
+					cout << dye::light_yellow("  Magic Damage Type: ") << "Frost" << endl;
+				}
+				if (item.magicDamageType == Item::SHOCK)
+				{
+					cout << dye::light_yellow("  Magic Damage Type: ") << "Shock" << endl;
+				}
+				cout << "\n";
+			}
+		}
+		cout << dye::light_yellow("->Armor(s): ") << endl;
+		for (Item& item : items) {
+			if (item.itemType == Item::ARMOR)
+			{
+				cout << dye::light_yellow("  Name: ") << item.name << endl;
+				cout << dye::light_yellow("  Defense: ") << item.defense << endl;
+				if (item.slot == Item::HEAD)
+				{
+					cout << dye::light_yellow("  Item type: ") << "Helmet" << endl;
+				}
+				if (item.slot == Item::CHEST)
+				{
+					cout << dye::light_yellow("  Item type: ") << "Cuirass" << endl;
+				}
+				if (item.slot == Item::ARMS)
+				{
+					cout << dye::light_yellow("  Item type: ") << "Gauntlets" << endl;
+				}
+
+				if (item.slot == Item::LEGS)
+				{
+					cout << dye::light_yellow("  Item type: ") << "Leggings" << endl;
+				}
+				if (item.slot == Item::AMULET)
+				{
+					cout << dye::light_yellow("  Item type: ") << "Amulet" << endl;
+				}
+				if (item.slot == Item::TRINKET)
+				{
+					cout << dye::light_yellow("  Item type: ") << "Trinket" << endl;
+				}
+				if (item.slot == Item::RING)
+				{
+					cout << dye::light_yellow("  Item type: ") << "Ring" << endl;
+				}
+				if (item.slot == Item::MISC)
+				{
+					cout << dye::light_yellow("  Item type: ") << "Miscellaneous" << endl;
+				}
+				cout << "\n";
+			}
+		}
+		for (Item& item : items) {
+			if (item.itemType == Item::SHIELD)
+			{
+
+			}
+		}
+		for (Item& item : items) {
+			if (item.itemType == Item::ARCANETOOL)
+			{
+
+			}
+		}
+		for (Item& item : items) {
+			if (item.itemType == Item::HOLYTOOL)
+			{
+
+			}
+		}
+		for (Item& item : items) {
+			if (item.itemType == Item::POTION)
+			{
+
+			}
+		}
+		for (Item& item : items) {
+			if (item.itemType == Item::TRINKET)
+			{
+
+			}
+		}
+		for (Item& item : items) {
+			if (item.itemType == Item::LIGHT)
+			{
+
+			}
+		}
+		for (Item& item : items) {
+			if (item.itemType == Item::LOOT)
+			{
+
+			}
 		}
 	}
 };
@@ -105,8 +226,11 @@ public:
 class Character
 {
 public:
+	bool active;
 	enum classChoice { DEFAULT, WIZARD, KNIGHT, CLERIC, HUNTER, HIGHLANDER, BATTLEMAGE };
+	classChoice classChoice;
 	string characterClass;
+
 	//Core Attributes
 	int health;
 	int mana;
@@ -143,43 +267,19 @@ public:
 	int distanceFromPlayer;
 	bool alert;
 
-	Character() {
-		//Core Attributes
-		characterClass = "";
-		health = health;
-		mana = mana;
-		stamina = stamina;
-		strength = strength;
-		agility = agility;
-		arcane = arcane;
-		faith = faith;
-		luck = luck;
+	Character(bool active, enum classChoice classChoice, string characterClass, int health, int mana, int stamina, int strength, int agility, int arcane, int faith, int luck, int healthPoints, int maxHealthPoints,
+		int manaPoints, int maxManaPoints, int staminaPoints, int maxStaminaPoints, int speed, int critChance, int dodgeChance, int blockChance, int blockAmount, int level, int experience, int experienceToNextLevel,
+		int gold, Inventory inventory, int distanceFromPlayer, bool alert)
+		: active(active), classChoice(classChoice), characterClass(characterClass), health(health), mana(mana), stamina(stamina), strength(strength), agility(agility), arcane(arcane), faith(faith), luck(luck),
+		healthPoints(healthPoints), maxHealthPoints(maxHealthPoints), manaPoints(manaPoints), maxManaPoints(maxManaPoints), staminaPoints(staminaPoints), maxStaminaPoints(maxStaminaPoints), speed(speed),
+		critChance(critChance), dodgeChance(dodgeChance), blockChance(blockChance), blockAmount(blockAmount), level(level), experience(experience), experienceToNextLevel(experienceToNextLevel), gold(gold),
+		inventory(inventory), distanceFromPlayer(distanceFromPlayer), alert(alert)
+	{
 
-		//Derived Attributes
-		healthPoints = healthPoints;
-		maxHealthPoints = maxHealthPoints;
-		manaPoints = manaPoints;
-		maxManaPoints = maxManaPoints;
-		staminaPoints = staminaPoints;
-		maxStaminaPoints = maxStaminaPoints;
-		speed = speed;
+	}
+	Character()
+	{
 
-		//Derived Stats
-		critChance = critChance;
-		dodgeChance = dodgeChance;
-		blockChance = blockAmount;
-		blockAmount = blockAmount;
-
-		level = 1;
-		experience = experience;
-		experienceToNextLevel = experienceToNextLevel;
-		gold = 0;
-
-		inventory = inventory;
-
-		//Enemy Specific Stats
-		distanceFromPlayer = distanceFromPlayer;
-		alert = alert;
 	}
 	void setCharacterClass(enum classChoice option)
 	{
@@ -187,6 +287,10 @@ public:
 		{
 		case WIZARD:
 		{
+			//clears items in case of a respec
+			inventory.removeAllItems();
+
+			active = true;
 			characterClass = "Wizard";
 			health = 10;
 			mana = 20;
@@ -196,23 +300,32 @@ public:
 			arcane = 20;
 			faith = 1;
 			luck = 10;
-			initializeCharacterStats();
+			level = 1;
 			//Mainhand default 1
-			inventory.addItem(Item("Weathered Arming Sword", "A short blade that could use a good sharpening",
-				Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NONE, Item::MAINHAND1, 6, 0, 8, 10, 1, 1, false, 7, 11));
+			Item startingSword = (Item("Weathered Arming Sword", "A short blade that could use a good sharpening",
+				Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 8, 10, 1, 1, false, 7, 11));
 			//Offhand default 1
-			inventory.addItem(Item("Oak Wand", "A basic wooden wand barely capable of casting magic",
-				Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::NONE, Item::OFFHAND1, 8, 0, 1, 10, 1, 1, false, 1, 10));
+			Item startingWand = (Item("Oak Wand", "A basic wooden wand barely capable of casting magic",
+				Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::MAGIC, Item::OFFHAND1, 0, 1, 10, 1, 1, false, 1, 10));
 			//Offhand default 2
-			inventory.addItem(Item("Plank Shield", "A small shield composed of several thin oak boards",
-				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NONE, Item::OFFHAND2, 9, 7, 2, 5, 2, 1, false, 1, 5));
+			Item startingShield = (Item("Plank Shield", "A small shield composed of several thin oak boards",
+				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND2, 5, 2, 5, 2, 1, false, 2, 3));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NONE, Item::BAREHAND, 12, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			inventory.addItem(startingSword);
+			inventory.addItem(startingWand);
+			inventory.addItem(startingShield);
 			inventory.addItem(fists);
+			vector<Item> items = { startingSword, startingWand, startingShield, fists };
+			initializeCharacterStats(items);
 			break;
 		}
 		case BATTLEMAGE:
 		{
+			//clears items in case of a respec
+			inventory.removeAllItems();
+
+			active = true;
 			characterClass = "Battle Mage";
 			health = 16;
 			mana = 10;
@@ -222,23 +335,32 @@ public:
 			arcane = 15;
 			faith = 1;
 			luck = 10;
-			initializeCharacterStats();
+			level = 1;
 			//Mainhand default 1
-			inventory.addItem(Item("Weathered Hand Axe", "An weathered axe of moderate size",
-				Item::WEAPON, Item::AXE, Item::SLASH, Item::NONE, Item::MAINHAND1, 6, 0, 12, 5, 4, 1, false, 11, 8));
+			Item startingAxe = (Item("Weathered Hand Axe", "An weathered axe of moderate size",
+				Item::WEAPON, Item::AXE, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 12, 5, 4, 1, false, 11, 8));
 			//Offhand default 1
-			inventory.addItem(Item("Oak Wand", "A basic wooden wand barely capable of casting magic",
-				Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::NONE, Item::OFFHAND1, 8, 0, 1, 20, 1, 1, false, 1, 10));
+			Item startingWand = (Item("Oak Wand", "A basic wooden wand barely capable of casting magic",
+				Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::MAGIC, Item::OFFHAND1, 0, 1, 20, 1, 1, false, 1, 10));
 			//Offhand default 2
-			inventory.addItem(Item("Sturdy Plank Shield", "A small shield composed of several thick oak boards bound together by rivets",
-				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NONE, Item::OFFHAND2, 9, 10, 2, 5, 2, 1, false, 1, 5));
+			Item startingShield = (Item("Sturdy Plank Shield", "A small shield composed of several thick oak boards bound together by rivets",
+				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND2, 10, 2, 5, 2, 1, false, 1, 5));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NONE, Item::BAREHAND, 12, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			inventory.addItem(startingAxe);
+			inventory.addItem(startingWand);
+			inventory.addItem(startingShield);
 			inventory.addItem(fists);
+			vector<Item> items = { startingAxe, startingWand, startingShield, fists };
+			initializeCharacterStats(items);
 			break;
 		}
 		case KNIGHT:
 		{
+			//clears items in case of a respec
+			inventory.removeAllItems();
+
+			active = true;
 			characterClass = "Knight";
 			health = 16;
 			mana = 5;
@@ -248,20 +370,28 @@ public:
 			arcane = 5;
 			faith = 5;
 			luck = 10;
-			initializeCharacterStats();
+			level = 1;
 			//Mainhand default 1
-			inventory.addItem(Item("Weathered Longsword", "A long blade that has seen a good amount of combat",
-				Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NONE, Item::MAINHAND1, 6, 0, 10, 5, 1, 1, false, 6, 10));
+			Item startingSword = (Item("Weathered Longsword", "A long blade that has seen a good amount of combat",
+				Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 10, 5, 1, 1, false, 6, 10));
 			//Offhand default 1
-			inventory.addItem(Item("Weathered Kite Shield", "A basic metal shield emblazened with a crest so faded it can't be made out",
-				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NONE, Item::OFFHAND1, 8, 15, 2, 5, 1, 1, false, 1, 5));
+			Item startingShield = (Item("Weathered Kite Shield", "A basic metal shield emblazened with a crest so faded it can't be made out",
+				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND1, 15, 2, 5, 1, 1, false, 1, 5));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NONE, Item::BAREHAND, 12, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			inventory.addItem(startingSword);
+			inventory.addItem(startingShield);
 			inventory.addItem(fists);
+			vector<Item> items = { startingSword, startingShield, fists };
+			initializeCharacterStats(items);
 			break;
 		}
 		case CLERIC:
 		{
+			//clears items in case of a respec
+			inventory.removeAllItems();
+
+			active = true;
 			characterClass = "Cleric";
 			health = 10;
 			mana = 15;
@@ -271,20 +401,28 @@ public:
 			arcane = 2;
 			faith = 20;
 			luck = 10;
-			initializeCharacterStats();
+			level = 1;
 			//Mainhand default 1
-			inventory.addItem(Item("Weathered Mace", "A hefty mace that, although weathered, could still crack a skull or two",
-				Item::WEAPON, Item::MACE, Item::BLUNT, Item::NONE, Item::MAINHAND1, 6, 0, 15, 5, 3, 1, false, 5, 7));
+			Item startingMace = (Item("Weathered Mace", "A hefty mace that, although weathered, could still crack a skull or two",
+				Item::WEAPON, Item::MACE, Item::BLUNT, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 15, 5, 3, 1, false, 5, 7));
 			//Offhand default 1
-			inventory.addItem(Item("Tarnished Talisman", "A basic talisman that cannels ones faith and allows the casting of miracles",
-				Item::HOLYTOOL, Item::TALISMAN, Item::BLUNT, Item::NONE, Item::OFFHAND1, 8, 0, 2, 5, 1, 1, false, 1, 5));
+			Item startingTalisman = (Item("Tarnished Talisman", "A basic talisman that cannels ones faith and allows the casting of miracles",
+				Item::HOLYTOOL, Item::TALISMAN, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND1, 0, 2, 5, 1, 1, false, 1, 5));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NONE, Item::BAREHAND, 12, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			inventory.addItem(startingMace);
+			inventory.addItem(startingTalisman);
 			inventory.addItem(fists);
+			vector<Item> items = { startingMace, startingTalisman, fists };
+			initializeCharacterStats(items);
 			break;
 		}
 		case HUNTER:
 		{
+			//clears items in case of a respec
+			inventory.removeAllItems();
+
+			active = true;
 			characterClass = "Hunter";
 			health = 10;
 			mana = 5;
@@ -294,20 +432,28 @@ public:
 			arcane = 10;
 			faith = 5;
 			luck = 10;
-			initializeCharacterStats();
+			level = 1;
 			//Mainhand default 1	
-			inventory.addItem(Item("Weathered Dagger", "A short blade mostly used for gutting fish and harvesting animal skins. It could stand to be sharpened",
-				Item::WEAPON, Item::DAGGER, Item::SLASH, Item::NONE, Item::MAINHAND1, 6, 0, 5, 5, 1, 1, false, 2, 15));
+			Item startingSword = (Item("Weathered Dagger", "A short blade mostly used for gutting fish and harvesting animal skins. It could stand to be sharpened",
+				Item::WEAPON, Item::DAGGER, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 5, 5, 1, 1, false, 2, 15));
 			//Offhand default 1
-			inventory.addItem(Item("Hunting Bow", "A basic wooden bow of average build",
-				Item::WEAPON, Item::LONGBOW, Item::PIERCE, Item::NONE, Item::OFFHAND1, 8, 0, 10, 10, 4, 1, false, 40, 5));
+			Item startingBow = (Item("Hunting Bow", "A basic wooden bow of average build",
+				Item::WEAPON, Item::LONGBOW, Item::PIERCE, Item::NOMAGICDAMAGE, Item::OFFHAND1, 0, 10, 10, 4, 1, false, 40, 5));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NONE, Item::BAREHAND, 12, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			inventory.addItem(startingSword);
+			inventory.addItem(startingBow);
 			inventory.addItem(fists);
+			vector<Item> items = { startingSword, startingBow, fists };
+			initializeCharacterStats(items);
 			break;
 		}
 		case HIGHLANDER:
 		{
+			//clears items in case of a respec
+			inventory.removeAllItems();
+
+			active = true;
 			characterClass = "Highlander";
 			health = 15;
 			mana = 3;
@@ -317,30 +463,48 @@ public:
 			arcane = 3;
 			faith = 3;
 			luck = 10;
-			initializeCharacterStats();
-			inventory.addItem(Item("Iron Claymore", "A massive blade that requires ample strength and two hands to wield. Typically used to cleave through horses it will makes short work of a man", 
-				Item::WEAPON, Item::GREATSWORD, Item::SLASH, Item::NONE, Item::MAINHAND1, 6, 0, 25, 15, 10, 1, true, 15, 5));
-			inventory.addItem(Item("Weathered Dagger", "A short blade mostly used for gutting fish and harvesting animal skins. It could stand to be sharpened",
-				Item::WEAPON, Item::DAGGER, Item::SLASH, Item::NONE, Item::MAINHAND2, 7, 0, 5, 5, 1, 1, false, 2, 15));
+			level = 1;
+			
+			Item startingSword = (Item("Iron Claymore", "A massive blade that requires ample strength and two hands to wield. Typically used to cleave through horses it will makes short work of a man",
+				Item::WEAPON, Item::GREATSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 25, 15, 10, 1, true, 15, 5));
+			inventory.addItem(startingSword);
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NONE, Item::BAREHAND, 10, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
 			inventory.addItem(fists);
+			vector<Item> items = { startingSword, fists };
+			initializeCharacterStats(items);
 			break;
 		}
 		default:
+			cout << "Invalid class choice" << endl;
 			break;
 		}
 	}
 
-	void initializeCharacterStats() {
-		maxHealthPoints = (health * 10) + (strength * 2) + (agility * 2);
+	void initializeCharacterStats(vector<Item> items) {
+		experienceToNextLevel = level * 100;
+		maxHealthPoints = (health * 10) + (strength * 2);
 		healthPoints = maxHealthPoints;
-		maxManaPoints = (arcane >= faith) ? (mana * 10) + (arcane * 2)  + (faith * 1) : (mana * 10) + (faith * 2) + (arcane * 1);
+		maxManaPoints = (arcane >= faith) ? (mana * 10) + (arcane * 2) + (faith * 1) : (mana * 10) + (faith * 2) + (arcane * 1);
 		manaPoints = maxManaPoints;
 		maxStaminaPoints = (stamina * 10) + (strength * 2);
 		staminaPoints = maxStaminaPoints;
 
-		speed = (agility * 20) + (stamina * 2);
+		//this will be rolled against a random number between 1-100, if the random number wins it will not be a crit. If it does win, it will be a crit
+		//set to -9 at first so each class will start with 1 crit chance
+		(critChance >= 50) ? critChance = 50 : critChance = critChance;
+		critChance = -9 + luck * 1 + agility * 0.1;
+
+		//iterates through all items in the player's equipped inventory and adds their equipment weights together for calculations
+		int armorWeight = 0;
+		for (int i = 0; i < items.size(); i++)
+		{
+			armorWeight += items[i].weight;
+		}
+		speed = (agility * 10) + (strength * 5) + (stamina * 2) - armorWeight;
+
+		dodgeChance = (agility * 0.5) + (speed / 100);
+		(dodgeChance >= 50) ? dodgeChance = 50 : dodgeChance = dodgeChance - (armorWeight / 100);
 	}
 
 	//Gets the weapon in the main hand. It can be a one-handed weapon with the MAINHAND1 enum, 
@@ -350,7 +514,7 @@ public:
 		bool found = false;
 		for (int i = 0; i < character.inventory.items.size(); i++)
 		{
-			if (character.inventory.items[i].storedSlot == Item::MAINHAND1)
+			if (character.inventory.items[i].itemType == Item::MAINHAND1)
 			{
 				bool found = true;
 				return character.inventory.items[i];
@@ -367,7 +531,7 @@ public:
 		bool found = false;
 		for (int i = 0; i < character.inventory.items.size(); i++)
 		{
-			if (character.inventory.items[i].storedSlot == Item::MAINHAND2)
+			if (character.inventory.items[i].itemType == Item::MAINHAND2)
 			{
 				bool found = true;
 				return character.inventory.items[i];
@@ -384,7 +548,7 @@ public:
 		bool found = false;
 		for (int i = 0; i < character.inventory.items.size(); i++)
 		{
-			if (character.inventory.items[i].storedSlot == Item::OFFHAND1)
+			if (character.inventory.items[i].itemType == Item::OFFHAND1)
 			{
 				bool found = true;
 				return character.inventory.items[i];
@@ -401,7 +565,7 @@ public:
 		bool found = false;
 		for (int i = 0; i < character.inventory.items.size(); i++)
 		{
-			if (character.inventory.items[i].storedSlot == Item::OFFHAND2)
+			if (character.inventory.items[i].itemType == Item::OFFHAND2)
 			{
 				bool found = true;
 				return character.inventory.items[i];
@@ -411,9 +575,42 @@ public:
 			return character.inventory.findItem("Fists");
 		}
 	}
-};
-#pragma region Function Declarations
 
+	void printCharacterStats(Character character)
+	{
+		cout << dye::light_yellow("  Class: ") << character.characterClass << endl;
+		cout << dye::light_yellow("  Health Points: ") << character.healthPoints << "/" << character.maxHealthPoints << endl;
+		cout << dye::light_yellow("  Stamina Points: ") << character.staminaPoints << "/" << character.maxStaminaPoints << endl;
+		cout << dye::light_yellow("  Mana Points: ") << character.manaPoints << "/" << character.maxManaPoints << endl;
+		cout << "\n";
+		cout << dye::light_yellow("  Health: ") << character.health << endl;
+		cout << dye::light_yellow("  Mana: ") << character.mana << endl;
+		cout << dye::light_yellow("  Stamina: ") << character.stamina << endl;
+		cout << dye::light_yellow("  Strength: ") << character.strength << endl;
+		cout << dye::light_yellow("  Agility: ") << character.agility << endl;
+		cout << dye::light_yellow("  Arcane: ") << character.arcane << endl;
+		cout << dye::light_yellow("  Faith: ") << character.faith << endl;
+		cout << dye::light_yellow("  Luck: ") << character.luck << endl;
+		cout << "\n";
+		cout << dye::light_yellow("  Speed: ") << character.speed << endl;
+		//under construction below
+		cout << dye::light_yellow("  Critical Chance: ") << character.critChance << "%" << endl;
+		cout << dye::light_yellow("  Dodge Chance: ") << character.dodgeChance << "%" << endl;
+		cout << dye::light_yellow("  Block Chance: ") << character.blockChance << "%" << endl;
+		cout << dye::light_yellow("  Block Amount: ") << character.blockAmount << endl;
+		cout << "\n";
+		cout << dye::light_yellow("  Level: ") << character.level << endl;
+		cout << dye::light_yellow("  Experience: ") << character.experience << "/" << character.experienceToNextLevel << endl;
+		cout << "\n";
+		cout << dye::light_yellow("  Gold: ") << character.gold << endl;
+	}
+};
+
+#pragma region Function Declarations
+//DESC: Prints the main menu and takes in user input to determine what to do next
+// PRE: None
+// POST: Returns a character object with the selected class
+void printMainMenu(Character character);
 //DESC: Starts a combat encounter and prints the relevant menus
 //PRE: Player and Enemy Characters must be initialized
 //POST: Player values will be updated depending on the results of the battle
@@ -423,7 +620,7 @@ void printMainCombatMenu(Character player, Character enemy);
 //POST: Prints health, stamina, or mana bar to console
 void printHealthBar(Character player);
 void printStaminaBar(Character player);
-void printManaBar(Character player);	
+void printManaBar(Character player);
 //DESC: Calls all 3 bar functions 
 //PRE: None
 //POST: All 3 will be printed to console
@@ -432,33 +629,192 @@ void printAllBars(Character character);
 
 int main()
 {
-	int choice;
-	Character player;
-	Character enemy;
-	
-	player.setCharacterClass(Character::HIGHLANDER);
-	enemy.setCharacterClass(Character::BATTLEMAGE);
-	enemy.distanceFromPlayer = 10;
-	enemy.inventory.addItem(Item("Weathered Dagger", "A short blade mostly used for gutting fish and harvesting animal skins. It could stand to be sharpened",
-		Item::WEAPON, Item::DAGGER, Item::SLASH, Item::NONE, Item::MAINHAND1, 6, 0, 15, 5, 1, 1, false, 2, 15));
+	Character player;;
+	printMainMenu(player);
+
 	mt19937 generator(time(nullptr));
-	uniform_int_distribution<int> distribution(1, 2);
+	uniform_int_distribution<int> distribution(1, 100);
 	int randomNum = distribution(generator);
-	cout << player.getMainWeapon1(player).name << endl;
-	cout << player.getMainWeapon2(player).name << endl;
-	cout << player.getOffhandWeapon1(player).name << endl;
-	cout << player.getOffhandWeapon2(player).name << endl;
-	printMainCombatMenu(player, enemy);
 	return 0;
 }
 
+void printMainMenu(Character character)
+{
+	//Initialize all classes so they can be printed 
+	Character wizard;
+	wizard.setCharacterClass(Character::WIZARD);
+	Character battleMage;
+	battleMage.setCharacterClass(Character::BATTLEMAGE);
+	Character knight;
+	knight.setCharacterClass(Character::KNIGHT);
+	Character cleric;
+	cleric.setCharacterClass(Character::CLERIC);
+	Character hunter;
+	hunter.setCharacterClass(Character::HUNTER);
+	Character highlander;
+	highlander.setCharacterClass(Character::HIGHLANDER);
+	//TODO: Make the buttons grey out if unselectable
+	int choice;
+	do
+	{
+		cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
+			<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =-------------------=   =-------------------=  ") << endl
+			<< dye::bright_white(" |   1) Continue     |   |   2) New Game     |   | 3) View Inventory |   | 4) View Character |   |      5) Exit      |  ") << endl
+			<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =-------------------=   =-------------------=  ") << endl
+			<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+
+		//input validation
+		do
+		{
+			cout << ">> ";
+			cin >> choice;
+			if (cin.fail() || choice > 5 || choice == 0)
+			{
+				cout << "Enter a number from 1 - 5" << endl;
+			}
+			cin.clear();
+			cin.ignore(10000, '\n');
+		} while (cin.fail() || choice > 5 || choice == 0);
+		switch (choice)
+		{
+		case 1:
+			//Continue
+			if (character.active == true)
+			{
+				//for now this adds items to the selected character for testing
+				character.inventory.addItem(Item("Iron Chestplate", "A sturdy cuirass of solid iron. Heavy, but provies ample defense for its cost", Item::ARMOR, Item::NOTAWEAPON,
+					Item::NODAMAGE, Item::NOMAGICDAMAGE, Item::CHEST, 40, 0, 20, 20, 1, false, 0, 0));
+
+				character.inventory.addItem(Item("Fire Longsword", "A steel longsword infused with fire. Does burning damage", Item::WEAPON, Item::NOTAWEAPON, Item::SLASH, Item::FIRE, Item::BACKPACK, 0, 20, 50, 4, 1, false, 10, 10));
+			}
+			else
+			{
+				cout << "No save file found" << endl;
+				break;
+		case 2:
+			//New Game
+			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
+				<< dye::light_yellow(" =-------------------=---=-------------------=---=-------------------=---=-------------------=---=-------------------=  ") << endl
+				<< dye::bright_white(" |                                                 Select Your Class                                                 |  ") << endl
+				<< dye::light_yellow(" =-------------------=---=-------------------=---=-------------------=---=-------------------=---=-------------------=  ") << endl
+				<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+
+			cout << dye::light_yellow(" =-------------------=") << endl
+				<< dye::bright_white(" |  1) The Wizard    |") << endl
+				<< dye::light_yellow(" =-------------------=") << endl;
+
+			wizard.printCharacterStats(wizard);
+			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+
+			cout << dye::light_yellow(" =-------------------=") << endl
+				<< dye::bright_white(" | 2) The Battlemage |") << endl
+				<< dye::light_yellow(" =-------------------=") << endl;
+			battleMage.printCharacterStats(battleMage);
+			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+
+			cout << dye::light_yellow(" =-------------------=") << endl
+				<< dye::bright_white(" |   3) The Knight   |") << endl
+				<< dye::light_yellow(" =-------------------=") << endl;
+			knight.printCharacterStats(knight);
+			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+
+			cout << dye::light_yellow(" =-------------------=") << endl
+				<< dye::bright_white(" |   4) The Cleric   |") << endl
+				<< dye::light_yellow(" =-------------------=") << endl;
+			cleric.printCharacterStats(cleric);
+			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+
+			cout << dye::light_yellow(" =-------------------=") << endl
+				<< dye::bright_white(" |   5) The Hunter   |") << endl
+				<< dye::light_yellow(" =-------------------=") << endl;
+			hunter.printCharacterStats(hunter);
+			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+
+			cout << dye::light_yellow(" =-------------------=") << endl
+				<< dye::bright_white(" | 6) The Highlander |") << endl
+				<< dye::light_yellow(" =-------------------=") << endl;
+			highlander.printCharacterStats(highlander);
+			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+			int classChoice;
+			//input validation
+			do
+			{
+				cout << ">> ";
+				cin >> classChoice;
+				if (cin.fail() || classChoice > 7 || classChoice == 0)
+				{
+					cout << "Enter a number from 1 - 7" << endl;
+				}
+				cin.clear();
+				cin.ignore(10000, '\n');
+			} while (cin.fail() || classChoice > 7 || classChoice == 0);
+
+			switch (classChoice)
+			{
+			case 1:
+				character.setCharacterClass(Character::WIZARD);
+				break;
+			case 2:
+				character.setCharacterClass(Character::BATTLEMAGE);
+				break;
+			case 3:
+				character.setCharacterClass(Character::KNIGHT);
+				break;
+			case 4:
+				character.setCharacterClass(Character::CLERIC);
+				break;
+			case 5:
+				character.setCharacterClass(Character::HUNTER);
+				break;
+			case 6:
+				character.setCharacterClass(Character::HIGHLANDER);
+				break;
+			case 7:
+				//Return to main menu for now
+				break;
+			}
+			break;
+		case 3:
+			if (character.active == true)
+			{
+				character.inventory.printInventory();
+			}
+			else
+			{
+				cout << "No save file found" << endl;
+				break;
+			}
+			break;
+		case 4:
+			//Inspect Character Stats
+			if (character.active == true)
+			{
+				character.printCharacterStats(character);
+			}
+			else
+			{
+				cout << "No save file found" << endl;
+				break;
+			}
+			break;
+			break;
+		case 5:
+			//Exit
+			break;
+			}
+		}
+	} while (choice != 5);
+}
 void printMainCombatMenu(Character player, Character enemy)
 {
+
 	cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
 		<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =-------------------=   =-------------------=  ") << endl
-		<< dye::light_yellow(" |     1) Move       |   |    2) Attack      |   |   3) Use Item     |   |  4) Check Enemy   |   | 5) Attempt to Run |  ") << endl
+		<< dye::bright_white(" |     1) Move       |   |    2) Attack      |   |   3) Use Item     |   |  4) Check Enemy   |   | 5) Attempt to Run |  ") << endl
 		<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =-------------------=   =-------------------=  ") << endl
 		<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+
+	//input validation
 	printAllBars(player);
 	int choice;
 	do {
@@ -474,12 +830,12 @@ void printMainCombatMenu(Character player, Character enemy)
 	switch (choice)
 	{
 	case 1:
-		if (player.getMainWeapon1(player).reach >= enemy.distanceFromPlayer || 
+		if (player.getMainWeapon1(player).reach >= enemy.distanceFromPlayer ||
 			player.getOffhandWeapon1(player).reach >= enemy.distanceFromPlayer)
 		{
 			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
 				<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =---------------------=   =-----------------=  ") << endl
-				<< dye::light_yellow(" |    1) Attack      |   |  2) Move Forward  |   | 3) Move Backward  |   | 4) Retreat & Attack |   |    5) Return    |  ") << endl
+				<< dye::bright_white(" |    1) Attack      |   |  2) Move Forward  |   | 3) Move Backward  |   | 4) Retreat & Attack |   |    5) Return    |  ") << endl
 				<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =---------------------=   =-----------------=  ") << endl
 				<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
 			printAllBars(player);
@@ -488,12 +844,12 @@ void printMainCombatMenu(Character player, Character enemy)
 		{
 			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
 				<< dye::grey(" =-------------------=   ") << dye::light_yellow("=-------------------=   =-------------------=   =-----------------------=   =---------------=  ") << endl
-				<< dye::grey(" |    1) Attack      |   ") << dye::light_yellow("|  2) Move Forward  |   | 3) Move Backward  |   | 4) Move Back & Attack |   |   5) Return   |  ") << endl
+				<< dye::grey(" |    1) Attack      |   ") << dye::bright_white("|  2) Move Forward  |   | 3) Move Backward  |   | 4) Move Back & Attack |   |   5) Return   |  ") << endl
 				<< dye::grey(" =-------------------=   ") << dye::light_yellow("=-------------------=   =-------------------=   =-----------------------=   =---------------=  ") << endl
 				<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
 			printAllBars(player);
-			
-			
+
+
 			//Scuffed color pallet lmao
 			/*cout << dye::light_yellow("  This is a ") << dye::yellow("legendary") << dye::light_yellow(" item.") << endl;
 			cout << dye::light_yellow("  This is an ") << dye::light_blue("epic") << dye::light_yellow(" item.") << endl;
@@ -533,6 +889,7 @@ void printAllBars(Character character)
 	printStaminaBar(character);
 	printManaBar(character);
 }
+
 void printHealthBar(Character player) {
 	//red portion of health bar (health remaining)
 	int healthRemainingSegments = player.healthPoints / 10;
