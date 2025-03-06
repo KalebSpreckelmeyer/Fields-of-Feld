@@ -83,11 +83,12 @@ public:
 	int magnitude;
 	int value;
 	int weight;
+	int quantity;
 	enum effect { HEALING, MANA, STAMINA, CUREDISEASE };
 	effect effects;
 
-	Potion(string name, int magnitude, int value, int weight, enum effect effects) :
-		name(name), magnitude(magnitude), value(value), weight(weight), effects(effects)
+	Potion(string name, int magnitude, int value, int weight, int quantity, enum effect effects) :
+		name(name), magnitude(magnitude), value(value), weight(weight), quantity(quantity), effects(effects)
 	{
 		if (magnitude < 0) {
 			throw invalid_argument("Magnitude must be a positive integer.");
@@ -97,6 +98,9 @@ public:
 		}
 		if (weight < 0) {
 			throw invalid_argument("Weight must be a positive integer");
+		}
+		if (quantity < 0) {
+			throw invalid_argument("Quantity must be a positive integer");
 		}
 	}
 
@@ -193,7 +197,7 @@ public:
 			}
 		}
 	}
-	Potion findPotion(const string& potionName) {
+	Potion& findPotion(const string& potionName) {
 		for (Potion& potion : potions) {
 			if (potion.name == potionName) {
 				return potion;
@@ -202,6 +206,15 @@ public:
 		cout << "Item not found in inventory" << endl;
 	}
 
+	void updatePotionQuantity(const string& potionName, int newQuantity) {
+		for (Potion& potion : potions) {
+			if (potion.name == potionName) {
+				potion.quantity = newQuantity;
+				return;
+			}
+		}
+		cout << "Item not found in inventory" << endl;
+	}
 	//ammunition
 	vector<Ammo> munitions;
 
@@ -387,7 +400,7 @@ public:
 				cout << dye::light_yellow("  Potion Effect") << " Healing" << endl;
 			}
 			cout << dye::light_yellow("  Magnitude: ") << potion.magnitude << endl;
-			
+			cout << dye::light_yellow("  Quantity: ") << potion.quantity << endl;
 			cout << "\n";
 			tally += 1;
 		}
@@ -462,7 +475,7 @@ public:
 	bool alert;
 
 	Character(bool active, enum classChoice classChoice, string characterClass, int health, int mana, int stamina, int strength, int agility, int arcane, int faith, int luck, int healthPoints, int maxHealthPoints,
-		int manaPoints, int maxManaPoints, int staminaPoints, int maxStaminaPoints, int speed, int critChance, int dodgeChance, int blockChance, int blockAmount, int level, int experience, int experienceToNextLevel,
+		int manaPoints, int maxManaPoints, int staminaPoints, int maxStaminaPoints, int speed, int critChance, int dodgeChance, int blockChance, int blockAmount, int damageReduction, int level, int experience, int experienceToNextLevel,
 		int gold, Inventory inventory, int distanceFromPlayer, bool alert)
 		: active(active), classChoice(classChoice), characterClass(characterClass), health(health), mana(mana), stamina(stamina), strength(strength), agility(agility), arcane(arcane), faith(faith), luck(luck),
 		healthPoints(healthPoints), maxHealthPoints(maxHealthPoints), manaPoints(manaPoints), maxManaPoints(maxManaPoints), staminaPoints(staminaPoints), maxStaminaPoints(maxStaminaPoints), speed(speed),
@@ -471,10 +484,7 @@ public:
 	{
 
 	}
-	Character()
-	{
-
-	}
+	Character() = default;
 	void setCharacterClass(enum classChoice option)
 	{
 		switch (option)
@@ -933,11 +943,15 @@ void printMainMenu(Character character)
 					Item::BACKPACK, 0, 20, 50, 0, 4, 1, false, false, 10, 10));
 				character.inventory.addItem(fireLongsword);
 				character.inventory.removeItem(fireLongsword);
-				Potion potion = (Potion("Healing Potion", 40, 10, 1, Potion::HEALING));
+				Potion potion = (Potion("Healing Potion", 40, 10, 1, 3, Potion::HEALING));
 				character.inventory.addPotion(potion);
 				cout << "Dealing 50 points of damage..." << endl;
 				character.takeDamage(50);
-				drinkPotion(character, potion);
+				Potion playerPotion = character.inventory.findPotion("Healing Potion");
+				cout << "You have: " << character.inventory.findPotion("Healing Potion").quantity << " potions left" << endl;
+				drinkPotion(character, playerPotion);
+				cout << "You have: " << character.inventory.findPotion("Healing Potion").quantity << " potions left" << endl;
+
 			}
 			else
 			{
@@ -1199,9 +1213,19 @@ void printManaBar(Character player)
 }
 
 void drinkPotion(Character& character, Potion& potion) {
-	if (potion.HEALING == Potion::HEALING) {
-		character.receiveHealing(potion.magnitude);
-		character.inventory.removePotion(potion);
-		cout << potion.name << " consumed, " << potion.magnitude << " points of healing administered." << endl;
+	if (potion.effects == Potion::HEALING) {
+		if (character.healthPoints == character.maxHealthPoints) {
+			cout << dye::light_yellow("You are already at full health and did not consume the potion.") << endl;
+		}
+		else {
+			character.receiveHealing(potion.magnitude);
+			if (potion.quantity == 1) {
+				character.inventory.removePotion(potion);
+			}
+			else {
+				character.inventory.updatePotionQuantity(potion.name, potion.quantity - 1);
+			}
+			cout << potion.name << " consumed, " << potion.magnitude << " points of healing administered." << endl;
+		}
 	}
 }
