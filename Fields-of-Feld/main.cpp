@@ -21,68 +21,147 @@ public:
 		LONGBOW, COMPOUNDBOW, GREATBOW, MINICROSSBOW, CROSSBOW, BALLISTA,
 		TALISMAN, CHIME, TOME, WAND, STAFF, ORB
 	};
-	enum physical_damage_types { SLASH, BLUNT, PIERCE, NODAMAGE};
-	enum magic_damage_types { FIRE, FROST, SHOCK, MAGIC, NOMAGICDAMAGE };
-	enum equip_slots { HEAD, CHEST, LEGS, ARMS, AMULET, RING, MAINHAND1, MAINHAND2, OFFHAND1, OFFHAND2, BAREHAND, MISC, BACKPACK};
+	enum physical_damage_types { SLASH, BLUNT, PIERCE, NODAMAGE };
+	enum magic_damage_types { FIRE, FROST, SHOCK, MAGIC, NATURE, SOUND, NOMAGICDAMAGE };
+	enum equip_slots { HEAD, CHEST, LEGS, ARMS, AMULET, RING, MAINHAND1, MAINHAND2, OFFHAND1, OFFHAND2, BAREHAND, MISC, BACKPACK };
 	item_types itemType;
 	weapon_types weaponType;
 	physical_damage_types physicalDamageType;
 	magic_damage_types magicDamageType;
 	equip_slots slot;
-	/*int storedSlot;*/
 	int defense;
 	int damage;
+	int magicAdjust;
 	int value;
 	int weight;
 	int quantity;
 	bool twoHanded;
+	bool needsAmmo;
 	int reach;
 	int attackSpeed;
-
 	Item(string name, string description, item_types itemType, weapon_types weaponType, physical_damage_types physicalDamageType,
-		magic_damage_types magicDamageType, equip_slots slot, int defense, int damage, int value, int weight,
-		int quantity, bool twoHanded, int reach, int attackSpeed) {
-		this->name = name;
-		this->description = description;
-		this->itemType = itemType;
-		this->weaponType = weaponType;
-		this->physicalDamageType = physicalDamageType;
-		this->magicDamageType = magicDamageType;
-		this->slot = slot;
-		/*this->storedSlot = storedSlot;*/
-		this->defense = defense;
-		this->damage = damage;
-		this->value = value;
-		this->weight = weight;
-		this->quantity = quantity;
-		this->twoHanded = twoHanded;
-		this->reach = reach;
-		this->attackSpeed = attackSpeed;
+		magic_damage_types magicDamageType, equip_slots slot, int defense, int damage, int magicAdjust, int value, int weight,
+		int quantity, bool twoHanded, bool needsAmmo, int reach, int attackSpeed) :
+		name(name), description(description), itemType(itemType), weaponType(weaponType), physicalDamageType(physicalDamageType),
+		magicDamageType(magicDamageType), slot(slot), defense(defense), damage(damage), magicAdjust(magicAdjust), value(value), weight(weight),
+		quantity(quantity), twoHanded(twoHanded), needsAmmo(needsAmmo), reach(reach), attackSpeed(attackSpeed)
+	{
+		if (defense < 0) {
+			throw invalid_argument("Defense must be a positive integer");
+		}
+		if (damage < 0) {
+			throw invalid_argument("Damage must be a positive integer");
+		}
+		if (magicAdjust < 0) {
+			throw invalid_argument("Magic Adjustment must be a positive integer");
+		}
+		if (value < 0) {
+			throw invalid_argument("Value must be a positive integer");
+		}
+		if (weight < 0) {
+			throw invalid_argument("Weight must be a positive integer");
+		}
+		if (quantity < 0) {
+			throw invalid_argument("Quantity must be a positive integer");
+		}
+		if (reach < 0) {
+			throw invalid_argument("Reach must be a positive integer");
+		}
+		if (attackSpeed < 0) {
+			throw invalid_argument("Attack Speed must be a positive integer");
+		}
+	}
+	Item()
+	{
+
+	}
+};
+
+class Potion : public Item {
+public:
+	string name;
+	int magnitude;
+	int value;
+	int weight;
+	enum effect { HEALING, MANA, STAMINA, CUREDISEASE };
+	effect effects;
+
+	Potion(string name, int magnitude, int value, int weight, enum effect effects) :
+		name(name), magnitude(magnitude), value(value), weight(weight), effects(effects)
+	{
+		if (magnitude < 0) {
+			throw invalid_argument("Magnitude must be a positive integer.");
+		}
+		if (value < 0) {
+			throw invalid_argument("Value must be a positive integer");
+		}
+		if (weight < 0) {
+			throw invalid_argument("Weight must be a positive integer");
+		}
+	}
+
+};
+
+class Ammo {
+public:
+	string name;
+	int damage;
+	int weight;
+	int quantity;
+
+	Ammo(string name, int damage, int weight, int quantity) :
+		name(name), damage(damage), weight(weight), quantity(quantity)
+	{
+		if (damage < 0) {
+			throw invalid_argument("Damage must be a positive integer");
+		}
+		if (weight < 0) {
+			throw invalid_argument("Weight must be a positive integer");
+		}
+		if (quantity < 0) {
+			throw invalid_argument("Quantity must be a positive integer");
+		}
 	}
 };
 
 class Inventory {
 public:
-	//stored as a vector of items
-	vector<Item> items;
+	//equipped items
+	vector<Item> equippedItems;
 
-	void addItem(const Item& item) {
-		items.push_back(item);
+	//retrieve and return all equipped items
+	vector<Item> getEquippedItems() {
+		vector<Item> items;
+		for (int i = 0; i < equippedItems.size(); i++)
+		{
+			items.push_back(equippedItems[i]);
+		}
+		return items;
 	}
+
+	//equip an item in the mainhand
+	
+
+	//backpack
+	vector<Item> backpackItems;
+	void addItem(const Item& item) {
+		backpackItems.push_back(item);
+	}
+
 	void removeItem(const Item& item) {
-		for (auto it = items.begin(); it != items.end(); ++it) {
+		for (auto it = backpackItems.begin(); it != backpackItems.end(); ++it) {
 			if (it->name == item.name) {
-				items.erase(it);
+				backpackItems.erase(it);
 				return;
 			}
 		}
 		cout << "Item not found in inventory" << endl;
 	}
 	void removeAllItems() {
-		items.clear();
+		backpackItems.clear();
 	}
 	void updateItemQuantity(const string& itemName, int newQuantity) {
-		for (Item& item : items) {
+		for (Item& item : backpackItems) {
 			if (item.name == itemName) {
 				item.quantity = newQuantity;
 				return;
@@ -91,24 +170,56 @@ public:
 		cout << "Item not found in inventory" << endl;
 	}
 	Item findItem(const string& itemName) {
-		for (Item& item : items) {
+		for (Item& item : backpackItems) {
 			if (item.name == itemName) {
 				return item;
 			}
 		}
 		cout << "Item not found in inventory" << endl;
 	}
+
+	//potions
+	vector<Potion> potions;
+	void addPotion(const Potion& potion) {
+		potions.push_back(potion);
+	}
+
+	void removePotion(const Potion& potion)
+	{
+		for (auto it = potions.begin(); it != potions.end(); ++it) {
+			if (it->name == potion.name) {
+				potions.erase(it);
+				return;
+			}
+		}
+	}
+	Potion findPotion(const string& potionName) {
+		for (Potion& potion : potions) {
+			if (potion.name == potionName) {
+				return potion;
+			}
+		}
+		cout << "Item not found in inventory" << endl;
+	}
+
+	//ammunition
+	vector<Ammo> munitions;
+
+	
 	void printInventory()
 	{
+		int tally;
 		cout << dye::light_yellow("->Weapon(s): ") << endl;
-		for (Item& item : items) {
+		tally = 1;
+		for (Item& item : backpackItems) {
 			if (item.itemType == Item::WEAPON)
 			{
 				cout << dye::light_yellow("  Name: ") << item.name << endl;
+				cout << dye::light_yellow("  Weight: ") << item.weight << endl;
 				cout << dye::light_yellow("  Damage: ") << item.damage << endl;
 				cout << dye::light_yellow("  Attack Speed: ") << item.attackSpeed << endl;
 				cout << dye::light_yellow("  Reach: ") << item.reach << endl;
-				if (item.physicalDamageType == Item::BLUNT) 
+				if (item.physicalDamageType == Item::BLUNT)
 				{
 					cout << dye::light_yellow("  Physical Damage Type: ") << "Blunt" << endl;
 				}
@@ -134,13 +245,20 @@ public:
 					cout << dye::light_yellow("  Magic Damage Type: ") << "Shock" << endl;
 				}
 				cout << "\n";
+				tally += 1;
 			}
 		}
+		if (tally == 1)
+		{
+			cout << dye::light_yellow("  None") << endl;
+		}
 		cout << dye::light_yellow("->Armor(s): ") << endl;
-		for (Item& item : items) {
+		tally = 1;
+		for (Item& item : backpackItems) {
 			if (item.itemType == Item::ARMOR)
 			{
 				cout << dye::light_yellow("  Name: ") << item.name << endl;
+				cout << dye::light_yellow("  Weight: ") << item.weight << endl;
 				cout << dye::light_yellow("  Defense: ") << item.defense << endl;
 				if (item.slot == Item::HEAD)
 				{
@@ -176,45 +294,120 @@ public:
 					cout << dye::light_yellow("  Item type: ") << "Miscellaneous" << endl;
 				}
 				cout << "\n";
+				tally += 1;
 			}
 		}
-		for (Item& item : items) {
+		if (tally == 1)
+		{
+			cout << dye::light_yellow("  None") << endl;
+		}
+		cout << dye::light_yellow("->Shield(s): ") << endl;
+		tally = 1;
+		for (Item& item : backpackItems) {
 			if (item.itemType == Item::SHIELD)
 			{
+				cout << dye::light_yellow("  Name: ") << item.name << endl;
+				cout << dye::light_yellow("  Weight: ") << item.weight << endl;
+				cout << dye::light_yellow("  Defense: ") << item.defense << endl;
+				cout << dye::light_yellow("  Damage: ") << item.damage << endl;
+				cout << dye::light_yellow("  Block chance: ") << "TODO" << "%" << endl;
+				if (item.physicalDamageType == Item::BLUNT)
+				{
+					cout << dye::light_yellow("  Physical Damage Type: ") << "Blunt" << endl;
+				}
+				if (item.physicalDamageType == Item::SLASH)
+				{
+					cout << dye::light_yellow("  Physical Damage Type: ") << "Slash" << endl;
+				}
+				if (item.physicalDamageType == Item::PIERCE)
+				{
+					cout << dye::light_yellow("  Physical Damage Type: ") << "Pierce" << endl;
+				}
 
+				if (item.magicDamageType == Item::FIRE)
+				{
+					cout << dye::light_yellow("  Magic Damage Type: ") << "Fire" << endl;
+				}
+				if (item.magicDamageType == Item::FROST)
+				{
+					cout << dye::light_yellow("  Magic Damage Type: ") << "Frost" << endl;
+				}
+				if (item.magicDamageType == Item::SHOCK)
+				{
+					cout << dye::light_yellow("  Magic Damage Type: ") << "Shock" << endl;
+				}
+				cout << "\n";
+				tally += 1;
 			}
 		}
-		for (Item& item : items) {
+		if (tally == 1)
+		{
+			cout << dye::light_yellow("  None") << endl;
+		}
+		cout << dye::light_yellow("->Arcane Casting Tools(s): ") << endl;
+		tally = 1;
+		for (Item& item : backpackItems) {
 			if (item.itemType == Item::ARCANETOOL)
 			{
-
+				cout << dye::light_yellow("  Name: ") << item.name << endl;
+				cout << dye::light_yellow("  Weight: ") << item.weight << endl;
+				cout << dye::light_yellow("  Magic Scaling: ") << item.magicAdjust << endl;
+				cout << dye::light_yellow("  Magic Damage Type: ") << "Shock" << endl;
+				cout << "\n";
+				tally += 1;
 			}
 		}
-		for (Item& item : items) {
+		if (tally == 1)
+		{
+			cout << dye::light_yellow("  None") << endl;
+		}
+		cout << dye::light_yellow("->Holy Casting Tools(s): ") << endl;
+		tally = 1;
+		for (Item& item : backpackItems) {
 			if (item.itemType == Item::HOLYTOOL)
 			{
-
+				cout << dye::light_yellow("  Name: ") << item.name << endl;
+				cout << dye::light_yellow("  Weight: ") << item.weight << endl;
+				cout << dye::light_yellow("  Magic Scaling: ") << item.magicAdjust << endl;
+				cout << "\n";
+				tally += 1;
 			}
 		}
-		for (Item& item : items) {
-			if (item.itemType == Item::POTION)
+		if (tally == 1)
+		{
+			cout << dye::light_yellow("  None") << endl;
+		}
+		cout << dye::light_yellow("->Potion(s): ") << endl;
+		tally = 1;
+		for (Potion& potion : potions) {
+			cout << dye::light_yellow("  Name: ") << potion.name << endl;
+			cout << dye::light_yellow("  Weight: ") << potion.weight << endl;
+			if (potion.effects == Potion::HEALING)
 			{
-
+				cout << dye::light_yellow("  Potion Effect") << " Healing" << endl;
 			}
+			cout << dye::light_yellow("  Magnitude: ") << potion.magnitude << endl;
+			
+			cout << "\n";
+			tally += 1;
 		}
-		for (Item& item : items) {
+		if (tally == 1)
+		{
+			cout << dye::light_yellow("  None") << endl;
+		}
+		for (Item& item : backpackItems) {
 			if (item.itemType == Item::TRINKET)
 			{
 
 			}
 		}
-		for (Item& item : items) {
+		for (Item& item : backpackItems) {
 			if (item.itemType == Item::LIGHT)
 			{
 
 			}
 		}
-		for (Item& item : items) {
+		for (Item& item : backpackItems) {
 			if (item.itemType == Item::LOOT)
 			{
 
@@ -255,6 +448,7 @@ public:
 	int dodgeChance;
 	int blockChance;
 	int blockAmount;
+	int damageReduction;
 
 	int level;
 	int experience;
@@ -272,7 +466,7 @@ public:
 		int gold, Inventory inventory, int distanceFromPlayer, bool alert)
 		: active(active), classChoice(classChoice), characterClass(characterClass), health(health), mana(mana), stamina(stamina), strength(strength), agility(agility), arcane(arcane), faith(faith), luck(luck),
 		healthPoints(healthPoints), maxHealthPoints(maxHealthPoints), manaPoints(manaPoints), maxManaPoints(maxManaPoints), staminaPoints(staminaPoints), maxStaminaPoints(maxStaminaPoints), speed(speed),
-		critChance(critChance), dodgeChance(dodgeChance), blockChance(blockChance), blockAmount(blockAmount), level(level), experience(experience), experienceToNextLevel(experienceToNextLevel), gold(gold),
+		critChance(critChance), dodgeChance(dodgeChance), blockChance(blockChance), blockAmount(blockAmount), damageReduction(damageReduction), level(level), experience(experience), experienceToNextLevel(experienceToNextLevel), gold(gold),
 		inventory(inventory), distanceFromPlayer(distanceFromPlayer), alert(alert)
 	{
 
@@ -303,21 +497,22 @@ public:
 			level = 1;
 			//Mainhand default 1
 			Item startingSword = (Item("Weathered Arming Sword", "A short blade that could use a good sharpening",
-				Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 8, 10, 1, 1, false, 7, 11));
+				Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 8, 0, 10, 1, 1, false, false, 7, 11));
 			//Offhand default 1
 			Item startingWand = (Item("Oak Wand", "A basic wooden wand barely capable of casting magic",
-				Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::MAGIC, Item::OFFHAND1, 0, 1, 10, 1, 1, false, 1, 10));
+				Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::MAGIC, Item::OFFHAND1, 0, 1, 20, 20, 1, 1, false, false, 1, 10));
 			//Offhand default 2
 			Item startingShield = (Item("Plank Shield", "A small shield composed of several thin oak boards",
-				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND2, 5, 2, 5, 2, 1, false, 2, 3));
+				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND2, 5, 2, 0, 10, 2, 1, false, false, 2, 3));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 
+				0, 1, 0, 0, 0, 1, false, false, 3, 10);
 			inventory.addItem(startingSword);
 			inventory.addItem(startingWand);
 			inventory.addItem(startingShield);
 			inventory.addItem(fists);
 			vector<Item> items = { startingSword, startingWand, startingShield, fists };
-			initializeCharacterStats(items);
+			refreshCharacterStats(items);
 			break;
 		}
 		case BATTLEMAGE:
@@ -338,21 +533,22 @@ public:
 			level = 1;
 			//Mainhand default 1
 			Item startingAxe = (Item("Weathered Hand Axe", "An weathered axe of moderate size",
-				Item::WEAPON, Item::AXE, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 12, 5, 4, 1, false, 11, 8));
+				Item::WEAPON, Item::AXE, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 12, 0, 5, 4, 1, false, false, 11, 8));
 			//Offhand default 1
 			Item startingWand = (Item("Oak Wand", "A basic wooden wand barely capable of casting magic",
-				Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::MAGIC, Item::OFFHAND1, 0, 1, 20, 1, 1, false, 1, 10));
+				Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::MAGIC, Item::OFFHAND1, 0, 1, 20, 20, 1, 1, false, false, 1, 10));
 			//Offhand default 2
 			Item startingShield = (Item("Sturdy Plank Shield", "A small shield composed of several thick oak boards bound together by rivets",
-				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND2, 10, 2, 5, 2, 1, false, 1, 5));
+				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND2, 10, 2, 0, 5, 2, 1, false, false, 1, 5));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 
+				0, 1, 0, 0, 0, 1, false, false, 3, 10);
 			inventory.addItem(startingAxe);
 			inventory.addItem(startingWand);
 			inventory.addItem(startingShield);
 			inventory.addItem(fists);
 			vector<Item> items = { startingAxe, startingWand, startingShield, fists };
-			initializeCharacterStats(items);
+			refreshCharacterStats(items);
 			break;
 		}
 		case KNIGHT:
@@ -373,17 +569,18 @@ public:
 			level = 1;
 			//Mainhand default 1
 			Item startingSword = (Item("Weathered Longsword", "A long blade that has seen a good amount of combat",
-				Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 10, 5, 1, 1, false, 6, 10));
+				Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 10, 0, 5, 1, 1, false, false, 6, 10));
 			//Offhand default 1
 			Item startingShield = (Item("Weathered Kite Shield", "A basic metal shield emblazened with a crest so faded it can't be made out",
-				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND1, 15, 2, 5, 1, 1, false, 1, 5));
+				Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND1, 15, 2, 0, 5, 1, 1, false, false, 1, 5));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 
+				0, 1, 0, 0, 0, 1, false, false, 3, 10);
 			inventory.addItem(startingSword);
 			inventory.addItem(startingShield);
 			inventory.addItem(fists);
 			vector<Item> items = { startingSword, startingShield, fists };
-			initializeCharacterStats(items);
+			refreshCharacterStats(items);
 			break;
 		}
 		case CLERIC:
@@ -404,17 +601,18 @@ public:
 			level = 1;
 			//Mainhand default 1
 			Item startingMace = (Item("Weathered Mace", "A hefty mace that, although weathered, could still crack a skull or two",
-				Item::WEAPON, Item::MACE, Item::BLUNT, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 15, 5, 3, 1, false, 5, 7));
+				Item::WEAPON, Item::MACE, Item::BLUNT, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 15, 0, 5, 3, 1, false, false, 5, 7));
 			//Offhand default 1
 			Item startingTalisman = (Item("Tarnished Talisman", "A basic talisman that cannels ones faith and allows the casting of miracles",
-				Item::HOLYTOOL, Item::TALISMAN, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND1, 0, 2, 5, 1, 1, false, 1, 5));
+				Item::HOLYTOOL, Item::TALISMAN, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND1, 0, 2, 20, 20, 1, 1, false, false, 1, 5));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 
+				0, 1, 0, 0, 0, 1, false, false, 3, 10);
 			inventory.addItem(startingMace);
 			inventory.addItem(startingTalisman);
 			inventory.addItem(fists);
 			vector<Item> items = { startingMace, startingTalisman, fists };
-			initializeCharacterStats(items);
+			refreshCharacterStats(items);
 			break;
 		}
 		case HUNTER:
@@ -435,17 +633,18 @@ public:
 			level = 1;
 			//Mainhand default 1	
 			Item startingSword = (Item("Weathered Dagger", "A short blade mostly used for gutting fish and harvesting animal skins. It could stand to be sharpened",
-				Item::WEAPON, Item::DAGGER, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 5, 5, 1, 1, false, 2, 15));
+				Item::WEAPON, Item::DAGGER, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 5, 0, 10, 1, 1, false, false, 2, 15));
 			//Offhand default 1
 			Item startingBow = (Item("Hunting Bow", "A basic wooden bow of average build",
-				Item::WEAPON, Item::LONGBOW, Item::PIERCE, Item::NOMAGICDAMAGE, Item::OFFHAND1, 0, 10, 10, 4, 1, false, 40, 5));
+				Item::WEAPON, Item::LONGBOW, Item::PIERCE, Item::NOMAGICDAMAGE, Item::OFFHAND1, 0, 10, 0, 10, 4, 1, false, true, 40, 5));
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 
+				0, 1, 0, 0, 0, 1, false, false, 3, 10);
 			inventory.addItem(startingSword);
 			inventory.addItem(startingBow);
 			inventory.addItem(fists);
 			vector<Item> items = { startingSword, startingBow, fists };
-			initializeCharacterStats(items);
+			refreshCharacterStats(items);
 			break;
 		}
 		case HIGHLANDER:
@@ -464,15 +663,16 @@ public:
 			faith = 3;
 			luck = 10;
 			level = 1;
-			
+
 			Item startingSword = (Item("Iron Claymore", "A massive blade that requires ample strength and two hands to wield. Typically used to cleave through horses it will makes short work of a man",
-				Item::WEAPON, Item::GREATSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 25, 15, 10, 1, true, 15, 5));
+				Item::WEAPON, Item::GREATSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 25, 0, 30, 10, 1, true, false, 15, 5));
 			inventory.addItem(startingSword);
 			//No weapon equipped
-			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 0, 1, 0, 0, 1, false, 3, 10);
+			Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND, 
+				0, 1, 0, 0, 0, 1, false, false, 3, 10);
 			inventory.addItem(fists);
 			vector<Item> items = { startingSword, fists };
-			initializeCharacterStats(items);
+			refreshCharacterStats(items);
 			break;
 		}
 		default:
@@ -481,11 +681,25 @@ public:
 		}
 	}
 
-	void initializeCharacterStats(vector<Item> items) {
+	//called when the player stats need to be refreshed, either when first initializing them or when they level up
+	void refreshCharacterStats(vector<Item> items) {
 		experienceToNextLevel = level * 100;
 		maxHealthPoints = (health * 10) + (strength * 2);
 		healthPoints = maxHealthPoints;
-		maxManaPoints = (arcane >= faith) ? (mana * 10) + (arcane * 2) + (faith * 1) : (mana * 10) + (faith * 2) + (arcane * 1);
+		//sets mana points to mainly rely on the mana stat, with bonuses from arcane or faith depending on which is higher.
+		//    the smaller of the two will still give a smaller bonus. If they're equal, they both contribute equally at a slightly reduced value.
+		if (arcane > faith)
+		{
+			maxManaPoints = (mana * 10) + (arcane * 2) + (faith * 1);
+		}
+		else if (arcane < faith)
+		{
+			maxManaPoints = (mana * 10) + (faith * 2) + (arcane * 1);
+		}
+		else if (arcane == faith)
+		{
+			maxManaPoints = (mana * 10) + (faith * 1.5) + (arcane * 1.5);
+		}
 		manaPoints = maxManaPoints;
 		maxStaminaPoints = (stamina * 10) + (strength * 2);
 		staminaPoints = maxStaminaPoints;
@@ -496,15 +710,39 @@ public:
 		critChance = -9 + luck * 1 + agility * 0.1;
 
 		//iterates through all items in the player's equipped inventory and adds their equipment weights together for calculations
-		int armorWeight = 0;
+		int equipmentWeight = 0;
 		for (int i = 0; i < items.size(); i++)
 		{
-			armorWeight += items[i].weight;
+			equipmentWeight += items[i].weight;
 		}
-		speed = (agility * 10) + (strength * 5) + (stamina * 2) - armorWeight;
+		speed = (agility * 10) + (strength * 5) + (stamina * 2) - equipmentWeight;
 
 		dodgeChance = (agility * 0.5) + (speed / 100);
-		(dodgeChance >= 50) ? dodgeChance = 50 : dodgeChance = dodgeChance - (armorWeight / 100);
+		(dodgeChance >= 50) ? dodgeChance = 50 : dodgeChance = dodgeChance - (equipmentWeight / 100);
+
+		int armorValue = 0;
+		for (int i = 0; i < items.size(); i++)
+		{
+			armorValue += items[i].defense;
+		}
+		damageReduction = armorValue / (armorValue + 100);
+	}
+
+	void takeDamage(int damage)
+	{
+		healthPoints -= damage;
+		if (healthPoints < 0) {
+			healthPoints = 0;
+			//add function to handle character death
+		}
+	}
+
+	void receiveHealing(int healing)
+	{
+		healthPoints += healing;
+		if (healthPoints > maxHealthPoints) {
+			healthPoints = maxHealthPoints;
+		}
 	}
 
 	//Gets the weapon in the main hand. It can be a one-handed weapon with the MAINHAND1 enum, 
@@ -512,12 +750,12 @@ public:
 	Item getMainWeapon1(Character character)
 	{
 		bool found = false;
-		for (int i = 0; i < character.inventory.items.size(); i++)
+		for (int i = 0; i < character.inventory.backpackItems.size(); i++)
 		{
-			if (character.inventory.items[i].itemType == Item::MAINHAND1)
+			if (character.inventory.backpackItems[i].itemType == Item::MAINHAND1)
 			{
 				bool found = true;
-				return character.inventory.items[i];
+				return character.inventory.backpackItems[i];
 			}
 		}
 		if (found == false) {
@@ -529,12 +767,12 @@ public:
 	Item getMainWeapon2(Character character)
 	{
 		bool found = false;
-		for (int i = 0; i < character.inventory.items.size(); i++)
+		for (int i = 0; i < character.inventory.backpackItems.size(); i++)
 		{
-			if (character.inventory.items[i].itemType == Item::MAINHAND2)
+			if (character.inventory.backpackItems[i].itemType == Item::MAINHAND2)
 			{
 				bool found = true;
-				return character.inventory.items[i];
+				return character.inventory.backpackItems[i];
 			}
 		}
 		if (found == false) {
@@ -546,12 +784,12 @@ public:
 	Item getOffhandWeapon1(Character character)
 	{
 		bool found = false;
-		for (int i = 0; i < character.inventory.items.size(); i++)
+		for (int i = 0; i < character.inventory.backpackItems.size(); i++)
 		{
-			if (character.inventory.items[i].itemType == Item::OFFHAND1)
+			if (character.inventory.backpackItems[i].itemType == Item::OFFHAND1)
 			{
 				bool found = true;
-				return character.inventory.items[i];
+				return character.inventory.backpackItems[i];
 			}
 		}
 		if (found == false) {
@@ -563,12 +801,12 @@ public:
 	Item getOffhandWeapon2(Character character)
 	{
 		bool found = false;
-		for (int i = 0; i < character.inventory.items.size(); i++)
+		for (int i = 0; i < character.inventory.backpackItems.size(); i++)
 		{
-			if (character.inventory.items[i].itemType == Item::OFFHAND2)
+			if (character.inventory.backpackItems[i].itemType == Item::OFFHAND2)
 			{
 				bool found = true;
-				return character.inventory.items[i];
+				return character.inventory.backpackItems[i];
 			}
 		}
 		if (found == false) {
@@ -593,6 +831,7 @@ public:
 		cout << dye::light_yellow("  Luck: ") << character.luck << endl;
 		cout << "\n";
 		cout << dye::light_yellow("  Speed: ") << character.speed << endl;
+		cout << dye::light_yellow("  Damage Reduction: ") << character.damageReduction << "%" << endl;
 		//under construction below
 		cout << dye::light_yellow("  Critical Chance: ") << character.critChance << "%" << endl;
 		cout << dye::light_yellow("  Dodge Chance: ") << character.dodgeChance << "%" << endl;
@@ -625,6 +864,11 @@ void printManaBar(Character player);
 //PRE: None
 //POST: All 3 will be printed to console
 void printAllBars(Character character);
+//DESC: Drinks a potion and applies its effects to the character that drinks it
+//PRE: Character and potion must be properly initialized and passed to function
+//POST: Character will be effected by the potion, potion will be consumed
+void drinkPotion(Character& character, Potion& potion);
+
 #pragma endregion Function Declarations
 
 int main()
@@ -683,58 +927,65 @@ void printMainMenu(Character character)
 			{
 				//for now this adds items to the selected character for testing
 				character.inventory.addItem(Item("Iron Chestplate", "A sturdy cuirass of solid iron. Heavy, but provies ample defense for its cost", Item::ARMOR, Item::NOTAWEAPON,
-					Item::NODAMAGE, Item::NOMAGICDAMAGE, Item::CHEST, 40, 0, 20, 20, 1, false, 0, 0));
+					Item::NODAMAGE, Item::NOMAGICDAMAGE, Item::CHEST, 40, 0, 20, 0, 20, 1, false, false, 0, 0));
 
-				character.inventory.addItem(Item("Fire Longsword", "A steel longsword infused with fire. Does burning damage", Item::WEAPON, Item::NOTAWEAPON, Item::SLASH, Item::FIRE, Item::BACKPACK, 0, 20, 50, 4, 1, false, 10, 10));
+				Item fireLongsword  = (Item("Fire Longsword", "A steel longsword infused with fire. Does burning damage", Item::WEAPON, Item::NOTAWEAPON, Item::SLASH, Item::FIRE,
+					Item::BACKPACK, 0, 20, 50, 0, 4, 1, false, false, 10, 10));
+				character.inventory.addItem(fireLongsword);
+				character.inventory.removeItem(fireLongsword);
+				Potion potion = (Potion("Healing Potion", 40, 10, 1, Potion::HEALING));
+				character.inventory.addPotion(potion);
+				cout << "Dealing 50 points of damage..." << endl;
+				character.takeDamage(50);
+				drinkPotion(character, potion);
 			}
 			else
 			{
-				cout << "No save file found" << endl;
+				cout << "  No save file found" << endl;
 				break;
 		case 2:
 			//New Game
-			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
-				<< dye::light_yellow(" =-------------------=---=-------------------=---=-------------------=---=-------------------=---=-------------------=  ") << endl
-				<< dye::bright_white(" |                                                 Select Your Class                                                 |  ") << endl
-				<< dye::light_yellow(" =-------------------=---=-------------------=---=-------------------=---=-------------------=---=-------------------=  ") << endl
-				<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
-
 			cout << dye::light_yellow(" =-------------------=") << endl
-				<< dye::bright_white(" |  1) The Wizard    |") << endl
+				<< dye::bright_white(" |  6) The Wizard    |") << endl
 				<< dye::light_yellow(" =-------------------=") << endl;
 
 			wizard.printCharacterStats(wizard);
 			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
 
 			cout << dye::light_yellow(" =-------------------=") << endl
-				<< dye::bright_white(" | 2) The Battlemage |") << endl
+				<< dye::bright_white(" | 5) The Battlemage |") << endl
 				<< dye::light_yellow(" =-------------------=") << endl;
 			battleMage.printCharacterStats(battleMage);
 			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
 
 			cout << dye::light_yellow(" =-------------------=") << endl
-				<< dye::bright_white(" |   3) The Knight   |") << endl
+				<< dye::bright_white(" |   4) The Knight   |") << endl
 				<< dye::light_yellow(" =-------------------=") << endl;
 			knight.printCharacterStats(knight);
 			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
 
 			cout << dye::light_yellow(" =-------------------=") << endl
-				<< dye::bright_white(" |   4) The Cleric   |") << endl
+				<< dye::bright_white(" |   3) The Cleric   |") << endl
 				<< dye::light_yellow(" =-------------------=") << endl;
 			cleric.printCharacterStats(cleric);
 			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
 
 			cout << dye::light_yellow(" =-------------------=") << endl
-				<< dye::bright_white(" |   5) The Hunter   |") << endl
+				<< dye::bright_white(" |   2) The Hunter   |") << endl
 				<< dye::light_yellow(" =-------------------=") << endl;
 			hunter.printCharacterStats(hunter);
 			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
 
 			cout << dye::light_yellow(" =-------------------=") << endl
-				<< dye::bright_white(" | 6) The Highlander |") << endl
+				<< dye::bright_white(" | 1) The Highlander |") << endl
 				<< dye::light_yellow(" =-------------------=") << endl;
 			highlander.printCharacterStats(highlander);
-			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
+				<< dye::light_yellow(" =-------------------=---=-------------------=---=-------------------=---=-------------------=---=-------------------=  ") << endl
+				<< dye::bright_white(" |                                                 Select Your Class                                                 |  ") << endl
+				<< dye::light_yellow(" =-------------------=---=-------------------=---=-------------------=---=-------------------=---=-------------------=  ") << endl
+				<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+
 			int classChoice;
 			//input validation
 			do
@@ -752,22 +1003,24 @@ void printMainMenu(Character character)
 			switch (classChoice)
 			{
 			case 1:
-				character.setCharacterClass(Character::WIZARD);
+				character.setCharacterClass(Character::HIGHLANDER);
 				break;
 			case 2:
-				character.setCharacterClass(Character::BATTLEMAGE);
-				break;
-			case 3:
-				character.setCharacterClass(Character::KNIGHT);
-				break;
-			case 4:
-				character.setCharacterClass(Character::CLERIC);
-				break;
-			case 5:
 				character.setCharacterClass(Character::HUNTER);
 				break;
+			case 3:
+				character.setCharacterClass(Character::CLERIC);
+				break;
+			case 4:
+				character.setCharacterClass(Character::KNIGHT);
+				break;
+			case 5:
+				character.setCharacterClass(Character::BATTLEMAGE);
+
+				break;
 			case 6:
-				character.setCharacterClass(Character::HIGHLANDER);
+				character.setCharacterClass(Character::WIZARD);
+
 				break;
 			case 7:
 				//Return to main menu for now
@@ -781,7 +1034,7 @@ void printMainMenu(Character character)
 			}
 			else
 			{
-				cout << "No save file found" << endl;
+				cout << "  No save file found" << endl;
 				break;
 			}
 			break;
@@ -793,7 +1046,7 @@ void printMainMenu(Character character)
 			}
 			else
 			{
-				cout << "No save file found" << endl;
+				cout << "  No save file found" << endl;
 				break;
 			}
 			break;
@@ -943,4 +1196,12 @@ void printManaBar(Character player)
 	}
 	cout << endl;
 	cout << endl;
+}
+
+void drinkPotion(Character& character, Potion& potion) {
+	if (potion.HEALING == Potion::HEALING) {
+		character.receiveHealing(potion.magnitude);
+		character.inventory.removePotion(potion);
+		cout << potion.name << " consumed, " << potion.magnitude << " points of healing administered." << endl;
+	}
 }
