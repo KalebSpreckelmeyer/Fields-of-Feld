@@ -271,12 +271,12 @@ public:
 		//needs error handling 
 	}
 
-	vector<Item> lootAll()
+	vector<Item> lootAll(vector<Item> container)
 	{
 		vector<Item> items;
-		for (int i = 0; i < lootItems.size(); i++)
+		for (int i = 0; i < items.size(); i++)
 		{
-			items.push_back(lootItems[i]);
+			items.push_back(container[i]);
 		}
 		return items;
 		//needs error handling 
@@ -1745,11 +1745,41 @@ void openShop(Character& character)
 	cout << dye::yellow(" Shopkeep:") << endl;
 	cout << dye::light_yellow("  Welcome to my shop traveler. Take a look around. I'm sure we've got what you're looking for.") << endl;
 	cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
-		<< dye::light_yellow(" =----------------------------=              =---------------------------=              =----------------------------=  ") << endl
-		<< dye::bright_white(" |       1) View Wares        |              |     2) Sell your Items    |              |         3) Go back         |  ") << endl
-		<< dye::light_yellow(" =----------------------------=              =---------------------------=              =----------------------------=  ") << endl
-		<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+		 << dye::light_yellow(" =----------------------------=              =---------------------------=              =----------------------------=  ") << endl
+		 << dye::bright_white(" |       1) View Wares        |              |     2) Sell your Items    |              |         3) Go back         |  ") << endl
+		 << dye::light_yellow(" =----------------------------=              =---------------------------=              =----------------------------=  ") << endl
+		 << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+	int choice;
+	do {
+		cout << ">> ";
+		cin >> choice;
+		if (cin.fail() || choice > 3 || choice == 0)
+		{
+			cout << "Enter a number from 1 - 3" << endl;
+		}
+		cin.clear();
+		cin.ignore(10000, '\n');
+	} while (cin.fail() || choice > 3 || choice == 0);
+	switch (choice)
+	{
+	case 1:
+	{
+		//buy items
+		break;
+	}
+	case 2:
+	{
+		//sell items
+		break;
+	}
+	case 3:
+	{
+		//go back
+		break;
+	}
+	}
 }
+
 void printMainCombatMenu(Character player, Character enemy)
 {
 
