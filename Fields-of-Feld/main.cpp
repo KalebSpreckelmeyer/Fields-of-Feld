@@ -1568,7 +1568,15 @@ void printMainMenu(Character character)
 				//for now this adds items to the selected character for testing		
 				Item goblet = goblet.createLootItem("Fine Gold Goblet", "A golden goblet inlaid with emeralds. Will fetch a nice price.", 100, 1, 1);
 				character.inventory.addItemToBackpack(goblet);
+				
 				openShop(character);
+				/*Potion potion = potion.createPotion("Healing Potion", "Heals you for 50 points", 50, 20, 1, 3, Potion::HEALING);
+				character.inventory.addPotion(potion);
+				character.takeDamage(50);
+				cout << "Your health is " << character.healthPoints << endl;
+				Potion potionToDrink = character.inventory.findPotion("Healing Potion");
+				character.drinkPotion(potionToDrink);
+				cout << "Your health is " << character.healthPoints << endl;*/
 				break;
 			}
 			else
@@ -1769,6 +1777,8 @@ void openShop(Character& character)
 	}
 	case 2:
 	{
+		Item itemToSell = character.inventory.findItem("Fine Gold Goblet");
+		character.sellItem(itemToSell);
 		//sell items
 		break;
 	}
