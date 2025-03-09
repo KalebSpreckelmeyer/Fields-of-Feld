@@ -101,6 +101,10 @@ public:
 
 	void printCharacterStats(Character& character);
 
+	int getStaminaCost(Item weapon);
+
+	void consumeStamina(Item weapon);
+
 	//Enemy Specifc Functions
 	
 	void addItemToEnemy(Character enemy, Item item, Item::equip_slots slot);

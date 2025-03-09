@@ -681,9 +681,19 @@ void Character::levelUp(float exp)
 				levelUpComplete = true;
 			}
 		} while (levelUpComplete == false);
+
+		//this prints out the stats a final time after they are done leveling up so they can see their final results
+		std::cout << dye::light_yellow("1) Health: ") << this->health << std::endl;
+		std::cout << dye::light_yellow("2) Mana: ") << this->mana << std::endl;
+		std::cout << dye::light_yellow("3) Stamina: ") << this->stamina << std::endl;
+		std::cout << dye::light_yellow("4) Strength: ") << this->strength << std::endl;
+		std::cout << dye::light_yellow("5) Agility: ") << this->agility << std::endl;
+		std::cout << dye::light_yellow("6) Arcane: ") << this->arcane << std::endl;
+		std::cout << dye::light_yellow("7) Faith: ") << this->faith << std::endl;
+		std::cout << dye::light_yellow("8) Luck: ") << this->luck << std::endl;
+
 		//loops so long as there is enough experience to level up again after consuming enough for a level
 		exp -= experienceToNextLevel;
-
 		level += 1;
 		refreshCharacterStats();
 	} while (exp >= experienceToNextLevel);
@@ -780,6 +790,18 @@ void Character::printCharacterStats(Character& character)
 	std::cout << dye::light_yellow("  Gold: ") << character.gold << std::endl;
 }
 
+int Character::getStaminaCost(Item weapon)
+{
+	float staminaConsumed = weapon.damage * 2;
+	return staminaConsumed;
+}
+
+void Character::consumeStamina(Item weapon)
+{
+	float staminaConsumed = weapon.damage * 2;
+	this->staminaPoints -= staminaConsumed;
+}
+
 void Character::addItemToEnemy(Character enemy, Item item, Item::equip_slots slot)
 {
 
@@ -789,9 +811,8 @@ void Character::checkEnemy()
 {
 	std::cout << dye::light_yellow("------------------------------------------------------------------------------") << std::endl;
 	std::cout << dye::light_yellow("  Name: ") << this->name << std::endl;
-	std::cout << dye::light_yellow("  Health: ") << this->health << std::endl;
-	std::cout << dye::light_yellow("  Mana: ") << this->mana << std::endl;
-	std::cout << dye::light_yellow("  Stamina: ") << this->stamina << std::endl;
+	std::cout << dye::light_yellow("  Health: ") << this->healthPoints << std::endl;
+	std::cout << dye::light_yellow("  Mana: ") << this->manaPoints << std::endl;
 	std::cout << dye::light_yellow("  Speed: ") << this->speed << std::endl;
 	std::cout << dye::light_yellow("------------------------------------------------------------------------------") << std::endl;
 }

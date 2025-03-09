@@ -353,6 +353,20 @@ void openShop(Character& character)
 
 void openCombat(Character& player, Character& enemy)
 {
+	//expand on this based on the characters level, archetype, etc...
+	cout << "You encounter a " << enemy.name << "!" << endl;
+	if (enemy.level <= player.level)
+	{
+		cout << "They shuffel about nervously" << endl;
+	}
+	if (enemy.level > player.level + 4)
+	{
+		cout << "They look tough..." << endl;
+	}
+	else if (enemy.level > player.level + 9)
+	{
+		cout << "You consider running away..." << endl;
+	}
 	vector<Item> charItems = player.inventory.getEquippedItems();
 	Item mainHand;
 	Item offHand;
@@ -402,15 +416,20 @@ void openCombat(Character& player, Character& enemy)
 				std::cin.ignore(10000, '\n');
 			} while (std::cin.fail() || choice > 6 || choice == 0);
 		}
-
+		//if player choses to check enemy (it shouldn't consume a turn)
+		if (choice == 3 && player.isAlive == true && enemy.isAlive == true)
+		{
+			enemy.checkEnemy();
+		}
 		//if player killed enemy
-		if (player.isAlive == true && enemy.isAlive == false)
+		else if (player.isAlive == true && enemy.isAlive == false)
 		{
 			player.gainExperience(enemy);
+			exitFight = true;
 		}
 		//checks if they selected to attack when they are too far away, doesn't 
 		//  progress loop if they can't attack
-		if (mainHand.reach < enemy.distanceFromPlayer && choice == 1 && player.isAlive == true && enemy.isAlive == true)
+		else if (mainHand.reach < enemy.distanceFromPlayer && choice == 1 && player.isAlive == true && enemy.isAlive == true)
 		{
 			cout << dye::light_yellow("You are too far away to attack!") << endl;
 			continue;
@@ -490,7 +509,12 @@ void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy
 		{
 			if (player.isAlive == true)
 			{
-				enemy.takeDamage(mainHand.damage);
+				for (int i = 0; i < 101;)
+				{
+					cout << dye::light_yellow("You strike forth with your ") << dye::light_yellow(mainHand.name) << endl;
+					enemy.takeDamage(mainHand.damage);
+					i += (100 - mainHand.attackSpeed);
+				}
 			}
 
 			//attack
@@ -626,8 +650,10 @@ void enemyTurn(Character& player, Character& enemy)
 	//if they're in range of the player with their weapon
 	if (mainHand.reach >= enemy.distanceFromPlayer && turnOver == false && enemy.isAlive == true)
 	{
-		for (int i = 0; i < 100;)
+		for (int i = 0; i < 101;)
 		{
+			cout << dye::light_yellow("The ") << dye::light_yellow(enemy.name) << dye::light_yellow(" strikes forward with their ") 
+				<< dye::light_yellow(mainHand.name) << endl;
 			player.takeDamage(mainHand.damage);
 			i += (100 - mainHand.attackSpeed);
 			turnOver = true;
