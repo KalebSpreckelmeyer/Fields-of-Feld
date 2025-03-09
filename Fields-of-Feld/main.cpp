@@ -130,7 +130,10 @@ void printMainMenu(Character character)
 					Item::magic_damage_types::NOMAGICDAMAGE);
 				easyEnemy.inventory.equipItem(ironDagger, Item::MAINHAND1);
 				Potion potion = potion.createPotion("Healing Potion", "Heals you", 40, 20, 1, 3, Potion::HEALING);
+				Potion biggerPotion = potion.createPotion("Large Healing Potion", "Heals you better", 80, 40, 1, 2, Potion::HEALING);
 				easyEnemy.inventory.addPotion(potion);
+				character.inventory.addPotion(potion);
+				character.inventory.addPotion(biggerPotion);
 				vector<Item> items = {ironDagger};
 				easyEnemy.refreshCharacterStats();
 				easyEnemy.setArmorValues(items);
@@ -523,18 +526,53 @@ void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy
 		case 2:
 		{
 			//Move
-			float distanceClosed;
-			if ((player.speed / 10) < 0)
+			if (enemy.distanceFromPlayer <= 0)
 			{
-				distanceClosed = 1;
+				cout << "You stand close enough to reach out and touch your enemy, you can't move forward anymore!" << endl;
+				cout << "Select an option: " << endl;
+				if (mainHand.reach >= enemy.distanceFromPlayer)
+				{
+					cout << dye::light_yellow("1. Attack!") << endl;
+				}
+				else {
+					cout << dye::grey("1. Attack!") << endl;
+				}
+				cout << "2. Move" << endl;
+				cout << "3. Check Enemy" << endl;
+				cout << "4. Use Potion" << endl;
+				cout << "5. Check Inventory" << endl;
+				cout << "6. Attempt to Flee" << endl;
+
+				//input validation
+				do
+				{
+					cout << ">> ";
+					std::cin >> choice;
+					if (std::cin.fail() || choice > 6 || choice == 0)
+					{
+						cout << "Enter a number from 1 - 6" << endl;
+					}
+					std::cin.clear();
+					std::cin.ignore(10000, '\n');
+				} while (std::cin.fail() || choice > 6 || choice == 0);
+				playerTurn(choice, exitFight, player, enemy);
+				break;
 			}
 			else
 			{
-				distanceClosed = player.speed / 10;
+				float distanceClosed;
+				if ((player.speed / 10) < 0)
+				{
+					distanceClosed = 1;
+				}
+				else
+				{
+					distanceClosed = player.speed / 10;
+				}
+				enemy.distanceFromPlayer -= distanceClosed;
+				std::cout << player.name << " closes the distance by " << distanceClosed << " units!" << endl;
+				break;
 			}
-			enemy.distanceFromPlayer -= distanceClosed;
-			std::cout << player.name << " closes the distance by " << distanceClosed << " units!" << endl;
-			break;
 		}
 		case 3:
 		{
@@ -574,6 +612,40 @@ void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy
 		case 4:
 		{
 			//Potion
+			bool turnOver = true;
+			player.openPotionDialogue(turnOver);
+
+			if (turnOver == false)
+			{
+				//this abuse of nature exists so that you can check the enemy without it consuming a turn
+				cout << "Select an option: " << endl;
+				if (mainHand.reach >= enemy.distanceFromPlayer)
+				{
+					cout << dye::light_yellow("1. Attack!") << endl;
+				}
+				else {
+					cout << dye::grey("1. Attack!") << endl;
+				}
+				cout << "2. Move" << endl;
+				cout << "3. Check Enemy" << endl;
+				cout << "4. Use Potion" << endl;
+				cout << "5. Check Inventory" << endl;
+				cout << "6. Attempt to Flee" << endl;
+
+				//input validation
+				do
+				{
+					cout << ">> ";
+					std::cin >> choice;
+					if (std::cin.fail() || choice > 6 || choice == 0)
+					{
+						cout << "Enter a number from 1 - 6" << endl;
+					}
+					std::cin.clear();
+					std::cin.ignore(10000, '\n');
+				} while (std::cin.fail() || choice > 6 || choice == 0);
+				playerTurn(choice, exitFight, player, enemy);
+			}
 			break;
 		}
 		case 5:

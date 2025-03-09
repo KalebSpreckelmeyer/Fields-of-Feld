@@ -699,6 +699,7 @@ void Character::levelUp(float exp)
 	} while (exp >= experienceToNextLevel);
 	experience = exp;
 }
+
 void Character::killCharacter()
 {
 	this->isAlive = false;
@@ -815,6 +816,63 @@ void Character::checkEnemy()
 	std::cout << dye::light_yellow("  Mana: ") << this->manaPoints << std::endl;
 	std::cout << dye::light_yellow("  Speed: ") << this->speed << std::endl;
 	std::cout << dye::light_yellow("------------------------------------------------------------------------------") << std::endl;
+}
+
+void Character::openPotionDialogue(bool & turnOver)
+{
+	std::vector<Potion> healingPotions;
+	int potionQuantity = 0;
+	for (int i = 0; i < this->inventory.potions.size(); i++)
+	{
+		if (this->inventory.potions[i].effects == Potion::HEALING)
+		{
+			healingPotions.push_back(this->inventory.potions[i]);
+			potionQuantity += this->inventory.potions[i].quantity;
+		}
+	}
+	std::cout << "You have " << potionQuantity << " healing potions left." << std::endl;
+	std::cout << "Would you like to drink one? 1 = yes, 2 = no" << std::endl;
+	//input validation
+	int choice;
+	do
+	{
+		std::cout << ">> ";
+		std::cin >> choice;
+		if (std::cin.fail() || choice > 2 || choice == 0)
+		{
+			std::cout << "Enter a number from 1 - 2" << std::endl;
+		}
+		std::cin.clear();
+		std::cin.ignore(10000, '\n');
+	} while (std::cin.fail() || choice > 2 || choice == 0);
+	
+	//yes
+	if (choice == 1)
+	{
+		std::cout << "Choose a potion.." << std::endl;
+		for (int i = 1; i < healingPotions.size() + 1; i++)
+		{
+			std::cout << i << ") " << healingPotions[i - 1].name << ", magnitude of "
+				<< healingPotions[i - 1].magnitude << ", quantity of " << healingPotions[i-1].quantity << std::endl;
+		}
+		do
+		{
+			std::cout << ">> ";
+			std::cin >> choice;
+			if (std::cin.fail() || choice > healingPotions.size() || choice == 0)
+			{
+				std::cout << "Enter a number from 1 - " << healingPotions.size() << std::endl;
+			}
+			std::cin.clear();
+			std::cin.ignore(10000, '\n');
+		} while (std::cin.fail() || choice > healingPotions.size() || choice == 0);
+
+		this->drinkPotion(healingPotions[choice - 1]);
+	}
+	if (choice == 2)
+	{
+		turnOver = false;
+	}
 }
 
 void Character::drinkPotion(Potion& potion) {

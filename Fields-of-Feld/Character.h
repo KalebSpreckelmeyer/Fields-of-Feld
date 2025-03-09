@@ -110,6 +110,8 @@ public:
 	void addItemToEnemy(Character enemy, Item item, Item::equip_slots slot);
 
 	void checkEnemy();
+
+	void openPotionDialogue(bool & turnOver);
 	
 	void drinkPotion(Potion& potion);
 
