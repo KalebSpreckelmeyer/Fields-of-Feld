@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <random>
+#include <algorithm>
 #include "color.hpp"
 #include "Item.h"
 #include "Potion.h"
@@ -35,7 +36,26 @@ void printAllBars(Character character);
 //PRE: Character should be initialized first
 //POST: Modifies the character's inventory or gold value based on interactions within the shop
 void openShop(Character& character);
-
+//DESC:
+//PRE:
+//POST:
+void openCombat(Character& player, Character& enemy1);
+void openCombat(Character& player, Character& enemy1, Character& enemy2);
+void openCombat(Character& player, Character& enemy1, Character& enemy2, Character& enemy3);
+void openCombat(Character& player, Character& enemy1, Character& enemy2, Character& enemy3, Character& enemy4);
+void openCombat(Character& player, Character& enemy1, Character& enemy2, Character& enemy3, Character& enemy4, Character& enemy5);
+//DESC:
+//PRE:
+//POST:
+void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1);
+void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1, Character& enemy2);
+void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1, Character& enemy2, Character& enemy3);
+void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1, Character& enemy2, Character& enemy3, Character& enemy4);
+void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1, Character& enemy2, Character& enemy3, Character& enemy4, Character& enemy5);
+//DESC:
+//PRE:
+//POST:
+void enemyTurn(Character& player, Character& enemy);
 #pragma endregion Function Declarations
 
 int main()
@@ -96,18 +116,9 @@ void printMainMenu(Character character)
 			//Continue
 			if (character.active == true)
 			{
-				//for now this adds items to the selected character for testing		
-				Item goblet = goblet.createLootItem("Fine Gold Goblet", "A golden goblet inlaid with emeralds. Will fetch a nice price.", 100, 1, 1);
-				character.inventory.addItemToBackpack(goblet);
-				
-				openShop(character);
-				/*Potion potion = potion.createPotion("Healing Potion", "Heals you for 50 points", 50, 20, 1, 3, Potion::HEALING);
-				character.inventory.addPotion(potion);
-				character.takeDamage(50);
-				cout << "Your health is " << character.healthPoints << endl;
-				Potion potionToDrink = character.inventory.findPotion("Healing Potion");
-				character.drinkPotion(potionToDrink);
-				cout << "Your health is " << character.healthPoints << endl;*/
+				Character hardEnemy = hardEnemy.createEnemy("Bandit Warlord", 300, 150, 50, 250, 10, 5, 5, 5, 40, 80, 20, 20);
+				Character easyEnemy = easyEnemy.createEnemy("Bandit", 150, 100, 50, 200, 10, 5, 5, 5, 20, 20, 5, 15);
+				openCombat(character, easyEnemy);
 				break;
 			}
 			else
@@ -284,10 +295,10 @@ void openShop(Character& character)
 	cout << dye::yellow(" Shopkeep:") << endl;
 	cout << dye::light_yellow("  Welcome to my shop traveler. Take a look around. I'm sure we've got what you're looking for.") << endl;
 	cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
-		 << dye::light_yellow(" =----------------------------=              =---------------------------=              =----------------------------=  ") << endl
-		 << dye::bright_white(" |       1) View Wares        |              |     2) Sell your Items    |              |         3) Go back         |  ") << endl
-		 << dye::light_yellow(" =----------------------------=              =---------------------------=              =----------------------------=  ") << endl
-		 << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
+		<< dye::light_yellow(" =----------------------------=              =---------------------------=              =----------------------------=  ") << endl
+		<< dye::bright_white(" |       1) View Wares        |              |     2) Sell your Items    |              |         3) Go back         |  ") << endl
+		<< dye::light_yellow(" =----------------------------=              =---------------------------=              =----------------------------=  ") << endl
+		<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
 	int choice;
 	do {
 		cout << ">> ";
@@ -308,8 +319,6 @@ void openShop(Character& character)
 	}
 	case 2:
 	{
-		Item itemToSell = character.inventory.findItem("Fine Gold Goblet");
-		character.sellItem(itemToSell);
 		//sell items
 		break;
 	}
@@ -321,84 +330,174 @@ void openShop(Character& character)
 	}
 }
 
-void printMainCombatMenu(Character player, Character enemy)
+void openCombat(Character& player, Character& enemy)
 {
+	vector<Item> charItems = player.inventory.getEquippedItems();
+	Item mainHand;
+	Item offHand;
+	bool exitFight = false;
+	bool optionPicked = false;
 
-	cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
-		<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =-------------------=   =-------------------=  ") << endl
-		<< dye::bright_white(" |     1) Move       |   |    2) Attack      |   |   3) Use Item     |   |  4) Check Enemy   |   | 5) Attempt to Run |  ") << endl
-		<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =-------------------=   =-------------------=  ") << endl
-		<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
-
-	//input validation
-	printAllBars(player);
-	int choice;
-	do {
-		cout << ">> ";
-		cin >> choice;
-		if (cin.fail() || choice > 5 || choice == 0)
-		{
-			cout << "Enter a number from 1 - 5" << endl;
-		}
-		cin.clear();
-		cin.ignore(10000, '\n');
-	} while (cin.fail() || choice > 5 || choice == 0);
-	switch (choice)
+	for (int i = 0; i < charItems.size(); i++)
 	{
-	case 1:
-		if (player.getMainWeapon1(player).reach >= enemy.distanceFromPlayer ||
-			player.getOffhandWeapon1(player).reach >= enemy.distanceFromPlayer)
+		if (charItems[i].slot == Item::MAINHAND1)
 		{
-			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
-				<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =---------------------=   =-----------------=  ") << endl
-				<< dye::bright_white(" |    1) Attack      |   |  2) Move Forward  |   | 3) Move Backward  |   | 4) Retreat & Attack |   |    5) Return    |  ") << endl
-				<< dye::light_yellow(" =-------------------=   =-------------------=   =-------------------=   =---------------------=   =-----------------=  ") << endl
-				<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
-			printAllBars(player);
+			mainHand = charItems[i];
+		}
+		if (charItems[i].slot == Item::OFFHAND1)
+		{
+			offHand = charItems[i];
+		}
+	}
+	//main fight loop
+	do
+	{
+		cout << "Select an option: " << endl;
+		if (mainHand.reach >= enemy.distanceFromPlayer)
+		{
+			cout << dye::light_yellow("1. Attack!") << endl;
+		}
+		else {
+			cout << dye::grey("1. Attack!") << endl;
+		}
+		cout << "2. Move" << endl;
+		cout << "3. Check Enemy" << endl;
+		cout << "4. Use Potion" << endl;
+		cout << "5. Check Inventory" << endl;
+		cout << "6. Attempt to Flee" << endl;
+		int choice;
+		//input validation
+		do
+		{
+			cout << ">> ";
+			std::cin >> choice;
+			if (std::cin.fail() || choice > 6 || choice == 0)
+			{
+				cout << "Enter a number from 1 - 6" << endl;
+			}
+			std::cin.clear();
+			std::cin.ignore(10000, '\n');
+		} while (std::cin.fail() || choice > 6 || choice == 0);
+
+		//checks if they selected to attack when they are too far away, doesn't 
+		//  progress loop if they can't attack
+		if (mainHand.reach < enemy.distanceFromPlayer && choice == 1)
+		{
+			cout << dye::light_yellow("You are too far away to attack!") << endl;
+			break;
 		}
 		else
 		{
-			cout << dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl
-				<< dye::grey(" =-------------------=   ") << dye::light_yellow("=-------------------=   =-------------------=   =-----------------------=   =---------------=  ") << endl
-				<< dye::grey(" |    1) Attack      |   ") << dye::bright_white("|  2) Move Forward  |   | 3) Move Backward  |   | 4) Move Back & Attack |   |   5) Return   |  ") << endl
-				<< dye::grey(" =-------------------=   ") << dye::light_yellow("=-------------------=   =-------------------=   =-----------------------=   =---------------=  ") << endl
-				<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
-			printAllBars(player);
+			if (player.speed > enemy.speed)
+			{
+				playerTurn(choice, exitFight, player, enemy);
+			}
+			else if (player.speed == enemy.speed)
+			{
+				mt19937 generator(time(nullptr));
+				uniform_int_distribution<int> distribution(player.luck, 100);
+				int randomSpeed = distribution(generator);
 
-
-			//Scuffed color pallet lmao
-			/*cout << dye::light_yellow("  This is a ") << dye::yellow("legendary") << dye::light_yellow(" item.") << endl;
-			cout << dye::light_yellow("  This is an ") << dye::light_blue("epic") << dye::light_yellow(" item.") << endl;
-			cout << dye::light_yellow("  This is an ") << dye::light_green("uncommon") << dye::light_yellow(" item.") << endl;
-			cout << dye::light_yellow("  This is a ") << dye::bright_white("common") << dye::light_yellow(" item.") << endl;
-			cout << dye::light_yellow("  It's wizard time motherfucker, ") << dye::light_red("FIREBALL") << endl;
-			cout << dye::light_yellow("  It's wizard time motherfucker, ") << dye::aqua("ICE SPEAR") << endl;
-			cout << dye::light_yellow("  It's wizard time motherfucker, ") << dye::purple("THUNDERBOLT") << endl;
-			cout << dye::light_yellow("  It's sword time motherfucker, ") << dye::white("SLASH") << endl;
-			cout << dye::light_yellow("  You recieve 10 points of ") << dye::green("healing") << endl;
-			cout << dye::light_yellow("  You take 10 points of ") << dye::red("damage") << endl;
-			cout << dye::light_yellow("  You have been ") << dye::light_green("buffed") << endl;
-			cout << dye::light_yellow("  You have been ") << dye::light_purple("debuffed") << endl;*/
-
+				if (randomSpeed >= 50)
+				{
+					playerTurn(choice, exitFight, player, enemy);
+				}
+			}
+			else
+			{
+				enemyTurn(player, enemy);
+			}
 		}
-		break;
-	case 2:
 
-		break;
-	case 3:
-
-		break;
-
-	case 4:
-
-		break;
-	case 5:
-
-		break;
-	}
+	} while (exitFight == false);
 
 }
 
+void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy)
+{
+	vector<Item> charItems = player.inventory.getEquippedItems();
+	Item mainHand;
+	Item offHand;
+
+	for (int i = 0; i < charItems.size(); i++)
+	{
+		if (charItems[i].slot == Item::MAINHAND1)
+		{
+			mainHand = charItems[i];
+		}
+		if (charItems[i].slot == Item::OFFHAND1)
+		{
+			offHand = charItems[i];
+		}
+	}
+
+	switch (choice)
+	{
+	case 1:
+	{
+		if (mainHand.reach >= enemy.distanceFromPlayer)
+		{
+
+		}
+		//attack
+		break;
+	}
+	case 2:
+	{
+		//Move
+		break;
+	}
+	case 3:
+	{
+		//Check Enemy
+		break;
+	}
+	case 4:
+	{
+		//Potion
+		break;
+	}
+	case 5:
+	{
+		//check inventory
+		break;
+	}
+	case 6:
+	{
+		//run
+
+		//sets up random number for the calculations on whether or not running is successful
+		mt19937 generator(time(nullptr));
+		uniform_int_distribution<int> distribution(enemy.speed / 2, enemy.speed);
+		int randomSpeed = distribution(generator);
+		if (player.speed >= enemy.speed)
+		{
+			exitFight = true;
+			cout << "Your superior speed allowed you to slip away!" << endl;
+		}
+		else if (player.speed >= randomSpeed)
+		{
+			exitFight = true;
+			cout << "In spite of your enemy's superior speed you managed to slip away!" << endl;
+		}
+		else {
+			cout << "The enemy is too fast for you to slip away!" << endl;
+		}
+		break;
+	}
+	}
+}
+
+void enemyTurn(Character& player, Character& enemy)
+{
+	//add more here if more potion types get implemented
+	Potion healingPotion = enemy.inventory.getHealingPotion();
+	//Drinks a potion if health is below 1/3
+	if (enemy.healthPoints <= enemy.maxHealthPoints / 3 && healingPotion.magnitude >= 1)
+	{
+		enemy.drinkPotion(healingPotion);
+	}
+}
 void printAllBars(Character character)
 {
 	printHealthBar(character);

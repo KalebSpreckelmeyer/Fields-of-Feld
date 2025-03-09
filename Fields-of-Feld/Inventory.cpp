@@ -3,6 +3,8 @@
 #include <string>
 #include "color.hpp"
 
+//LOOT ITEMS
+
 void Inventory::addLootItems(Item& item)
 {
 	lootItems.push_back(item);
@@ -94,6 +96,9 @@ void Inventory::equipItem(Item& item, Item::equip_slots slot) {
 	}
 }
 
+
+//BACKPACK ITEMS
+
 void Inventory::swapEquippedItem(Item& equippedItem, Item& itemToEquip, Item::equip_slots slot) {
 	//Checks the slot of the item they're storing away and assigns it to the item they're equipping
 	if (equippedItem.slot == Item::MAINHAND1)
@@ -127,7 +132,7 @@ void Inventory::addItemToBackpack(const Item& item) {
 	backpackItems.push_back(item);
 }
 
-void Inventory::removeItem(const Item& item) {
+void Inventory::removeItemFromBackpack(const Item& item) {
 	for (auto it = backpackItems.begin(); it != backpackItems.end(); ++it) {
 		if (it->name == item.name) {
 			backpackItems.erase(it);
@@ -137,12 +142,12 @@ void Inventory::removeItem(const Item& item) {
 	throw std::invalid_argument("Item not found");
 }
 
-void Inventory::removeAllItems() {
+void Inventory::removeAllItemsFromBackpack() {
 	backpackItems.clear();
 	equippedItems.clear();
 }
 
-void Inventory::updateItemQuantity(const std::string& itemName, int newQuantity) {
+void Inventory::updateItemQuantityInBackpack(const std::string& itemName, int newQuantity) {
 	for (Item& item : backpackItems) {
 		if (item.name == itemName) {
 			item.quantity = newQuantity;
@@ -152,7 +157,7 @@ void Inventory::updateItemQuantity(const std::string& itemName, int newQuantity)
 	throw std::invalid_argument("Item not found");
 }
 
-Item Inventory::findItem(const std::string& itemName) {
+Item Inventory::findItemInBackpack(const std::string& itemName) {
 	for (Item& item : backpackItems) {
 		if (item.name == itemName) {
 			return item;
@@ -166,6 +171,21 @@ Item Inventory::findItem(const std::string& itemName) {
 	throw std::invalid_argument("Item not found");
 }
 
+
+//POTION
+
+Potion& Inventory::getHealingPotion()
+{
+	std::vector<Potion> healingPotions;
+	for (int i = 0; i < this->potions.size(); i++)
+	{
+		if (this->potions[i].effects == Potion::HEALING)
+		{
+			healingPotions.push_back(this->potions[i]);
+		}
+	}
+	return healingPotions[0];
+}
 void Inventory::addPotion(const Potion& potion) {
 	potions.push_back(potion);
 }
@@ -195,40 +215,6 @@ void Inventory::updatePotionQuantity(const std::string& potionName, int newQuant
 	for (Potion& potion : potions) {
 		if (potion.name == potionName) {
 			potion.quantity = newQuantity;
-			return;
-		}
-	}
-	throw std::invalid_argument("Item not found");
-}
-
-void Inventory::addAmmo(const Ammo& ammo) {
-	munitions.push_back(ammo);
-}
-
-void Inventory::removeAmmo(const Ammo& ammo)
-{
-	for (auto it = munitions.begin(); it != munitions.end(); ++it) {
-		if (it->name == ammo.name) {
-			munitions.erase(it);
-			return;
-		}
-	}
-	throw std::invalid_argument("Item not found");
-}
-
-Ammo& Inventory::findAmmo(const std::string& ammoName) {
-	for (Ammo& ammo : munitions) {
-		if (ammo.name == ammoName) {
-			return ammo;
-		}
-	}
-	throw std::invalid_argument("Item not found");
-}
-
-void Inventory::updateAmmoQuantity(const std::string& ammoName, int newQuantity) {
-	for (Ammo& ammo : munitions) {
-		if (ammo.name == ammoName) {
-			ammo.quantity = newQuantity;
 			return;
 		}
 	}

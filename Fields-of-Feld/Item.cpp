@@ -30,9 +30,8 @@ Item::Item(std::string name, std::string description, item_types itemType, weapo
 Item::~Item() {
 
 }
-Item Item::createWeapon(std::string name, std::string description, int damage, int reach, int attackSpeed, int weight, int value, int quantity,
-	bool twohanded, bool needsAmmo, Item::weapon_types weaponType, Item::physical_damage_types physType, Item::magic_damage_types magType,
-	Item::equip_slots slot)
+Item Item::createWeapon(std::string name, std::string description, int damage, int reach, int attackSpeed, int weight, int value,
+	bool twohanded, bool needsAmmo, Item::weapon_types weaponType, Item::physical_damage_types physType, Item::magic_damage_types magType)
 {
 	Item item;
 	item.itemType = Item::WEAPON;
@@ -44,21 +43,21 @@ Item Item::createWeapon(std::string name, std::string description, int damage, i
 	item.weight = weight;
 	item.value = value;
 	item.quantity = quantity;
-	item.twoHanded = twohanded;
+	item.twoHanded = 1;
 	item.needsAmmo = needsAmmo;
 	item.weaponType = weaponType;
 	item.physicalDamageType = physType;
 	item.magicDamageType = magType;
-	item.slot = slot;
 
 	//Default values for values associated with non weapons
 	item.defense = 0;
 	item.magicAdjust = 0;
+	item.slot = Item::BACKPACK;
 
 	return item;
 }
 
-Item Item::createArmor(std::string name, std::string description, int defense, int weight, int value, int quantity, Item::equip_slots slot)
+Item Item::createArmor(std::string name, std::string description, int defense, int weight, int value)
 {
 	Item item;
 	item.itemType = Item::ARMOR;
@@ -67,8 +66,7 @@ Item Item::createArmor(std::string name, std::string description, int defense, i
 	item.defense = defense;
 	item.weight = weight;
 	item.value = value;
-	item.quantity = quantity;
-	item.slot = slot;
+	item.quantity = 1;
 
 	//Default values for values associated with non armors
 
@@ -81,11 +79,13 @@ Item Item::createArmor(std::string name, std::string description, int defense, i
 	item.reach = 0;
 	item.twoHanded = false;
 	item.weaponType = Item::NOTAWEAPON;
+	item.slot = Item::BACKPACK;
+
 
 	return item;
 }
 
-Item Item::createTool(std::string name, std::string description, Item::item_types toolType, int weight, int value, int quantity, int magicAdjust, Item::equip_slots slot)
+Item Item::createTool(std::string name, std::string description, Item::item_types toolType, int weight, int value, int quantity, int magicAdjust)
 {
 	Item item;
 	item.itemType = toolType;
@@ -95,7 +95,6 @@ Item Item::createTool(std::string name, std::string description, Item::item_type
 	item.value = value;
 	item.quantity = quantity;
 	item.magicAdjust = magicAdjust;
-	item.slot = slot;
 
 	//Default values for values associated with non tools
 	item.defense = 0;
@@ -106,6 +105,8 @@ Item Item::createTool(std::string name, std::string description, Item::item_type
 	item.reach = 0;
 	item.twoHanded = false;
 	item.weaponType = Item::NOTAWEAPON;
+	item.slot = Item::BACKPACK;
+
 
 	return item;
 }

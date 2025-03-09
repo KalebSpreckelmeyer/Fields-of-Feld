@@ -42,15 +42,14 @@ public:
 	~Item();
 	//Functions to streamline item creation
 	//Weapon
-	Item createWeapon(std::string name, std::string description, int damage, int reach, int attackSpeed, int weight, int value, int quantity,
-		bool twohanded, bool needsAmmo, Item::weapon_types weaponType, Item::physical_damage_types physType, Item::magic_damage_types magType,
-		Item::equip_slots slot);
+	Item createWeapon(std::string name, std::string description, int damage, int reach, int attackSpeed, int weight, int value,
+		bool twohanded, bool needsAmmo, Item::weapon_types weaponType, Item::physical_damage_types physType, Item::magic_damage_types magType);
 	
 	//Armor
-	Item createArmor(std::string name, std::string description, int defense, int weight, int value, int quantity, Item::equip_slots slot);
+	Item createArmor(std::string name, std::string description, int defense, int weight, int value);
 	
 	//Tools
-	Item createTool(std::string name, std::string description, Item::item_types toolType, int weight, int value, int quantity, int magicAdjust, Item::equip_slots slot);
+	Item createTool(std::string name, std::string description, Item::item_types toolType, int weight, int value, int quantity, int magicAdjust);
 
 	//Loot Items
 	Item createLootItem(std::string name, std::string description, int value, int weight, int quantity);

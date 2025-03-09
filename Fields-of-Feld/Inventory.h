@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+
 #include "Item.h"
 #include "Potion.h"
 #include "Ammo.h"
@@ -31,21 +32,24 @@ public:
 	void swapEquippedItem(Item& equippedItem, Item& itemToEquip, Item::equip_slots slot);
 
 	//backpack
+
 	std::vector<Item> backpackItems;
 
 	void addItemToBackpack(const Item& item);
 
-	void removeItem(const Item& item);
+	void removeItemFromBackpack(const Item& item);
 
-	void removeAllItems();
+	void removeAllItemsFromBackpack();
 
-	void updateItemQuantity(const std::string& itemName, int newQuantity);
+	void updateItemQuantityInBackpack(const std::string& itemName, int newQuantity);
 
-	Item findItem(const std::string& itemName);
+	Item findItemInBackpack(const std::string& itemName);
 
 	//potions
+
 	std::vector<Potion> potions;
 
+	Potion& getHealingPotion();
 	void addPotion(const Potion& potion);
 
 	void removePotion(const Potion& potion);
@@ -53,16 +57,8 @@ public:
 	Potion& findPotion(const std::string& potionName);
 
 	void updatePotionQuantity(const std::string& potionName, int newQuantity);
-	//ammunition
 
-	std::vector<Ammo> munitions;
-	void addAmmo(const Ammo& ammo);
-
-	void removeAmmo(const Ammo& ammo);
-
-	Ammo& findAmmo(const std::string& ammoName);
-
-	void updateAmmoQuantity(const std::string& ammoName, int newQuantity);
+	//Printing Information
 
 	void printEquippedItems();
 
@@ -70,4 +66,3 @@ public:
 };
 
 #endif // !Inventory_h
-

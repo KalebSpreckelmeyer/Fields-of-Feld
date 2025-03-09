@@ -2,13 +2,16 @@
 #define Character_h
 
 #include <string>
-#include "Item.h"
 #include "Inventory.h"
+#include "Item.h"
+#include "Spell.h"
+#include "MagicEffect.h"
 
 class Character
 {
 public:
 	bool active;
+	std::string name;
 	enum classChoice { DEFAULT, WIZARD, KNIGHT, CLERIC, HUNTER, HIGHLANDER, BATTLEMAGE, WRETCH };
 	classChoice classChoice;
 	std::string characterClass;
@@ -54,7 +57,7 @@ public:
 	Character();
 
 	//Main Constructor
-	Character(bool active, enum classChoice classChoice, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
+	Character(bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
 		float manaPoints, float maxManaPoints, float staminaPoints, float maxStaminaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float experience, float experienceToNextLevel,
 		float gold, Inventory inventory, float distanceFromPlayer, bool alert);
 
@@ -89,14 +92,65 @@ public:
 	void printCharacterStats(Character& character);
 
 	//Enemy Specifc Functions
-	void createEnemy(std::string name, std::string description, int healthPoints, int staminaPoints, int manaPoints, int speed, int reach, int critChance,
-		int dodgeChance, int blockChance, int blockAmount, int damageReduction, int level);
+	Character createEnemy(std::string name, float healthPoints, float staminaPoints, float manaPoints, float speed, float reach, float critChance,
+		float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float distanceFromPlayer);
 	
 	void addItemToEnemy(Character enemy, Item item, Item::equip_slots slot);
 	
 	void drinkPotion(Potion& potion);
 
 	void sellItem(Item& item);
+
+	//Ammunition
+#pragma region AMMO
+	std::vector<Ammo> munitions;
+
+	Ammo createAmmo(std::string name, int damage, int weight, int quantity, Ammo::ammo_Types ammoType);
+
+	void addAmmo(const Ammo& ammo);
+
+	void removeAmmo(const Ammo& ammo);
+
+	Ammo& findAmmo(const std::string& ammoName);
+
+	void updateAmmoQuantity(const std::string& ammoName, int newQuantity);
+
+	int getAmmoCount(Character character);
+
+	void depleteAmmo(Ammo& ammunition);
+#pragma endregion AMMO
+
+	//SPELLS
+#pragma region SPELLS
+	std::vector<Spell> spells;
+
+	void addSpell(const Spell& spell);
+
+	void removeSpell(const Spell& item);
+
+	void removeAllSpells();
+
+	Spell findSpell(const std::string& spellName);
+
+	void castSpell(Spell& spellName, Character& enemy);
+
+#pragma endregion SPELLS
+
+#pragma region MAGICEFFECTS
+	std::vector<MagicEffect> magicEffects;
+
+	void addMagicEffect(const MagicEffect& effect);
+
+	void removeMagicEffect(const MagicEffect& effect);
+
+	void removeAllMagicEffects();
+
+	MagicEffect findMagicEffect(const std::string& effectName);
+
+	MagicEffect createMagicEffect(std::string name, std::string description, int damage, int healing,
+		int turnsActive, int turnsRemaining, int magnitude, MagicEffect::stats_effected statEffected);
+
+#pragma endregion MAGICEFFECTS
 };
 
 #endif // !Character_h

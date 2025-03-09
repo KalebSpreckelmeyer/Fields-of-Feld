@@ -1,8 +1,8 @@
 #ifndef Potion_h
 #define Potion_h
 
-#include "Item.h"
 #include <string>
+#include "Item.h"
 
 class Potion : public Item {
 public:

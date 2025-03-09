@@ -8,7 +8,7 @@ Character::Character() {
 
 }
 
-Character::Character(bool active, enum classChoice classChoice, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
+Character::Character(bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
 	float manaPoints, float maxManaPoints, float staminaPoints, float maxStaminaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float experience, float experienceToNextLevel,
 	float gold, Inventory inventory, float distanceFromPlayer, bool alert) 
 {
@@ -54,7 +54,7 @@ void Character::setCharacterClass(enum classChoice option)
 	case WIZARD:
 	{
 		//clears items in case of a respec
-		inventory.removeAllItems();
+		inventory.removeAllItemsFromBackpack();
 
 		active = true;
 		characterClass = "Wizard";
@@ -67,7 +67,10 @@ void Character::setCharacterClass(enum classChoice option)
 		faith = 1;
 		luck = 10;
 		level = 1;
-		//Mainhand default 1
+		//Spells
+		MagicEffect effect = (MagicEffect("Damage Over Time", "The missile lingers in the target, doing a small amount of damage over time",
+			1, 0, 3, 3, 1, MagicEffect::stats_effected::NONE));
+		Spell startingSpell = Spell(effect, "Minor Magic Missile", "A small bolt of energy shot forth like a missile", 20, 0, 20, 10, 30, 10, Spell::magic_types::SORCERY, Spell::spell_effects::NONE);		//Mainhand default 1
 		Item startingSword = (Item("Weathered Arming Sword", "A short blade that could use a good sharpening",
 			Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 8, 0, 10, 1, 1, false, false, 7, 11));
 		//Offhand default 1
@@ -83,6 +86,7 @@ void Character::setCharacterClass(enum classChoice option)
 		inventory.equipItem(startingWand, Item::OFFHAND1);
 		inventory.equipItem(startingShield, Item::OFFHAND2);
 		inventory.addItemToBackpack(fists);
+		this->addSpell(startingSpell);
 		std::vector<Item> items = this->inventory.getEquippedItems();
 		refreshCharacterStats(items);
 		break;
@@ -90,7 +94,7 @@ void Character::setCharacterClass(enum classChoice option)
 	case BATTLEMAGE:
 	{
 		//clears items in case of a respec
-		inventory.removeAllItems();
+		inventory.removeAllItemsFromBackpack();
 
 		active = true;
 		characterClass = "Battle Mage";
@@ -103,6 +107,10 @@ void Character::setCharacterClass(enum classChoice option)
 		faith = 1;
 		luck = 10;
 		level = 1;
+		//Spells
+		MagicEffect effect = (MagicEffect("Damage Over Time", "The missile lingers in the target, doing a small amount of damage over time",
+			1, 0, 3, 3, 1,MagicEffect::stats_effected::NONE));
+		Spell startingSpell = Spell(effect,"Minor Magic Missile", "A small bolt of energy shot forth like a missile", 20, 0, 20, 10, 30, 10, Spell::magic_types::SORCERY, Spell::spell_effects::NONE);
 		//Mainhand default 1
 		Item startingAxe = (Item("Weathered Hand Axe", "An weathered axe of moderate size",
 			Item::WEAPON, Item::AXE, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 12, 0, 5, 4, 1, false, false, 11, 8));
@@ -119,6 +127,7 @@ void Character::setCharacterClass(enum classChoice option)
 		inventory.equipItem(startingWand, Item::MAINHAND2);
 		inventory.equipItem(startingShield, Item::OFFHAND1);
 		inventory.addItemToBackpack(fists);
+		this->addSpell(startingSpell);
 		std::vector<Item> items = this->inventory.getEquippedItems();
 		refreshCharacterStats(items);
 		break;
@@ -126,7 +135,7 @@ void Character::setCharacterClass(enum classChoice option)
 	case KNIGHT:
 	{
 		//clears items in case of a respec
-		inventory.removeAllItems();
+		inventory.removeAllItemsFromBackpack();
 
 		active = true;
 		characterClass = "Knight";
@@ -158,7 +167,7 @@ void Character::setCharacterClass(enum classChoice option)
 	case CLERIC:
 	{
 		//clears items in case of a respec
-		inventory.removeAllItems();
+		inventory.removeAllItemsFromBackpack();
 
 		active = true;
 		characterClass = "Cleric";
@@ -190,7 +199,7 @@ void Character::setCharacterClass(enum classChoice option)
 	case HUNTER:
 	{
 		//clears items in case of a respec
-		inventory.removeAllItems();
+		inventory.removeAllItemsFromBackpack();
 
 		active = true;
 		characterClass = "Hunter";
@@ -222,7 +231,7 @@ void Character::setCharacterClass(enum classChoice option)
 	case HIGHLANDER:
 	{
 		//clears items in case of a respec
-		inventory.removeAllItems();
+		inventory.removeAllItemsFromBackpack();
 
 		active = true;
 		characterClass = "Highlander";
@@ -250,7 +259,7 @@ void Character::setCharacterClass(enum classChoice option)
 	case WRETCH:
 	{
 		//clears items in case of a respec
-		inventory.removeAllItems();
+		inventory.removeAllItemsFromBackpack();
 
 		active = true;
 		characterClass = "Wretch";
@@ -301,7 +310,7 @@ void Character::refreshCharacterStats(std::vector<Item> items) {
 	critChance = -9 + luck * 1 + agility * 0.1;
 
 	//iterates through all items in the player's equipped inventory and adds their equipment weights together for calculations
-	int equipmentWeight = 0;
+	float equipmentWeight = 0;
 	for (int i = 0; i < items.size(); i++)
 	{
 		equipmentWeight += items[i].weight;
@@ -311,7 +320,7 @@ void Character::refreshCharacterStats(std::vector<Item> items) {
 	dodgeChance = (agility * 0.5) + (speed / 100);
 	(dodgeChance >= 50) ? dodgeChance = 50 : dodgeChance = dodgeChance - (equipmentWeight / 100);
 
-	int armorValue = 0;
+	float armorValue = 0;
 	for (int i = 0; i < items.size(); i++)
 	{
 		armorValue += items[i].defense;
@@ -422,25 +431,32 @@ void Character::printCharacterStats(Character& character)
 	std::cout << dye::light_yellow("  Gold: ") << character.gold << std::endl;
 }
 
-void Character::createEnemy(std::string name, std::string description, int healthPoints, int staminaPoints, int manaPoints, int speed, int reach, int critChance,
-	int dodgeChance, int blockChance, int blockAmount, int damageReduction, int level)
+Character Character::createEnemy(std::string name, float healthPoints, float staminaPoints, float manaPoints, float speed, float reach, float critChance,
+	float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float distanceFromPlayer)
 {
-	name = name;
-	description = description;
-	healthPoints = healthPoints;
-	maxHealthPoints = healthPoints;
-	staminaPoints = staminaPoints;
-	maxStaminaPoints = staminaPoints;
-	manaPoints = manaPoints;
-	maxManaPoints = manaPoints;
-	speed = speed;
-	reach = reach;
-	critChance = critChance;
-	dodgeChance = dodgeChance;
-	blockChance = blockChance;
-	blockAmount = blockAmount;
-	damageReduction = damageReduction;
-	level = level;
+	Character enemy;
+	enemy.name = name;
+	enemy.healthPoints = healthPoints;
+	enemy.maxHealthPoints = healthPoints;
+	enemy.staminaPoints = staminaPoints;
+	enemy.maxStaminaPoints = staminaPoints;
+	enemy.manaPoints = manaPoints;
+	enemy.maxManaPoints = manaPoints;
+	enemy.speed = speed;
+	enemy.critChance = critChance;
+	enemy.dodgeChance = dodgeChance;
+	enemy.blockChance = blockChance;
+	enemy.blockAmount = blockAmount;
+	enemy.damageReduction = damageReduction;
+	enemy.level = level;
+	enemy.distanceFromPlayer = distanceFromPlayer;
+
+	Item ironDagger = ironDagger.createWeapon("Iron Dagger", "A short blade stained brown with blood", 5,
+		3, 10, 1, 1, false, false, Item::weapon_types::DAGGER, Item::physical_damage_types::SLASH,
+		Item::magic_damage_types::NOMAGICDAMAGE);
+	enemy.inventory.equipItem(ironDagger, Item::MAINHAND1);
+
+	return enemy;
 }
 
 void Character::addItemToEnemy(Character enemy, Item item, Item::equip_slots slot)
@@ -489,7 +505,7 @@ void Character::sellItem(Item& item) {
 	{
 		if (item.quantity == 1)
 		{
-			this->inventory.removeItem(item);
+			this->inventory.removeItemFromBackpack(item);
 			this->gold += item.value;
 			std::cout << item.name << " sold for " << item.value << " gold pieces!" << std::endl;
 		}
@@ -503,3 +519,165 @@ void Character::sellItem(Item& item) {
 		std::cout << "Item not sold" << std::endl;
 	}
 }
+
+//AMMO
+#pragma region AMMO
+Ammo Character::createAmmo(std::string name, int damage, int weight, int quantity, Ammo::ammo_Types ammoType)
+{
+	Ammo ammo;
+	ammo.name = name;
+	ammo.damage = damage;
+	ammo.weight = weight;
+	ammo.quantity = quantity;
+	ammo.ammoType = ammoType;
+
+	return ammo;
+}
+
+void Character::addAmmo(const Ammo& ammo) {
+	munitions.push_back(ammo);
+}
+
+void Character::removeAmmo(const Ammo& ammo)
+{
+	for (auto it = munitions.begin(); it != munitions.end(); ++it) {
+		if (it->name == ammo.name) {
+			munitions.erase(it);
+			return;
+		}
+	}
+	throw std::invalid_argument("Item not found");
+}
+
+Ammo& Character::findAmmo(const std::string& ammoName) {
+	for (Ammo& ammo : munitions) {
+		if (ammo.name == ammoName) {
+			return ammo;
+		}
+	}
+throw std::invalid_argument("Item not found");
+}
+
+void Character::updateAmmoQuantity(const std::string& ammoName, int newQuantity) {
+	for (Ammo& ammo : munitions) {
+		if (ammo.name == ammoName) {
+			ammo.quantity = newQuantity;
+			return;
+		}
+	}
+	throw std::invalid_argument("Item not found");
+}
+
+int Character::getAmmoCount(Character character)
+{
+	int ammoCount = 0;
+	for (int i = 0; i < munitions.size(); i++)
+	{
+		ammoCount += 1;
+	}
+	return ammoCount;
+}
+
+void Character::depleteAmmo(Ammo& ammunition)
+{
+	if (ammunition.quantity == 1)
+	{
+		this->removeAmmo(ammunition);
+	}
+	else {
+		ammunition.quantity -= 1;
+	}
+}
+#pragma endregion AMMO
+
+//SPELLS
+#pragma region SPELLS
+void Character::addSpell(const Spell& spell) {
+	spells.push_back(spell);
+}
+
+void Character::removeSpell(const Spell& spell) {
+	for (auto it = spells.begin(); it != spells.end(); ++it) {
+		if (it->name == spell.name) {
+			spells.erase(it);
+			return;
+		}
+	}
+	throw std::invalid_argument("Item not found");
+}
+
+void Character::removeAllSpells() {
+	spells.clear();
+}
+
+
+Spell Character::findSpell(const std::string& spellName) {
+	for (Spell& spell : spells) {
+		if (spell.name == spellName) {
+			return spell;
+		}
+	}
+	throw std::invalid_argument("Item not found");
+}
+
+
+void Character::castSpell(Spell& spellName, Character& enemy) {
+	if (this->manaPoints < spellName.manaCost)
+	{
+		std::cout << "You do not have enough mana to cast this spell" << std::endl;
+	}
+	else {
+		this->manaPoints -= spellName.manaCost;
+		enemy.healthPoints -= spellName.damage;
+		std::cout << "You cast " << spellName.name << " at the " << enemy.name <<
+			" and deal " << spellName.damage << " damage!" << std::endl;
+	}
+}
+
+#pragma endregion SPELLS
+
+#pragma region MAGICEFFECTS
+void Character::addMagicEffect(const MagicEffect& spell) {
+	magicEffects.push_back(spell);
+}
+
+void Character::removeMagicEffect(const MagicEffect& spell) {
+	for (auto it = magicEffects.begin(); it != magicEffects.end(); ++it) {
+		if (it->name == spell.name) {
+			magicEffects.erase(it);
+			return;
+		}
+	}
+	throw std::invalid_argument("Item not found");
+}
+
+void Character::removeAllMagicEffects() {
+	magicEffects.clear();
+}
+
+
+MagicEffect Character::findMagicEffect(const std::string& effectName) {
+	for (MagicEffect& effect : magicEffects) {
+		if (effect.name == effectName) {
+			return effect;
+		}
+	}
+	throw std::invalid_argument("Item not found");
+}
+
+MagicEffect Character::createMagicEffect(std::string name, std::string description, int damage, int healing,
+	int turnsActive, int turnsRemaining, int magnitude, MagicEffect::stats_effected statEffected)
+{
+	MagicEffect effect;
+	effect.name = name;
+	effect.description = description;
+	effect.damage = damage;
+	effect.healing = healing;
+	effect.turnsActive = turnsActive;
+	effect.turnsRemaining = turnsRemaining;
+	effect.magnitude = magnitude;
+	effect.statEffected = statEffected;
+
+	return effect;
+}
+#pragma endregion MAGICEFFECTS
