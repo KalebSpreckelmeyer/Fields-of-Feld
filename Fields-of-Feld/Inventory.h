@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <optional>
 
 #include "Item.h"
 #include "Potion.h"
@@ -49,7 +50,8 @@ public:
 
 	std::vector<Potion> potions;
 
-	Potion& getHealingPotion();
+	std::optional<Potion> getHealingPotion();
+
 	void addPotion(const Potion& potion);
 
 	void removePotion(const Potion& potion);

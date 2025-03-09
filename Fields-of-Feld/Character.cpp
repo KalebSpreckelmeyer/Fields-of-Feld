@@ -8,10 +8,12 @@ Character::Character() {
 
 }
 
-Character::Character(bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
+Character::Character(bool isAlive, bool isPlayer, bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
 	float manaPoints, float maxManaPoints, float staminaPoints, float maxStaminaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float experience, float experienceToNextLevel,
-	float gold, Inventory inventory, float distanceFromPlayer, bool alert) 
+	float gold, Inventory inventory, float distanceFromPlayer, bool alert)
 {
+	this->isAlive = isAlive;
+	this->isPlayer = isPlayer;
 	this->active = active;
 	this->classChoice = classChoice;
 	this->characterClass = characterClass;
@@ -39,7 +41,7 @@ Character::Character(bool active, enum classChoice classChoice, std::string name
 	this->experience = experience;
 	this->experienceToNextLevel = experienceToNextLevel;
 	this->gold = gold;
-	this->inventory = inventory; 
+	this->inventory = inventory;
 	this->distanceFromPlayer = distanceFromPlayer;
 	this->alert = alert;
 }
@@ -56,6 +58,8 @@ void Character::setCharacterClass(enum classChoice option)
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		isAlive = true;
+		isPlayer = true;
 		active = true;
 		characterClass = "Wizard";
 		health = 10;
@@ -88,7 +92,8 @@ void Character::setCharacterClass(enum classChoice option)
 		inventory.addItemToBackpack(fists);
 		this->addSpell(startingSpell);
 		std::vector<Item> items = this->inventory.getEquippedItems();
-		refreshCharacterStats(items);
+		setArmorValues(items);
+		refreshCharacterStats();
 		break;
 	}
 	case BATTLEMAGE:
@@ -96,6 +101,8 @@ void Character::setCharacterClass(enum classChoice option)
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		isAlive = true;
+		isPlayer = true;
 		active = true;
 		characterClass = "Battle Mage";
 		health = 16;
@@ -109,8 +116,8 @@ void Character::setCharacterClass(enum classChoice option)
 		level = 1;
 		//Spells
 		MagicEffect effect = (MagicEffect("Damage Over Time", "The missile lingers in the target, doing a small amount of damage over time",
-			1, 0, 3, 3, 1,MagicEffect::stats_effected::NONE));
-		Spell startingSpell = Spell(effect,"Minor Magic Missile", "A small bolt of energy shot forth like a missile", 20, 0, 20, 10, 30, 10, Spell::magic_types::SORCERY, Spell::spell_effects::NONE);
+			1, 0, 3, 3, 1, MagicEffect::stats_effected::NONE));
+		Spell startingSpell = Spell(effect, "Minor Magic Missile", "A small bolt of energy shot forth like a missile", 20, 0, 20, 10, 30, 10, Spell::magic_types::SORCERY, Spell::spell_effects::NONE);
 		//Mainhand default 1
 		Item startingAxe = (Item("Weathered Hand Axe", "An weathered axe of moderate size",
 			Item::WEAPON, Item::AXE, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 12, 0, 5, 4, 1, false, false, 11, 8));
@@ -129,7 +136,8 @@ void Character::setCharacterClass(enum classChoice option)
 		inventory.addItemToBackpack(fists);
 		this->addSpell(startingSpell);
 		std::vector<Item> items = this->inventory.getEquippedItems();
-		refreshCharacterStats(items);
+		setArmorValues(items);
+		refreshCharacterStats();
 		break;
 	}
 	case KNIGHT:
@@ -137,6 +145,8 @@ void Character::setCharacterClass(enum classChoice option)
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		isAlive = true;
+		isPlayer = true;
 		active = true;
 		characterClass = "Knight";
 		health = 16;
@@ -161,7 +171,8 @@ void Character::setCharacterClass(enum classChoice option)
 		inventory.equipItem(startingShield, Item::OFFHAND1);
 		inventory.addItemToBackpack(fists);
 		std::vector<Item> items = this->inventory.getEquippedItems();
-		refreshCharacterStats(items);
+		setArmorValues(items);
+		refreshCharacterStats();
 		break;
 	}
 	case CLERIC:
@@ -169,6 +180,8 @@ void Character::setCharacterClass(enum classChoice option)
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		isAlive = true;
+		isPlayer = true;
 		active = true;
 		characterClass = "Cleric";
 		health = 10;
@@ -193,7 +206,8 @@ void Character::setCharacterClass(enum classChoice option)
 		inventory.equipItem(startingTalisman, Item::OFFHAND1);
 		inventory.addItemToBackpack(fists);
 		std::vector<Item> items = this->inventory.getEquippedItems();
-		refreshCharacterStats(items);
+		setArmorValues(items);
+		refreshCharacterStats();
 		break;
 	}
 	case HUNTER:
@@ -201,6 +215,8 @@ void Character::setCharacterClass(enum classChoice option)
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		isAlive = true;
+		isPlayer = true;
 		active = true;
 		characterClass = "Hunter";
 		health = 10;
@@ -225,7 +241,8 @@ void Character::setCharacterClass(enum classChoice option)
 		inventory.equipItem(startingBow, Item::MAINHAND2);
 		inventory.addItemToBackpack(fists);
 		std::vector<Item> items = this->inventory.getEquippedItems();
-		refreshCharacterStats(items);
+		setArmorValues(items);
+		refreshCharacterStats();
 		break;
 	}
 	case HIGHLANDER:
@@ -233,6 +250,8 @@ void Character::setCharacterClass(enum classChoice option)
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		isAlive = true;
+		isPlayer = true;
 		active = true;
 		characterClass = "Highlander";
 		health = 15;
@@ -253,7 +272,8 @@ void Character::setCharacterClass(enum classChoice option)
 			0, 1, 0, 0, 0, 1, false, false, 3, 10);
 		inventory.addItemToBackpack(fists);
 		std::vector<Item> items = this->inventory.getEquippedItems();
-		refreshCharacterStats(items);
+		setArmorValues(items);
+		refreshCharacterStats();
 		break;
 	}
 	case WRETCH:
@@ -261,6 +281,8 @@ void Character::setCharacterClass(enum classChoice option)
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		isAlive = true;
+		isPlayer = true;
 		active = true;
 		characterClass = "Wretch";
 		health = 1;
@@ -273,7 +295,8 @@ void Character::setCharacterClass(enum classChoice option)
 		luck = 1;
 		level = 1;
 		std::vector<Item> items = this->inventory.getEquippedItems();
-		refreshCharacterStats(items);
+		setArmorValues(items);
+		refreshCharacterStats();
 		break;
 	}
 	default:
@@ -282,7 +305,7 @@ void Character::setCharacterClass(enum classChoice option)
 	}
 }
 
-void Character::refreshCharacterStats(std::vector<Item> items) {
+void Character::refreshCharacterStats() {
 	experienceToNextLevel = level * 100;
 	maxHealthPoints = (health * 10) + (strength * 2);
 	healthPoints = maxHealthPoints;
@@ -308,7 +331,10 @@ void Character::refreshCharacterStats(std::vector<Item> items) {
 	//set to -9 at first so each class will start with 1 crit chance
 	(critChance >= 50) ? critChance = 50 : critChance = critChance;
 	critChance = -9 + luck * 1 + agility * 0.1;
+}
 
+void Character::setArmorValues(std::vector<Item> items)
+{
 	//iterates through all items in the player's equipped inventory and adds their equipment weights together for calculations
 	float equipmentWeight = 0;
 	for (int i = 0; i < items.size(); i++)
@@ -325,16 +351,43 @@ void Character::refreshCharacterStats(std::vector<Item> items) {
 	{
 		armorValue += items[i].defense;
 	}
-	damageReduction = armorValue / (armorValue + 100);
+	damageReduction = armorValue / (armorValue + 500);
 }
-
 void Character::takeDamage(int damage)
 {
-	healthPoints -= damage;
-	if (healthPoints < 0) {
-		healthPoints = 0;
-		//add function to handle character death
+	float damageTaken = damage - (damage * damageReduction);
+	healthPoints -= damageTaken;
+	if (isPlayer == true)
+	{
+		if (damageReduction > 0.01)
+		{
+			std::cout << "Your armor absorbs " << damage * damageReduction << " points of damage!" << std::endl;
+			std::cout << "You take " << damageTaken << " points of damage!" << std::endl;
+		}
+		else {
+			std::cout << "You take " << damageTaken << " points of damage!" << std::endl;
+		}
+		if (healthPoints < 0) {
+			healthPoints = 0;
+			killCharacter();
+		}
 	}
+	else
+	{
+		if (damageReduction > 0.01)
+		{
+			std::cout << "The " << this->name << "'s armor absorbs " << damage * damageReduction << " points of damage!" << std::endl;
+			std::cout << "The " << this->name << " takes " << damageTaken << " points of damage!" << std::endl;
+		}
+		else {
+			std::cout << "The " << this->name << " takes " << damageTaken << " points of damage!" << std::endl;
+		}
+		if (healthPoints < 0) {
+			healthPoints = 0;
+			killCharacter();
+		}
+	}
+
 }
 
 void Character::receiveHealing(int healing)
@@ -345,6 +398,302 @@ void Character::receiveHealing(int healing)
 	}
 }
 
+void Character::gainExperience(Character enemy)
+{
+	float expGained = enemy.level * 50;
+	std::cout << this->name << " gained " << expGained << " points of experience for their victory!" << std::endl;
+
+	if (expGained + experience >= experienceToNextLevel)
+	{
+		levelUp(expGained);
+	}
+	else
+	{
+		this->experience += expGained;
+	}
+}
+
+//this is an arcane monstrocity that I am not proud of
+void Character::levelUp(float exp)
+{
+	experience += exp;
+	float expDifference;
+	do
+	{
+		bool levelUpComplete = false;
+		do {
+			int iterator = 0;
+			std::cout << dye::yellow("Level up! You are now level: ") << dye::yellow(level + 1) << std::endl;
+			for (int i = 3; i > 0; i--)
+			{
+				int areYouSure = 0;
+				do
+				{
+					std::cout << dye::yellow("Select ") << dye::yellow(i) << dye::yellow(" stats to increase by 5!") << std::endl;
+					std::cout << dye::light_yellow("1) Health: ") << this->health << std::endl;
+					std::cout << dye::light_yellow("2) Mana: ") << this->mana << std::endl;
+					std::cout << dye::light_yellow("3) Stamina: ") << this->stamina << std::endl;
+					std::cout << dye::light_yellow("4) Strength: ") << this->strength << std::endl;
+					std::cout << dye::light_yellow("5) Agility: ") << this->agility << std::endl;
+					std::cout << dye::light_yellow("6) Arcane: ") << this->arcane << std::endl;
+					std::cout << dye::light_yellow("7) Faith: ") << this->faith << std::endl;
+					std::cout << dye::light_yellow("8) Luck: ") << this->luck << std::endl;
+					int choice;
+					//input validation
+					do
+					{
+						std::cout << ">> ";
+						std::cin >> choice;
+						if (std::cin.fail() || choice > 8 || choice == 0)
+						{
+							std::cout << "Enter a number from 1 - 8" << std::endl;
+						}
+						std::cin.clear();
+						std::cin.ignore(10000, '\n');
+					} while (std::cin.fail() || choice > 8 || choice == 0);
+
+					switch (choice)
+					{
+					case 1:
+					{
+						std::cout << "Health: " << this->health << " -> " << this->health + 5 << std::endl;
+						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
+
+						//input validation
+						do
+						{
+							std::cout << ">> ";
+							std::cin >> areYouSure;
+							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							{
+								std::cout << "Enter a number from 1 - 2" << std::endl;
+							}
+							std::cin.clear();
+							std::cin.ignore(10000, '\n');
+						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+
+						if (areYouSure == 1)
+						{
+							this->health += 5;
+						}
+						else
+						{
+							break;
+						}
+						break;
+					}
+					case 2:
+					{
+						std::cout << "Mana: " << this->mana << " -> " << this->mana + 5 << std::endl;
+						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
+						//input validation
+						do
+						{
+							std::cout << ">> ";
+							std::cin >> areYouSure;
+							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							{
+								std::cout << "Enter a number from 1 - 2" << std::endl;
+							}
+							std::cin.clear();
+							std::cin.ignore(10000, '\n');
+						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+
+						if (areYouSure == 1)
+						{
+							this->mana += 5;
+						}
+						else
+						{
+							break;
+						}
+						break;
+					}
+					case 3:
+					{
+						std::cout << "Stamina: " << this->stamina << " -> " << this->stamina + 5 << std::endl;
+						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
+						//input validation
+						do
+						{
+							std::cout << ">> ";
+							std::cin >> areYouSure;
+							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							{
+								std::cout << "Enter a number from 1 - 2" << std::endl;
+							}
+							std::cin.clear();
+							std::cin.ignore(10000, '\n');
+						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+
+						if (areYouSure == 1)
+						{
+							this->stamina += 5;
+						}
+						else
+						{
+							break;
+						}
+						break;
+					}
+					case 4:
+					{
+						std::cout << "Strength: " << this->strength << " -> " << this->strength + 5 << std::endl;
+						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
+						//input validation
+						do
+						{
+							std::cout << ">> ";
+							std::cin >> areYouSure;
+							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							{
+								std::cout << "Enter a number from 1 - 2" << std::endl;
+							}
+							std::cin.clear();
+							std::cin.ignore(10000, '\n');
+						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+
+						if (areYouSure == 1)
+						{
+							this->strength += 5;
+						}
+						else
+						{
+							break;
+						}
+						break;
+					}
+					case 5:
+					{
+						std::cout << "Agility: " << this->agility << " -> " << this->agility + 5 << std::endl;
+						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
+						//input validation
+						do
+						{
+							std::cout << ">> ";
+							std::cin >> areYouSure;
+							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							{
+								std::cout << "Enter a number from 1 - 2" << std::endl;
+							}
+							std::cin.clear();
+							std::cin.ignore(10000, '\n');
+						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+
+						if (areYouSure == 1)
+						{
+							this->agility += 5;
+						}
+						else
+						{
+							break;
+						}
+						break;
+					}
+					case 6:
+					{
+						std::cout << "Arcane: " << this->arcane << " -> " << this->arcane + 5 << std::endl;
+						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
+						//input validation
+						do
+						{
+							std::cout << ">> ";
+							std::cin >> areYouSure;
+							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							{
+								std::cout << "Enter a number from 1 - 2" << std::endl;
+							}
+							std::cin.clear();
+							std::cin.ignore(10000, '\n');
+						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+
+						if (areYouSure == 1)
+						{
+							this->arcane += 5;
+						}
+						else
+						{
+							break;
+						}
+						break;
+					}
+					case 7:
+					{
+						std::cout << "Faith: " << this->faith << " -> " << this->faith + 5 << std::endl;
+						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
+						//input validation
+						do
+						{
+							std::cout << ">> ";
+							std::cin >> areYouSure;
+							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							{
+								std::cout << "Enter a number from 1 - 2" << std::endl;
+							}
+							std::cin.clear();
+							std::cin.ignore(10000, '\n');
+						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+
+						if (areYouSure == 1)
+						{
+							this->faith += 5;
+						}
+						else
+						{
+							break;
+						}
+						break;
+					}
+					case 8:
+					{
+						std::cout << "Luck: " << this->luck << " -> " << this->luck + 5 << std::endl;
+						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
+						//input validation
+						do
+						{
+							std::cout << ">> ";
+							std::cin >> areYouSure;
+							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							{
+								std::cout << "Enter a number from 1 - 2" << std::endl;
+							}
+							std::cin.clear();
+							std::cin.ignore(10000, '\n');
+						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+
+						if (areYouSure == 1)
+						{
+							this->luck += 5;
+						}
+						else
+						{
+							break;
+						}
+						break;
+					}
+					}
+
+				} while (areYouSure == 2);
+				iterator += 1;
+			}
+			if (iterator == 3)
+			{
+				levelUpComplete = true;
+			}
+		} while (levelUpComplete == false);
+		//loops so long as there is enough experience to level up again after consuming enough for a level
+		exp -= experienceToNextLevel;
+
+		level += 1;
+		refreshCharacterStats();
+	} while (exp >= experienceToNextLevel);
+	experience = exp;
+}
+void Character::killCharacter()
+{
+	this->isAlive = false;
+	std::cout << this->name << " has taken" << dye::light_red(" fatal damage...") << std::endl;
+}
 Item Character::getMainWeapon1(Character& character)
 {
 	bool found = false;
@@ -431,59 +780,68 @@ void Character::printCharacterStats(Character& character)
 	std::cout << dye::light_yellow("  Gold: ") << character.gold << std::endl;
 }
 
-Character Character::createEnemy(std::string name, float healthPoints, float staminaPoints, float manaPoints, float speed, float reach, float critChance,
-	float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float distanceFromPlayer)
-{
-	Character enemy;
-	enemy.name = name;
-	enemy.healthPoints = healthPoints;
-	enemy.maxHealthPoints = healthPoints;
-	enemy.staminaPoints = staminaPoints;
-	enemy.maxStaminaPoints = staminaPoints;
-	enemy.manaPoints = manaPoints;
-	enemy.maxManaPoints = manaPoints;
-	enemy.speed = speed;
-	enemy.critChance = critChance;
-	enemy.dodgeChance = dodgeChance;
-	enemy.blockChance = blockChance;
-	enemy.blockAmount = blockAmount;
-	enemy.damageReduction = damageReduction;
-	enemy.level = level;
-	enemy.distanceFromPlayer = distanceFromPlayer;
-
-	Item ironDagger = ironDagger.createWeapon("Iron Dagger", "A short blade stained brown with blood", 5,
-		3, 10, 1, 1, false, false, Item::weapon_types::DAGGER, Item::physical_damage_types::SLASH,
-		Item::magic_damage_types::NOMAGICDAMAGE);
-	enemy.inventory.equipItem(ironDagger, Item::MAINHAND1);
-
-	return enemy;
-}
-
 void Character::addItemToEnemy(Character enemy, Item item, Item::equip_slots slot)
 {
 
 }
 
+void Character::checkEnemy()
+{
+	std::cout << dye::light_yellow("------------------------------------------------------------------------------") << std::endl;
+	std::cout << dye::light_yellow("  Name: ") << this->name << std::endl;
+	std::cout << dye::light_yellow("  Health: ") << this->health << std::endl;
+	std::cout << dye::light_yellow("  Mana: ") << this->mana << std::endl;
+	std::cout << dye::light_yellow("  Stamina: ") << this->stamina << std::endl;
+	std::cout << dye::light_yellow("  Speed: ") << this->speed << std::endl;
+	std::cout << dye::light_yellow("------------------------------------------------------------------------------") << std::endl;
+}
+
 void Character::drinkPotion(Potion& potion) {
-	if (potion.effects == Potion::HEALING) {
-		if (this->healthPoints == this->maxHealthPoints) {
-			std::cout << dye::light_yellow("You are already at full health and did not consume the potion.") << std::endl;
-		}
-		else {
-			this->receiveHealing(potion.magnitude);
-			if (potion.quantity == 1) {
-				this->inventory.removePotion(potion);
+	if (this->isPlayer == true)
+	{
+		if (potion.effects == Potion::HEALING) {
+			if (this->healthPoints == this->maxHealthPoints) {
+				std::cout << dye::light_yellow("You are already at full health and did not consume the potion.") << std::endl;
 			}
 			else {
-				this->inventory.updatePotionQuantity(potion.name, potion.quantity - 1);
+				this->receiveHealing(potion.magnitude);
+				if (potion.quantity == 1) {
+					this->inventory.removePotion(potion);
+				}
+				else {
+					this->inventory.updatePotionQuantity(potion.name, potion.quantity - 1);
+				}
+				std::cout << potion.name << " consumed, " << potion.magnitude << " points of healing administered." << std::endl;
 			}
-			std::cout << potion.name << " consumed, " << potion.magnitude << " points of healing administered." << std::endl;
+		}
+		else
+		{
+			std::cout << "Invalid potion" << std::endl;
 		}
 	}
 	else
 	{
-		std::cout << "Invalid potion" << std::endl;
+		if (potion.effects == Potion::HEALING) {
+			if (this->healthPoints == this->maxHealthPoints) {
+				std::cout << dye::light_yellow(this->name) << dye::light_yellow(" tried to drink a potion, but they were already at full health and did not consume the potion.") << std::endl;
+			}
+			else {
+				this->receiveHealing(potion.magnitude);
+				if (potion.quantity == 1) {
+					this->inventory.removePotion(potion);
+				}
+				else {
+					this->inventory.updatePotionQuantity(potion.name, potion.quantity - 1);
+				}
+				std::cout << this->name << " consumed a " << potion.name << ", " << potion.magnitude << " points of healing administered." << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "Invalid potion" << std::endl;
+		}
 	}
+
 }
 
 void Character::sellItem(Item& item) {
@@ -555,7 +913,7 @@ Ammo& Character::findAmmo(const std::string& ammoName) {
 			return ammo;
 		}
 	}
-throw std::invalid_argument("Item not found");
+	throw std::invalid_argument("Item not found");
 }
 
 void Character::updateAmmoQuantity(const std::string& ammoName, int newQuantity) {

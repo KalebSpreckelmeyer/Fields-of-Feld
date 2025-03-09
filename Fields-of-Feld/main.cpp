@@ -9,6 +9,7 @@
 #include "Item.h"
 #include "Potion.h"
 #include "Character.h"
+#include "optional"
 
 
 using namespace std;
@@ -48,10 +49,6 @@ void openCombat(Character& player, Character& enemy1, Character& enemy2, Charact
 //PRE:
 //POST:
 void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1);
-void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1, Character& enemy2);
-void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1, Character& enemy2, Character& enemy3);
-void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1, Character& enemy2, Character& enemy3, Character& enemy4);
-void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy1, Character& enemy2, Character& enemy3, Character& enemy4, Character& enemy5);
 //DESC:
 //PRE:
 //POST:
@@ -116,8 +113,27 @@ void printMainMenu(Character character)
 			//Continue
 			if (character.active == true)
 			{
-				Character hardEnemy = hardEnemy.createEnemy("Bandit Warlord", 300, 150, 50, 250, 10, 5, 5, 5, 40, 80, 20, 20);
-				Character easyEnemy = easyEnemy.createEnemy("Bandit", 150, 100, 50, 200, 10, 5, 5, 5, 20, 20, 5, 15);
+				Character easyEnemy;
+				easyEnemy.isAlive = true;
+				easyEnemy.health = 10;
+				easyEnemy.mana = 5;
+				easyEnemy.stamina = 15;
+				easyEnemy.strength = 10;
+				easyEnemy.agility = 18;
+				easyEnemy.luck = 2;
+				easyEnemy.level = 5;
+				easyEnemy.name = "Bandit";
+				easyEnemy.distanceFromPlayer = 50;
+
+				Item ironDagger = ironDagger.createWeapon("Iron Dagger", "A short blade stained brown with blood", 10,
+					3, 60, 1, 1, false, false, Item::weapon_types::DAGGER, Item::physical_damage_types::SLASH,
+					Item::magic_damage_types::NOMAGICDAMAGE);
+				easyEnemy.inventory.equipItem(ironDagger, Item::MAINHAND1);
+				Potion potion = potion.createPotion("Healing Potion", "Heals you", 40, 20, 1, 3, Potion::HEALING);
+				easyEnemy.inventory.addPotion(potion);
+				vector<Item> items = {ironDagger};
+				easyEnemy.refreshCharacterStats();
+				easyEnemy.setArmorValues(items);
 				openCombat(character, easyEnemy);
 				break;
 			}
@@ -130,6 +146,11 @@ void printMainMenu(Character character)
 		case 2:
 		{
 			//New Game
+			cout << dye::yellow("Enter your name:") << endl;
+			string playerName;
+			getline(cin, playerName);
+			character.name = playerName;
+
 			cout << dye::light_yellow(" =-------------------=") << endl
 				<< dye::bright_white(" |  6) The Wizard    |") << endl
 				<< dye::light_yellow(" =-------------------=") << endl;
@@ -172,8 +193,8 @@ void printMainMenu(Character character)
 				<< dye::light_yellow(" =-------------------=---=-------------------=---=-------------------=---=-------------------=---=-------------------=  ") << endl
 				<< dye::bright_white(" ---------------------------------------------------------------------------------------------------------------------  ") << endl;
 
-
 			int classChoice;
+
 			//input validation
 			do
 			{
@@ -336,7 +357,6 @@ void openCombat(Character& player, Character& enemy)
 	Item mainHand;
 	Item offHand;
 	bool exitFight = false;
-	bool optionPicked = false;
 
 	for (int i = 0; i < charItems.size(); i++)
 	{
@@ -352,47 +372,65 @@ void openCombat(Character& player, Character& enemy)
 	//main fight loop
 	do
 	{
-		cout << "Select an option: " << endl;
-		if (mainHand.reach >= enemy.distanceFromPlayer)
+		int choice = 0;
+		if (player.isAlive == true && enemy.isAlive == true)
 		{
-			cout << dye::light_yellow("1. Attack!") << endl;
-		}
-		else {
-			cout << dye::grey("1. Attack!") << endl;
-		}
-		cout << "2. Move" << endl;
-		cout << "3. Check Enemy" << endl;
-		cout << "4. Use Potion" << endl;
-		cout << "5. Check Inventory" << endl;
-		cout << "6. Attempt to Flee" << endl;
-		int choice;
-		//input validation
-		do
-		{
-			cout << ">> ";
-			std::cin >> choice;
-			if (std::cin.fail() || choice > 6 || choice == 0)
+			cout << "Select an option: " << endl;
+			if (mainHand.reach >= enemy.distanceFromPlayer)
 			{
-				cout << "Enter a number from 1 - 6" << endl;
+				cout << dye::light_yellow("1. Attack!") << endl;
 			}
-			std::cin.clear();
-			std::cin.ignore(10000, '\n');
-		} while (std::cin.fail() || choice > 6 || choice == 0);
+			else {
+				cout << dye::grey("1. Attack!") << endl;
+			}
+			cout << "2. Move" << endl;
+			cout << "3. Check Enemy" << endl;
+			cout << "4. Use Potion" << endl;
+			cout << "5. Check Inventory" << endl;
+			cout << "6. Attempt to Flee" << endl;
+			
+			//input validation
+			do
+			{
+				cout << ">> ";
+				std::cin >> choice;
+				if (std::cin.fail() || choice > 6 || choice == 0)
+				{
+					cout << "Enter a number from 1 - 6" << endl;
+				}
+				std::cin.clear();
+				std::cin.ignore(10000, '\n');
+			} while (std::cin.fail() || choice > 6 || choice == 0);
+		}
 
+		//if player killed enemy
+		if (player.isAlive == true && enemy.isAlive == false)
+		{
+			player.gainExperience(enemy);
+		}
 		//checks if they selected to attack when they are too far away, doesn't 
 		//  progress loop if they can't attack
-		if (mainHand.reach < enemy.distanceFromPlayer && choice == 1)
+		if (mainHand.reach < enemy.distanceFromPlayer && choice == 1 && player.isAlive == true && enemy.isAlive == true)
 		{
 			cout << dye::light_yellow("You are too far away to attack!") << endl;
-			break;
+			continue;
 		}
 		else
 		{
-			if (player.speed > enemy.speed)
+			//turn order
+			if (player.speed > enemy.speed && player.isAlive == true && enemy.isAlive == true)
 			{
 				playerTurn(choice, exitFight, player, enemy);
+				if (exitFight == true) {
+					cout << "The enemy's attack grazes the air of where you once stood!" << endl;
+				}
+				else
+				{
+					enemyTurn(player, enemy);
+				}
+				
 			}
-			else if (player.speed == enemy.speed)
+			else if (player.speed == enemy.speed && player.isAlive == true && enemy.isAlive == true)
 			{
 				mt19937 generator(time(nullptr));
 				uniform_int_distribution<int> distribution(player.luck, 100);
@@ -401,11 +439,25 @@ void openCombat(Character& player, Character& enemy)
 				if (randomSpeed >= 50)
 				{
 					playerTurn(choice, exitFight, player, enemy);
+					if (exitFight == true) {
+						cout << "The enemy's attack grazes the air of where you once stood!" << endl;
+					}
+					else
+					{
+						enemyTurn(player, enemy);
+					}
 				}
 			}
-			else
+			else if (player.speed < enemy.speed && player.isAlive == true && enemy.isAlive == true)
 			{
 				enemyTurn(player, enemy);
+				playerTurn(choice, exitFight, player, enemy);
+			}
+			//player is dead
+			else
+			{
+				cout << "Exiting game..." << endl;
+				exitFight = true;
 			}
 		}
 
@@ -430,72 +482,173 @@ void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy
 			offHand = charItems[i];
 		}
 	}
-
-	switch (choice)
+	for (int i = 0; i < 1; i++)
 	{
-	case 1:
-	{
-		if (mainHand.reach >= enemy.distanceFromPlayer)
+		switch (choice)
 		{
-
-		}
-		//attack
-		break;
-	}
-	case 2:
-	{
-		//Move
-		break;
-	}
-	case 3:
-	{
-		//Check Enemy
-		break;
-	}
-	case 4:
-	{
-		//Potion
-		break;
-	}
-	case 5:
-	{
-		//check inventory
-		break;
-	}
-	case 6:
-	{
-		//run
-
-		//sets up random number for the calculations on whether or not running is successful
-		mt19937 generator(time(nullptr));
-		uniform_int_distribution<int> distribution(enemy.speed / 2, enemy.speed);
-		int randomSpeed = distribution(generator);
-		if (player.speed >= enemy.speed)
+		case 1:
 		{
-			exitFight = true;
-			cout << "Your superior speed allowed you to slip away!" << endl;
+			if (player.isAlive == true)
+			{
+				enemy.takeDamage(mainHand.damage);
+			}
+
+			//attack
+			break;
 		}
-		else if (player.speed >= randomSpeed)
+		case 2:
 		{
-			exitFight = true;
-			cout << "In spite of your enemy's superior speed you managed to slip away!" << endl;
+			//Move
+			float distanceClosed;
+			if ((player.speed / 10) < 0)
+			{
+				distanceClosed = 1;
+			}
+			else
+			{
+				distanceClosed = player.speed / 10;
+			}
+			enemy.distanceFromPlayer -= distanceClosed;
+			std::cout << player.name << " closes the distance by " << distanceClosed << " units!" << endl;
+			break;
 		}
-		else {
-			cout << "The enemy is too fast for you to slip away!" << endl;
+		case 3:
+		{
+			//Check Enemy
+			enemy.checkEnemy();
+
+			//this abuse of nature exists so that you can check the enemy without it consuming a turn
+			cout << "Select an option: " << endl;
+			if (mainHand.reach >= enemy.distanceFromPlayer)
+			{
+				cout << dye::light_yellow("1. Attack!") << endl;
+			}
+			else {
+				cout << dye::grey("1. Attack!") << endl;
+			}
+			cout << "2. Move" << endl;
+			cout << "3. Check Enemy" << endl;
+			cout << "4. Use Potion" << endl;
+			cout << "5. Check Inventory" << endl;
+			cout << "6. Attempt to Flee" << endl;
+
+			//input validation
+			do
+			{
+				cout << ">> ";
+				std::cin >> choice;
+				if (std::cin.fail() || choice > 6 || choice == 0)
+				{
+					cout << "Enter a number from 1 - 6" << endl;
+				}
+				std::cin.clear();
+				std::cin.ignore(10000, '\n');
+			} while (std::cin.fail() || choice > 6 || choice == 0);
+			playerTurn(choice, exitFight, player, enemy);
+			break;
 		}
-		break;
-	}
+		case 4:
+		{
+			//Potion
+			break;
+		}
+		case 5:
+		{
+			//check inventory
+			break;
+		}
+		case 6:
+		{
+			//run
+
+			//sets up random number for the calculations on whether or not running is successful
+			mt19937 generator(time(nullptr));
+			uniform_int_distribution<int> distribution(enemy.speed / 2, enemy.speed);
+			int randomSpeed = distribution(generator);
+			if (player.speed >= enemy.speed && player.isAlive == true)
+			{
+				exitFight = true;
+				cout << "Your superior speed allowed you to slip away!" << endl;
+			}
+			else if (player.speed >= randomSpeed && player.isAlive == true)
+			{
+				exitFight = true;
+				cout << "In spite of your enemy's superior speed you managed to slip away!" << endl;
+			}
+			else {
+				cout << "The enemy is too fast for you to slip away!" << endl;
+			}
+			break;
+		}
+		}
 	}
 }
 
 void enemyTurn(Character& player, Character& enemy)
 {
-	//add more here if more potion types get implemented
-	Potion healingPotion = enemy.inventory.getHealingPotion();
-	//Drinks a potion if health is below 1/3
-	if (enemy.healthPoints <= enemy.maxHealthPoints / 3 && healingPotion.magnitude >= 1)
+	bool turnOver = false;
+
+	//get enemy weapons
+	vector<Item> charItems = enemy.inventory.getEquippedItems();
+	Item mainHand;
+	Item offHand;
+
+	for (int i = 0; i < charItems.size(); i++)
 	{
-		enemy.drinkPotion(healingPotion);
+		if (charItems[i].slot == Item::MAINHAND1)
+		{
+			mainHand = charItems[i];
+		}
+		if (charItems[i].slot == Item::OFFHAND1)
+		{
+			offHand = charItems[i];
+		}
+	}
+	//add more here if more potion types get implemented  
+	std::optional<Potion> healingPotionOpt = enemy.inventory.getHealingPotion();
+	if (healingPotionOpt.has_value())
+	{
+		//random num generation
+		Potion healingPotion = healingPotionOpt.value();
+		mt19937 generator(time(nullptr));
+		uniform_int_distribution<int> distribution(player.luck, 100);
+		int potionChance = distribution(generator);
+
+		//potentially game breaking depending on where we cap luck values, adjust if needed
+		//Can drink a potion if health is below 1/3
+		float thirdHealth = enemy.maxHealthPoints / 3;
+		if (enemy.healthPoints < thirdHealth && potionChance < 50 && turnOver == false && enemy.isAlive == true)
+		{
+			enemy.drinkPotion(healingPotion);
+			turnOver = true;
+		}
+	}
+	//if they're in range of the player with their weapon
+	if (mainHand.reach >= enemy.distanceFromPlayer && turnOver == false && enemy.isAlive == true)
+	{
+		for (int i = 0; i < 100;)
+		{
+			player.takeDamage(mainHand.damage);
+			i += (100 - mainHand.attackSpeed);
+			turnOver = true;
+		}
+	}
+	//move closer
+	else if (mainHand.reach < enemy.distanceFromPlayer && turnOver == false && enemy.isAlive == true)
+	{
+		float distanceClosed;
+		if ((enemy.speed / 10) < 0)
+		{
+			distanceClosed = 1;
+			turnOver = true;
+		}
+		else
+		{
+			distanceClosed = enemy.speed / 10;
+			turnOver = true;
+		}
+		enemy.distanceFromPlayer -= distanceClosed;
+		std::cout << "The " << enemy.name << " closes the distance by " << distanceClosed << " units!" << endl;
 	}
 }
 void printAllBars(Character character)

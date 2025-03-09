@@ -10,6 +10,8 @@
 class Character
 {
 public:
+	bool isAlive;
+	bool isPlayer;
 	bool active;
 	std::string name;
 	enum classChoice { DEFAULT, WIZARD, KNIGHT, CLERIC, HUNTER, HIGHLANDER, BATTLEMAGE, WRETCH };
@@ -57,7 +59,7 @@ public:
 	Character();
 
 	//Main Constructor
-	Character(bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
+	Character(bool isAlive, bool isPlayer, bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
 		float manaPoints, float maxManaPoints, float staminaPoints, float maxStaminaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float experience, float experienceToNextLevel,
 		float gold, Inventory inventory, float distanceFromPlayer, bool alert);
 
@@ -67,11 +69,19 @@ public:
 	void setCharacterClass(enum classChoice option);
 
 	//called when the player stats need to be refreshed, either when first initializing them or when they level up
-	void refreshCharacterStats(std::vector<Item> items);
+	void refreshCharacterStats();
+
+	void setArmorValues(std::vector<Item> items);
 
 	void takeDamage(int damage);
 
 	void receiveHealing(int healing);
+
+	void gainExperience(Character enemy);
+
+	void levelUp(float extraExp);
+
+	void killCharacter();
 
 	//Gets the weapon in the main hand. It can be a one-handed weapon with the MAINHAND1 enum, 
 	// a two-handed weapon with the BOTHHANDS enum, or a weapon that can be wielded in either hand with the HANDS enum
@@ -92,10 +102,10 @@ public:
 	void printCharacterStats(Character& character);
 
 	//Enemy Specifc Functions
-	Character createEnemy(std::string name, float healthPoints, float staminaPoints, float manaPoints, float speed, float reach, float critChance,
-		float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float distanceFromPlayer);
 	
 	void addItemToEnemy(Character enemy, Item item, Item::equip_slots slot);
+
+	void checkEnemy();
 	
 	void drinkPotion(Potion& potion);
 

@@ -174,17 +174,22 @@ Item Inventory::findItemInBackpack(const std::string& itemName) {
 
 //POTION
 
-Potion& Inventory::getHealingPotion()
+std::optional<Potion> Inventory::getHealingPotion()
 {
-	std::vector<Potion> healingPotions;
-	for (int i = 0; i < this->potions.size(); i++)
+	if (!potions.empty())
 	{
-		if (this->potions[i].effects == Potion::HEALING)
+		for (int i = 0; i < this->potions.size(); i++)
 		{
-			healingPotions.push_back(this->potions[i]);
+			if (this->potions[i].effects == Potion::HEALING)
+			{
+				return this->potions[i];
+			}
 		}
 	}
-	return healingPotions[0];
+	else
+	{
+		return std::nullopt;
+	}
 }
 void Inventory::addPotion(const Potion& potion) {
 	potions.push_back(potion);
@@ -438,217 +443,217 @@ void Inventory::printEquippedItems() {
 }
 
 void Inventory::printBackpack() {
-int tally;
-std::cout << dye::light_yellow("->Weapon(s): ") << std::endl;
-tally = 1;
-for (Item& item : backpackItems) {
-	if (item.itemType == Item::WEAPON)
-	{
-		std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
-		std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
-		std::cout << dye::light_yellow("  Damage: ") << item.damage << std::endl;
-		std::cout << dye::light_yellow("  Attack Speed: ") << item.attackSpeed << std::endl;
-		std::cout << dye::light_yellow("  Reach: ") << item.reach << std::endl;
-		std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
-		if (item.physicalDamageType == Item::BLUNT)
+	int tally;
+	std::cout << dye::light_yellow("->Weapon(s): ") << std::endl;
+	tally = 1;
+	for (Item& item : backpackItems) {
+		if (item.itemType == Item::WEAPON)
 		{
-			std::cout << dye::light_yellow("  Physical Damage Type: ") << "Blunt" << std::endl;
-		}
-		if (item.physicalDamageType == Item::SLASH)
-		{
-			std::cout << dye::light_yellow("  Physical Damage Type: ") << "Slash" << std::endl;
-		}
-		if (item.physicalDamageType == Item::PIERCE)
-		{
-			std::cout << dye::light_yellow("  Physical Damage Type: ") << "Pierce" << std::endl;
-		}
+			std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
+			std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
+			std::cout << dye::light_yellow("  Damage: ") << item.damage << std::endl;
+			std::cout << dye::light_yellow("  Attack Speed: ") << item.attackSpeed << std::endl;
+			std::cout << dye::light_yellow("  Reach: ") << item.reach << std::endl;
+			std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
+			if (item.physicalDamageType == Item::BLUNT)
+			{
+				std::cout << dye::light_yellow("  Physical Damage Type: ") << "Blunt" << std::endl;
+			}
+			if (item.physicalDamageType == Item::SLASH)
+			{
+				std::cout << dye::light_yellow("  Physical Damage Type: ") << "Slash" << std::endl;
+			}
+			if (item.physicalDamageType == Item::PIERCE)
+			{
+				std::cout << dye::light_yellow("  Physical Damage Type: ") << "Pierce" << std::endl;
+			}
 
-		if (item.magicDamageType == Item::FIRE)
-		{
-			std::cout << dye::light_yellow("  Magic Damage Type: ") << "Fire" << std::endl;
+			if (item.magicDamageType == Item::FIRE)
+			{
+				std::cout << dye::light_yellow("  Magic Damage Type: ") << "Fire" << std::endl;
+			}
+			if (item.magicDamageType == Item::FROST)
+			{
+				std::cout << dye::light_yellow("  Magic Damage Type: ") << "Frost" << std::endl;
+			}
+			if (item.magicDamageType == Item::SHOCK)
+			{
+				std::cout << dye::light_yellow("  Magic Damage Type: ") << "Shock" << std::endl;
+			}
+			std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
+			std::cout << "\n";
+			tally += 1;
 		}
-		if (item.magicDamageType == Item::FROST)
+	}
+	if (tally == 1)
+	{
+		std::cout << dye::light_yellow("  None") << std::endl;
+	}
+	std::cout << dye::light_yellow("->Armor(s): ") << std::endl;
+	tally = 1;
+	for (Item& item : backpackItems) {
+		if (item.itemType == Item::ARMOR)
 		{
-			std::cout << dye::light_yellow("  Magic Damage Type: ") << "Frost" << std::endl;
+			std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
+			std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
+			std::cout << dye::light_yellow("  Defense: ") << item.defense << std::endl;
+			std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
+			if (item.slot == Item::HEAD)
+			{
+				std::cout << dye::light_yellow("  Item type: ") << "Helmet" << std::endl;
+			}
+			if (item.slot == Item::CHEST)
+			{
+				std::cout << dye::light_yellow("  Item type: ") << "Cuirass" << std::endl;
+			}
+			if (item.slot == Item::ARMS)
+			{
+				std::cout << dye::light_yellow("  Item type: ") << "Gauntlets" << std::endl;
+			}
+
+			if (item.slot == Item::LEGS)
+			{
+				std::cout << dye::light_yellow("  Item type: ") << "Leggings" << std::endl;
+			}
+			if (item.slot == Item::AMULET)
+			{
+				std::cout << dye::light_yellow("  Item type: ") << "Amulet" << std::endl;
+			}
+			if (item.slot == Item::TRINKET)
+			{
+				std::cout << dye::light_yellow("  Item type: ") << "Trinket" << std::endl;
+			}
+			if (item.slot == Item::RING)
+			{
+				std::cout << dye::light_yellow("  Item type: ") << "Ring" << std::endl;
+			}
+			if (item.slot == Item::MISC)
+			{
+				std::cout << dye::light_yellow("  Item type: ") << "Miscellaneous" << std::endl;
+			}
+			std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
+			std::cout << "\n";
+			tally += 1;
 		}
-		if (item.magicDamageType == Item::SHOCK)
+	}
+	if (tally == 1)
+	{
+		std::cout << dye::light_yellow("  None") << std::endl;
+	}
+	std::cout << dye::light_yellow("->Shield(s): ") << std::endl;
+	tally = 1;
+	for (Item& item : backpackItems) {
+		if (item.itemType == Item::SHIELD)
 		{
+			std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
+			std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
+			std::cout << dye::light_yellow("  Defense: ") << item.defense << std::endl;
+			std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
+			std::cout << dye::light_yellow("  Damage: ") << item.damage << std::endl;
+			std::cout << dye::light_yellow("  Block chance: ") << "TODO" << "%" << std::endl;
+			if (item.physicalDamageType == Item::BLUNT)
+			{
+				std::cout << dye::light_yellow("  Physical Damage Type: ") << "Blunt" << std::endl;
+			}
+			if (item.physicalDamageType == Item::SLASH)
+			{
+				std::cout << dye::light_yellow("  Physical Damage Type: ") << "Slash" << std::endl;
+			}
+			if (item.physicalDamageType == Item::PIERCE)
+			{
+				std::cout << dye::light_yellow("  Physical Damage Type: ") << "Pierce" << std::endl;
+			}
+
+			if (item.magicDamageType == Item::FIRE)
+			{
+				std::cout << dye::light_yellow("  Magic Damage Type: ") << "Fire" << std::endl;
+			}
+			if (item.magicDamageType == Item::FROST)
+			{
+				std::cout << dye::light_yellow("  Magic Damage Type: ") << "Frost" << std::endl;
+			}
+			if (item.magicDamageType == Item::SHOCK)
+			{
+				std::cout << dye::light_yellow("  Magic Damage Type: ") << "Shock" << std::endl;
+			}
+			std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
+			std::cout << "\n";
+			tally += 1;
+		}
+	}
+	if (tally == 1)
+	{
+		std::cout << dye::light_yellow("  None") << std::endl;
+	}
+	std::cout << dye::light_yellow("->Arcane Casting Tools(s): ") << std::endl;
+	tally = 1;
+	for (Item& item : backpackItems) {
+		if (item.itemType == Item::ARCANETOOL)
+		{
+			std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
+			std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
+			std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
+			std::cout << dye::light_yellow("  Magic Scaling: ") << item.magicAdjust << std::endl;
 			std::cout << dye::light_yellow("  Magic Damage Type: ") << "Shock" << std::endl;
+			std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
+			std::cout << "\n";
+			tally += 1;
 		}
-		std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
-		std::cout << "\n";
-		tally += 1;
 	}
-}
-if (tally == 1)
-{
-	std::cout << dye::light_yellow("  None") << std::endl;
-}
-std::cout << dye::light_yellow("->Armor(s): ") << std::endl;
-tally = 1;
-for (Item& item : backpackItems) {
-	if (item.itemType == Item::ARMOR)
+	if (tally == 1)
 	{
-		std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
-		std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
-		std::cout << dye::light_yellow("  Defense: ") << item.defense << std::endl;
-		std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
-		if (item.slot == Item::HEAD)
-		{
-			std::cout << dye::light_yellow("  Item type: ") << "Helmet" << std::endl;
-		}
-		if (item.slot == Item::CHEST)
-		{
-			std::cout << dye::light_yellow("  Item type: ") << "Cuirass" << std::endl;
-		}
-		if (item.slot == Item::ARMS)
-		{
-			std::cout << dye::light_yellow("  Item type: ") << "Gauntlets" << std::endl;
-		}
-
-		if (item.slot == Item::LEGS)
-		{
-			std::cout << dye::light_yellow("  Item type: ") << "Leggings" << std::endl;
-		}
-		if (item.slot == Item::AMULET)
-		{
-			std::cout << dye::light_yellow("  Item type: ") << "Amulet" << std::endl;
-		}
-		if (item.slot == Item::TRINKET)
-		{
-			std::cout << dye::light_yellow("  Item type: ") << "Trinket" << std::endl;
-		}
-		if (item.slot == Item::RING)
-		{
-			std::cout << dye::light_yellow("  Item type: ") << "Ring" << std::endl;
-		}
-		if (item.slot == Item::MISC)
-		{
-			std::cout << dye::light_yellow("  Item type: ") << "Miscellaneous" << std::endl;
-		}
-		std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
-		std::cout << "\n";
-		tally += 1;
+		std::cout << dye::light_yellow("  None") << std::endl;
 	}
-}
-if (tally == 1)
-{
-	std::cout << dye::light_yellow("  None") << std::endl;
-}
-std::cout << dye::light_yellow("->Shield(s): ") << std::endl;
-tally = 1;
-for (Item& item : backpackItems) {
-	if (item.itemType == Item::SHIELD)
+	std::cout << dye::light_yellow("->Holy Casting Tools(s): ") << std::endl;
+	tally = 1;
+	for (Item& item : backpackItems) {
+		if (item.itemType == Item::HOLYTOOL)
+		{
+			std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
+			std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
+			std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
+			std::cout << dye::light_yellow("  Magic Scaling: ") << item.magicAdjust << std::endl;
+			std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
+			std::cout << "\n";
+			tally += 1;
+		}
+	}
+	if (tally == 1)
 	{
-		std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
-		std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
-		std::cout << dye::light_yellow("  Defense: ") << item.defense << std::endl;
-		std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
-		std::cout << dye::light_yellow("  Damage: ") << item.damage << std::endl;
-		std::cout << dye::light_yellow("  Block chance: ") << "TODO" << "%" << std::endl;
-		if (item.physicalDamageType == Item::BLUNT)
-		{
-			std::cout << dye::light_yellow("  Physical Damage Type: ") << "Blunt" << std::endl;
-		}
-		if (item.physicalDamageType == Item::SLASH)
-		{
-			std::cout << dye::light_yellow("  Physical Damage Type: ") << "Slash" << std::endl;
-		}
-		if (item.physicalDamageType == Item::PIERCE)
-		{
-			std::cout << dye::light_yellow("  Physical Damage Type: ") << "Pierce" << std::endl;
-		}
-
-		if (item.magicDamageType == Item::FIRE)
-		{
-			std::cout << dye::light_yellow("  Magic Damage Type: ") << "Fire" << std::endl;
-		}
-		if (item.magicDamageType == Item::FROST)
-		{
-			std::cout << dye::light_yellow("  Magic Damage Type: ") << "Frost" << std::endl;
-		}
-		if (item.magicDamageType == Item::SHOCK)
-		{
-			std::cout << dye::light_yellow("  Magic Damage Type: ") << "Shock" << std::endl;
-		}
-		std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
-		std::cout << "\n";
-		tally += 1;
+		std::cout << dye::light_yellow("  None") << std::endl;
 	}
-}
-if (tally == 1)
-{
-	std::cout << dye::light_yellow("  None") << std::endl;
-}
-std::cout << dye::light_yellow("->Arcane Casting Tools(s): ") << std::endl;
-tally = 1;
-for (Item& item : backpackItems) {
-	if (item.itemType == Item::ARCANETOOL)
+	std::cout << dye::light_yellow("->Trinket(s): ") << std::endl;
+	tally = 1;
+	for (Item& item : backpackItems) {
+		if (item.itemType == Item::TRINKET)
+		{
+			std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
+			std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
+			std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
+			std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
+			std::cout << "\n";
+			tally += 1;
+		}
+	}
+	if (tally == 1)
 	{
-		std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
-		std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
-		std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
-		std::cout << dye::light_yellow("  Magic Scaling: ") << item.magicAdjust << std::endl;
-		std::cout << dye::light_yellow("  Magic Damage Type: ") << "Shock" << std::endl;
-		std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
-		std::cout << "\n";
-		tally += 1;
+		std::cout << dye::light_yellow("  None") << std::endl;
 	}
-}
-if (tally == 1)
-{
-	std::cout << dye::light_yellow("  None") << std::endl;
-}
-std::cout << dye::light_yellow("->Holy Casting Tools(s): ") << std::endl;
-tally = 1;
-for (Item& item : backpackItems) {
-	if (item.itemType == Item::HOLYTOOL)
+	std::cout << dye::light_yellow("->Light Source(s): ") << std::endl;
+	tally = 1;
+	for (Item& item : backpackItems) {
+		if (item.itemType == Item::LIGHT)
+		{
+			std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
+			std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
+			std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
+			std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
+			std::cout << "\n";
+			tally += 1;
+		}
+	}
+	if (tally == 1)
 	{
-		std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
-		std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
-		std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
-		std::cout << dye::light_yellow("  Magic Scaling: ") << item.magicAdjust << std::endl;
-		std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
-		std::cout << "\n";
-		tally += 1;
+		std::cout << dye::light_yellow("  None") << std::endl;
 	}
-}
-if (tally == 1)
-{
-	std::cout << dye::light_yellow("  None") << std::endl;
-}
-std::cout << dye::light_yellow("->Trinket(s): ") << std::endl;
-tally = 1;
-for (Item& item : backpackItems) {
-	if (item.itemType == Item::TRINKET)
-	{
-		std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
-		std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
-		std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
-		std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
-		std::cout << "\n";
-		tally += 1;
-	}
-}
-if (tally == 1)
-{
-	std::cout << dye::light_yellow("  None") << std::endl;
-}
-std::cout << dye::light_yellow("->Light Source(s): ") << std::endl;
-tally = 1;
-for (Item& item : backpackItems) {
-	if (item.itemType == Item::LIGHT)
-	{
-		std::cout << dye::light_yellow("  Name: ") << item.name << std::endl;
-		std::cout << dye::light_yellow("  Weight: ") << item.weight << std::endl;
-		std::cout << dye::light_yellow("  Quantity: ") << item.quantity << std::endl;
-		std::cout << dye::light_yellow("  Value: ") << item.value << std::endl;
-		std::cout << "\n";
-		tally += 1;
-	}
-}
-if (tally == 1)
-{
-	std::cout << dye::light_yellow("  None") << std::endl;
-}
 }
