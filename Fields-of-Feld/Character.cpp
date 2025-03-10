@@ -671,7 +671,201 @@ void Character::killCharacter()
 	std::cout << this->name << " has taken" << dye::light_red(" fatal damage...") << std::endl;
 }
 
+void Character::openLootInterface(Character& container)
+{
+	int i = 0;
 
+	int goldCount = container.gold;
+
+	//the number used to keep track of whether or not an item in one category exists
+	int tally = 0;
+	//the number to keep track of the total # of items in a list (loot items, equipped items, etc...)
+	int totalCategory = 0;
+
+	std::vector<Item> loot;
+	std::vector<Potion> lootPotions;
+	std::cout << container.name << "'s spoils: " << std::endl;
+
+
+	//loot items go here
+
+
+	//looting 
+	int input;
+	int totalItems = totalCategory;
+	do
+	{
+		if (!inventory.equippedItems.empty())
+		{
+			std::cout << "Equipment: " << std::endl;
+			for (int j = 0; j < container.inventory.equippedItems.size(); j++)
+			{
+				if (container.inventory.equippedItems[i].itemType == Item::WEAPON)
+				{
+					tally += 1;
+				}
+			}
+			if (tally != 0)
+			{
+				std::cout << "Weapons: " << std::endl;
+				for (i = 1; i < container.inventory.equippedItems.size() + 1; i++)
+				{
+					if (container.inventory.equippedItems[i - 1].itemType == Item::WEAPON)
+					{
+						std::cout << i << ") " << container.inventory.equippedItems[i - 1].name << ", damage: "
+							<< container.inventory.equippedItems[i - 1].damage << ", attack speed: "
+							<< container.inventory.equippedItems[i - 1].attackSpeed << ", weight: "
+							<< container.inventory.equippedItems[i - 1].weight << ", value: "
+							<< container.inventory.equippedItems[i - 1].value << std::endl;
+						totalCategory += 1;
+						loot.push_back(container.inventory.equippedItems[i - 1]);
+					}
+				}
+			}
+			tally = 0;
+			for (int j = 0; j < container.inventory.equippedItems.size(); j++)
+			{
+				if (container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::ARMOR)
+				{
+					tally += 1;
+				}
+			}
+			if (tally != 0)
+			{
+				std::cout << "Armor: " << std::endl;
+				for (i = i; i < container.inventory.equippedItems.size() + totalCategory - 1; i++)
+				{
+					if (container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::ARMOR)
+					{
+						std::cout << i << ") " << container.inventory.equippedItems[i - totalCategory - 1].name << ", defense: "
+							<< container.inventory.equippedItems[i - totalCategory - 1].defense << ", weight: "
+							<< container.inventory.equippedItems[i - totalCategory - 1].weight << ", value: "
+							<< container.inventory.equippedItems[i - totalCategory - 1].value << std::endl;
+						loot.push_back(container.inventory.equippedItems[i - totalCategory - 1]);
+						totalCategory += 1;
+
+					}
+				}
+			}
+			tally = 0;
+			for (int j = 0; j < container.inventory.equippedItems.size(); j++)
+			{
+				if (container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::ARCANETOOL ||
+					container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::HOLYTOOL)
+				{
+					tally += 1;
+				}
+			}
+			if (tally != 0)
+			{
+				std::cout << "Tools: " << std::endl;
+				tally = 0;
+				for (i = i; i < container.inventory.equippedItems.size() + totalCategory - 1; i++)
+				{
+					if (container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::ARCANETOOL ||
+						container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::HOLYTOOL)
+					{
+						std::cout << i << ") " << container.inventory.equippedItems[i - totalCategory - 1].name << ", defense: "
+							<< container.inventory.equippedItems[i - totalCategory - 1].defense << ", weight: "
+							<< container.inventory.equippedItems[i - totalCategory - 1].weight << ", value: "
+							<< container.inventory.equippedItems[i - totalCategory - 1].value << ", Magic Adjust: "
+							<< container.inventory.equippedItems[i - totalCategory - 1].magicAdjust << std::endl;
+						loot.push_back(container.inventory.equippedItems[i - totalCategory - 1]);
+						totalCategory += 1;
+					}
+				}
+			}
+			tally = 0;
+			if (!container.inventory.potions.empty())
+			{
+				std::string types[] = { "Restore Health", "Restore Mana", "Cure Disease" };
+				std::cout << "Potions: " << std::endl;
+				tally = 0;
+				int num = container.inventory.potions.size() + totalCategory + 1;
+				for (i = i; i < num; i++)
+				{
+					std::cout << i << ") " << container.inventory.potions[i - totalCategory - 1].name << ", weight: "
+						<< container.inventory.potions[i - totalCategory - 1].weight << ", value: "
+						<< container.inventory.potions[i - totalCategory - 1].value << ", effect: "
+						<< types[container.inventory.potions[i - totalCategory - 1].effects] << ", quantity: "
+						<< container.inventory.potions[i - totalCategory - 1].quantity << std::endl;
+					lootPotions.push_back(container.inventory.potions[i - totalCategory - 1]);
+					totalCategory += 1;
+				}
+			}
+		}
+	} while (input != -2 || loot.empty() || lootPotions.empty());
+
+	std::cout << "Enter the number of the item you want to loot!" << std::endl;
+	std::cout << "Or, type -1 to loot everything!" << std::endl;
+	std::cout << "Enter -2 to stop looting!" << std::endl;
+	do
+	{
+		std::cout << ">> ";
+		std::cin >> input;
+		if (std::cin.fail() || input < -2 || input == 0 || input > totalItems)
+		{
+			std::cout << "Enter either -1 for all items, 1 - " << totalItems << " for a specific item, or -2 to stop looting" << std::endl;
+		}
+		std::cin.clear();
+		std::cin.ignore(10000, '\n');
+	} while (std::cin.fail() || input < -2 || input == 0 || input > totalItems);
+	if (!loot.empty())
+	{
+		if (input == -1)
+		{
+			for (int j = 0; j < loot.size(); j++)
+			{
+				if (!loot.empty())
+				{
+					this->inventory.backpackItems.push_back(loot[j]);
+					std::cout << loot[j].name << " added!" << std::endl;
+					container.inventory.equippedItems.erase(container.inventory.equippedItems.begin() + j);
+				}
+			}
+		}
+		else if (input == -2)
+		{
+			std::cout << "Looting ceased..." << std::endl;
+		}
+		else
+		{
+			if (input > 0 && input <= loot.size() && !loot.empty())
+			{
+				int end = input - 1;
+				this->inventory.backpackItems.push_back(loot[input - 1]);
+				std::cout << loot[input - 1].name << " added!" << std::endl;
+				//loot.erase(loot.begin() + end);
+			}
+		}
+	}
+	if (!lootPotions.empty())
+	{
+		if (input == -1)
+		{
+			for (int j = 0; j < lootPotions.size(); j++)
+			{
+				if (!lootPotions.empty())
+				{
+					this->inventory.potions.push_back(lootPotions[j]);
+					std::cout << lootPotions[j].name << " added!" << std::endl;
+					container.inventory.potions.erase(container.inventory.potions.begin() + j);
+				}
+			}
+		}
+		else if (input == -2)
+		{
+			std::cout << "Looting ceased..." << std::endl;
+		}
+		else if (input > loot.size() && !lootPotions.empty())
+		{
+			int end = input - loot.size();
+			this->inventory.potions.push_back(lootPotions[input - loot.size() - 1]);
+			std::cout << lootPotions[input - loot.size() - 1].name << " added!" << std::endl;
+			//lootPotions.erase(lootPotions.begin() + end);
+		}
+	}
+}
 
 void Character::printCharacterStats(Character& character)
 {
@@ -716,60 +910,67 @@ void Character::checkEnemy()
 	std::cout << dye::light_yellow("------------------------------------------------------------------------------") << std::endl;
 }
 
-void Character::openPotionDialogue(bool & turnOver)
+void Character::openPotionDialogue(bool& turnOver)
 {
-	std::vector<Potion> healingPotions;
-	int potionQuantity = 0;
-	for (int i = 0; i < this->inventory.potions.size(); i++)
+	if (this->isAlive == false)
 	{
-		if (this->inventory.potions[i].effects == Potion::HEALING)
-		{
-			healingPotions.push_back(this->inventory.potions[i]);
-			potionQuantity += this->inventory.potions[i].quantity;
-		}
+		std::cout << "Your enemy was too quick and you're dead before the potion can reach your lips..." << std::endl;
 	}
-	std::cout << "You have " << potionQuantity << " healing potions left." << std::endl;
-	std::cout << "Would you like to drink one? 1 = yes, 2 = no" << std::endl;
-	//input validation
-	int choice;
-	do
+	else
 	{
-		std::cout << ">> ";
-		std::cin >> choice;
-		if (std::cin.fail() || choice > 2 || choice == 0)
+		std::vector<Potion> healingPotions;
+		int potionQuantity = 0;
+		for (int i = 0; i < this->inventory.potions.size(); i++)
 		{
-			std::cout << "Enter a number from 1 - 2" << std::endl;
+			if (this->inventory.potions[i].effects == Potion::HEALING)
+			{
+				healingPotions.push_back(this->inventory.potions[i]);
+				potionQuantity += this->inventory.potions[i].quantity;
+			}
 		}
-		std::cin.clear();
-		std::cin.ignore(10000, '\n');
-	} while (std::cin.fail() || choice > 2 || choice == 0);
-	
-	//yes
-	if (choice == 1)
-	{
-		std::cout << "Choose a potion.." << std::endl;
-		for (int i = 1; i < healingPotions.size() + 1; i++)
-		{
-			std::cout << i << ") " << healingPotions[i - 1].name << ", magnitude of "
-				<< healingPotions[i - 1].magnitude << ", quantity of " << healingPotions[i-1].quantity << std::endl;
-		}
+		std::cout << "You have " << potionQuantity << " healing potions left." << std::endl;
+		std::cout << "Would you like to drink one? 1 = yes, 2 = no" << std::endl;
+		//input validation
+		int choice;
 		do
 		{
 			std::cout << ">> ";
 			std::cin >> choice;
-			if (std::cin.fail() || choice > healingPotions.size() || choice == 0)
+			if (std::cin.fail() || choice > 2 || choice == 0)
 			{
-				std::cout << "Enter a number from 1 - " << healingPotions.size() << std::endl;
+				std::cout << "Enter a number from 1 - 2" << std::endl;
 			}
 			std::cin.clear();
 			std::cin.ignore(10000, '\n');
-		} while (std::cin.fail() || choice > healingPotions.size() || choice == 0);
+		} while (std::cin.fail() || choice > 2 || choice == 0);
 
-		this->drinkPotion(healingPotions[choice - 1]);
-	}
-	if (choice == 2)
-	{
-		turnOver = false;
+		//yes
+		if (choice == 1)
+		{
+			std::cout << "Choose a potion.." << std::endl;
+			for (int i = 1; i < healingPotions.size() + 1; i++)
+			{
+				std::cout << i << ") " << healingPotions[i - 1].name << ", magnitude of "
+					<< healingPotions[i - 1].magnitude << ", quantity of " << healingPotions[i - 1].quantity << std::endl;
+			}
+			do
+			{
+				std::cout << ">> ";
+				std::cin >> choice;
+				if (std::cin.fail() || choice > healingPotions.size() || choice == 0)
+				{
+					std::cout << "Enter a number from 1 - " << healingPotions.size() << std::endl;
+				}
+				std::cin.clear();
+				std::cin.ignore(10000, '\n');
+			} while (std::cin.fail() || choice > healingPotions.size() || choice == 0);
+
+			this->drinkPotion(healingPotions[choice - 1]);
+		}
+		if (choice == 2)
+		{
+			turnOver = false;
+		}
 	}
 }
 

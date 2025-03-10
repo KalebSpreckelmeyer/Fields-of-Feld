@@ -12,7 +12,7 @@ public:
 	int value;
 	int weight;
 	int quantity;
-	enum effect { HEALING, MANA, STAMINA, CUREDISEASE };
+	enum effect { HEALING, MANA, CUREDISEASE };
 	effect effects;
 
 	Potion();

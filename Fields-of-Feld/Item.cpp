@@ -42,7 +42,7 @@ Item Item::createWeapon(std::string name, std::string description, int damage, i
 	item.attackSpeed = attackSpeed;
 	item.weight = weight;
 	item.value = value;
-	item.quantity = quantity;
+	item.quantity = 1;
 	item.twoHanded = 1;
 	item.needsAmmo = needsAmmo;
 	item.weaponType = weaponType;

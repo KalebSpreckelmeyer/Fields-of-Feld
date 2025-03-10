@@ -81,6 +81,8 @@ public:
 
 	void killCharacter();
 
+	void openLootInterface(Character& container);
+
 	void printCharacterStats(Character& character);
 
 	//Enemy Specifc Functions
