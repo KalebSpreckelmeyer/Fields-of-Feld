@@ -8,8 +8,8 @@ Character::Character() {
 
 }
 
-Character::Character(bool isAlive, bool isPlayer, bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
-	float manaPoints, float maxManaPoints, float staminaPoints, float maxStaminaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float experience, float experienceToNextLevel,
+Character::Character(bool isAlive, bool isPlayer, bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
+	float manaPoints, float maxManaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float weightBurden, float level, float experience, float experienceToNextLevel,
 	float gold, Inventory inventory, float distanceFromPlayer, bool alert)
 {
 	this->isAlive = isAlive;
@@ -18,8 +18,7 @@ Character::Character(bool isAlive, bool isPlayer, bool active, enum classChoice 
 	this->classChoice = classChoice;
 	this->characterClass = characterClass;
 	this->health = health;
-	this->mana = mana;
-	this->stamina = stamina;
+	this->mana = mana;;
 	this->strength = strength;
 	this->agility = agility;
 	this->arcane = arcane;
@@ -29,14 +28,13 @@ Character::Character(bool isAlive, bool isPlayer, bool active, enum classChoice 
 	this->maxHealthPoints = maxHealthPoints;
 	this->manaPoints = manaPoints;
 	this->maxManaPoints = maxManaPoints;
-	this->staminaPoints = staminaPoints;
-	this->maxStaminaPoints = maxStaminaPoints;
 	this->speed = speed;
 	this->critChance = critChance;
 	this->dodgeChance = dodgeChance;
 	this->blockChance = blockChance;
 	this->blockAmount = blockAmount;
 	this->damageReduction = damageReduction;
+	this->weightBurden = weightBurden;
 	this->level = level;
 	this->experience = experience;
 	this->experienceToNextLevel = experienceToNextLevel;
@@ -64,7 +62,6 @@ void Character::setCharacterClass(enum classChoice option)
 		characterClass = "Wizard";
 		health = 10;
 		mana = 20;
-		stamina = 7;
 		strength = 7;
 		agility = 7;
 		arcane = 20;
@@ -107,7 +104,6 @@ void Character::setCharacterClass(enum classChoice option)
 		characterClass = "Battle Mage";
 		health = 16;
 		mana = 10;
-		stamina = 10;
 		strength = 10;
 		agility = 10;
 		arcane = 15;
@@ -151,7 +147,6 @@ void Character::setCharacterClass(enum classChoice option)
 		characterClass = "Knight";
 		health = 16;
 		mana = 5;
-		stamina = 15;
 		strength = 16;
 		agility = 10;
 		arcane = 5;
@@ -186,7 +181,6 @@ void Character::setCharacterClass(enum classChoice option)
 		characterClass = "Cleric";
 		health = 10;
 		mana = 15;
-		stamina = 10;
 		strength = 10;
 		agility = 5;
 		arcane = 2;
@@ -221,7 +215,6 @@ void Character::setCharacterClass(enum classChoice option)
 		characterClass = "Hunter";
 		health = 10;
 		mana = 5;
-		stamina = 15;
 		strength = 7;
 		agility = 20;
 		arcane = 10;
@@ -256,7 +249,6 @@ void Character::setCharacterClass(enum classChoice option)
 		characterClass = "Highlander";
 		health = 15;
 		mana = 3;
-		stamina = 15;
 		strength = 17;
 		agility = 16;
 		arcane = 3;
@@ -287,7 +279,6 @@ void Character::setCharacterClass(enum classChoice option)
 		characterClass = "Wretch";
 		health = 1;
 		mana = 1;
-		stamina = 1;
 		strength = 1;
 		agility = 1;
 		arcane = 1;
@@ -324,8 +315,6 @@ void Character::refreshCharacterStats() {
 		maxManaPoints = (mana * 10) + (faith * 1.5) + (arcane * 1.5);
 	}
 	manaPoints = maxManaPoints;
-	maxStaminaPoints = (stamina * 10) + (strength * 2);
-	staminaPoints = maxStaminaPoints;
 
 	//this will be rolled against a random number between 1-100, if the random number wins it will not be a crit. If it does win, it will be a crit
 	//set to -9 at first so each class will start with 1 crit chance
@@ -341,7 +330,7 @@ void Character::setArmorValues(std::vector<Item> items)
 	{
 		equipmentWeight += items[i].weight;
 	}
-	speed = (agility * 10) + (strength * 5) + (stamina * 2) - equipmentWeight;
+	speed = (agility * 10) + (strength * 5) - equipmentWeight;
 
 	dodgeChance = (agility * 0.5) + (speed / 100);
 	(dodgeChance >= 50) ? dodgeChance = 50 : dodgeChance = dodgeChance - (equipmentWeight / 100);
@@ -353,15 +342,20 @@ void Character::setArmorValues(std::vector<Item> items)
 	}
 	damageReduction = armorValue / (armorValue + 500);
 }
-void Character::takeDamage(int damage)
+void Character::takeDamage(Character damageDealer)
 {
-	float damageTaken = damage - (damage * damageReduction);
+	Item mainhand1;
+	Item mainhand2;
+	Item offhand1;
+	Item offhand2;
+	damageDealer.inventory.getEquippedWeapons(mainhand1, mainhand2, offhand1, offhand2);
+	float damageTaken = mainhand1.damage - (mainhand1.damage * damageReduction);
 	healthPoints -= damageTaken;
 	if (isPlayer == true)
 	{
 		if (damageReduction > 0.01)
 		{
-			std::cout << "Your armor absorbs " << damage * damageReduction << " points of damage!" << std::endl;
+			std::cout << "Your armor absorbs " << mainhand1.damage * damageReduction << " points of damage!" << std::endl;
 			std::cout << "You take " << damageTaken << " points of damage!" << std::endl;
 		}
 		else {
@@ -376,7 +370,7 @@ void Character::takeDamage(int damage)
 	{
 		if (damageReduction > 0.01)
 		{
-			std::cout << "The " << this->name << "'s armor absorbs " << damage * damageReduction << " points of damage!" << std::endl;
+			std::cout << "The " << this->name << "'s armor absorbs " << mainhand1.damage * damageReduction << " points of damage!" << std::endl;
 			std::cout << "The " << this->name << " takes " << damageTaken << " points of damage!" << std::endl;
 		}
 		else {
@@ -429,34 +423,33 @@ void Character::levelUp(float exp)
 				int areYouSure = 0;
 				do
 				{
-					std::cout << dye::yellow("Select ") << dye::yellow(i) << dye::yellow(" stats to increase by 5!") << std::endl;
+					std::cout << dye::yellow("Select ") << dye::yellow(i) << dye::yellow(" stats to increase by 3!") << std::endl;
 					std::cout << dye::light_yellow("1) Health: ") << this->health << std::endl;
 					std::cout << dye::light_yellow("2) Mana: ") << this->mana << std::endl;
-					std::cout << dye::light_yellow("3) Stamina: ") << this->stamina << std::endl;
-					std::cout << dye::light_yellow("4) Strength: ") << this->strength << std::endl;
-					std::cout << dye::light_yellow("5) Agility: ") << this->agility << std::endl;
-					std::cout << dye::light_yellow("6) Arcane: ") << this->arcane << std::endl;
-					std::cout << dye::light_yellow("7) Faith: ") << this->faith << std::endl;
-					std::cout << dye::light_yellow("8) Luck: ") << this->luck << std::endl;
+					std::cout << dye::light_yellow("3) Strength: ") << this->strength << std::endl;
+					std::cout << dye::light_yellow("4) Agility: ") << this->agility << std::endl;
+					std::cout << dye::light_yellow("5) Arcane: ") << this->arcane << std::endl;
+					std::cout << dye::light_yellow("6) Faith: ") << this->faith << std::endl;
+					std::cout << dye::light_yellow("7) Luck: ") << this->luck << std::endl;
 					int choice;
 					//input validation
 					do
 					{
 						std::cout << ">> ";
 						std::cin >> choice;
-						if (std::cin.fail() || choice > 8 || choice == 0)
+						if (std::cin.fail() || choice > 7 || choice == 0)
 						{
-							std::cout << "Enter a number from 1 - 8" << std::endl;
+							std::cout << "Enter a number from 1 - 7" << std::endl;
 						}
 						std::cin.clear();
 						std::cin.ignore(10000, '\n');
-					} while (std::cin.fail() || choice > 8 || choice == 0);
+					} while (std::cin.fail() || choice > 7 || choice == 0);
 
 					switch (choice)
 					{
 					case 1:
 					{
-						std::cout << "Health: " << this->health << " -> " << this->health + 5 << std::endl;
+						std::cout << "Health: " << this->health << " -> " << this->health + 3 << std::endl;
 						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
 
 						//input validation
@@ -464,17 +457,17 @@ void Character::levelUp(float exp)
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
 
 						if (areYouSure == 1)
 						{
-							this->health += 5;
+							this->health += 3;
 						}
 						else
 						{
@@ -484,24 +477,24 @@ void Character::levelUp(float exp)
 					}
 					case 2:
 					{
-						std::cout << "Mana: " << this->mana << " -> " << this->mana + 5 << std::endl;
+						std::cout << "Mana: " << this->mana << " -> " << this->mana + 3 << std::endl;
 						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
 						//input validation
 						do
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
 
 						if (areYouSure == 1)
 						{
-							this->mana += 5;
+							this->mana += 3;
 						}
 						else
 						{
@@ -511,24 +504,24 @@ void Character::levelUp(float exp)
 					}
 					case 3:
 					{
-						std::cout << "Stamina: " << this->stamina << " -> " << this->stamina + 5 << std::endl;
+						std::cout << "Strength: " << this->strength << " -> " << this->strength + 3 << std::endl;
 						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
 						//input validation
 						do
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
 
 						if (areYouSure == 1)
 						{
-							this->stamina += 5;
+							this->strength += 3;
 						}
 						else
 						{
@@ -538,24 +531,24 @@ void Character::levelUp(float exp)
 					}
 					case 4:
 					{
-						std::cout << "Strength: " << this->strength << " -> " << this->strength + 5 << std::endl;
+						std::cout << "Agility: " << this->agility << " -> " << this->agility + 3 << std::endl;
 						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
 						//input validation
 						do
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
 
 						if (areYouSure == 1)
 						{
-							this->strength += 5;
+							this->agility += 3;
 						}
 						else
 						{
@@ -565,24 +558,24 @@ void Character::levelUp(float exp)
 					}
 					case 5:
 					{
-						std::cout << "Agility: " << this->agility << " -> " << this->agility + 5 << std::endl;
+						std::cout << "Arcane: " << this->arcane << " -> " << this->arcane + 3 << std::endl;
 						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
 						//input validation
 						do
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
 
 						if (areYouSure == 1)
 						{
-							this->agility += 5;
+							this->arcane += 3;
 						}
 						else
 						{
@@ -592,24 +585,24 @@ void Character::levelUp(float exp)
 					}
 					case 6:
 					{
-						std::cout << "Arcane: " << this->arcane << " -> " << this->arcane + 5 << std::endl;
+						std::cout << "Faith: " << this->faith << " -> " << this->faith + 3 << std::endl;
 						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
 						//input validation
 						do
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
 
 						if (areYouSure == 1)
 						{
-							this->arcane += 5;
+							this->faith += 3;
 						}
 						else
 						{
@@ -619,51 +612,24 @@ void Character::levelUp(float exp)
 					}
 					case 7:
 					{
-						std::cout << "Faith: " << this->faith << " -> " << this->faith + 5 << std::endl;
+						std::cout << "Luck: " << this->luck << " -> " << this->luck + 3 << std::endl;
 						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
 						//input validation
 						do
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
 
 						if (areYouSure == 1)
 						{
-							this->faith += 5;
-						}
-						else
-						{
-							break;
-						}
-						break;
-					}
-					case 8:
-					{
-						std::cout << "Luck: " << this->luck << " -> " << this->luck + 5 << std::endl;
-						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
-						//input validation
-						do
-						{
-							std::cout << ">> ";
-							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 8 || areYouSure == 0)
-							{
-								std::cout << "Enter a number from 1 - 2" << std::endl;
-							}
-							std::cin.clear();
-							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 8 || areYouSure == 0);
-
-						if (areYouSure == 1)
-						{
-							this->luck += 5;
+							this->luck += 3;
 						}
 						else
 						{
@@ -685,7 +651,6 @@ void Character::levelUp(float exp)
 		//this prints out the stats a final time after they are done leveling up so they can see their final results
 		std::cout << dye::light_yellow("1) Health: ") << this->health << std::endl;
 		std::cout << dye::light_yellow("2) Mana: ") << this->mana << std::endl;
-		std::cout << dye::light_yellow("3) Stamina: ") << this->stamina << std::endl;
 		std::cout << dye::light_yellow("4) Strength: ") << this->strength << std::endl;
 		std::cout << dye::light_yellow("5) Agility: ") << this->agility << std::endl;
 		std::cout << dye::light_yellow("6) Arcane: ") << this->arcane << std::endl;
@@ -705,72 +670,17 @@ void Character::killCharacter()
 	this->isAlive = false;
 	std::cout << this->name << " has taken" << dye::light_red(" fatal damage...") << std::endl;
 }
-Item Character::getMainWeapon1(Character& character)
-{
-	bool found = false;
-	for (int i = 0; i < character.inventory.backpackItems.size(); i++)
-	{
-		if (character.inventory.backpackItems[i].itemType == Item::MAINHAND1)
-		{
-			bool found = true;
-			return character.inventory.backpackItems[i];
-		}
-	}
-	std::cout << " No mainhand weapon 1 found" << std::endl;
-}
 
-Item Character::getMainWeapon2(Character& character)
-{
-	bool found = false;
-	for (int i = 0; i < character.inventory.backpackItems.size(); i++)
-	{
-		if (character.inventory.backpackItems[i].itemType == Item::MAINHAND2)
-		{
-			bool found = true;
-			return character.inventory.backpackItems[i];
-		}
-	}
-	std::cout << " No mainhand weapon 2 found" << std::endl;
-}
 
-Item Character::getOffhandWeapon1(Character& character)
-{
-	bool found = false;
-	for (int i = 0; i < character.inventory.backpackItems.size(); i++)
-	{
-		if (character.inventory.backpackItems[i].itemType == Item::OFFHAND1)
-		{
-			bool found = true;
-			return character.inventory.backpackItems[i];
-		}
-	}
-	std::cout << " No offhand weapon 1 found" << std::endl;
-}
-
-Item Character::getOffhandWeapon2(Character& character)
-{
-	bool found = false;
-	for (int i = 0; i < character.inventory.backpackItems.size(); i++)
-	{
-		if (character.inventory.backpackItems[i].itemType == Item::OFFHAND2)
-		{
-			bool found = true;
-			return character.inventory.backpackItems[i];
-		}
-	}
-	std::cout << " No offhand weapon 2 found" << std::endl;
-}
 
 void Character::printCharacterStats(Character& character)
 {
 	std::cout << dye::light_yellow("  Class: ") << character.characterClass << std::endl;
 	std::cout << dye::light_yellow("  Health Points: ") << character.healthPoints << "/" << character.maxHealthPoints << std::endl;
-	std::cout << dye::light_yellow("  Stamina Points: ") << character.staminaPoints << "/" << character.maxStaminaPoints << std::endl;
 	std::cout << dye::light_yellow("  Mana Points: ") << character.manaPoints << "/" << character.maxManaPoints << std::endl;
 	std::cout << "\n";
 	std::cout << dye::light_yellow("  Health: ") << character.health << std::endl;
 	std::cout << dye::light_yellow("  Mana: ") << character.mana << std::endl;
-	std::cout << dye::light_yellow("  Stamina: ") << character.stamina << std::endl;
 	std::cout << dye::light_yellow("  Strength: ") << character.strength << std::endl;
 	std::cout << dye::light_yellow("  Agility: ") << character.agility << std::endl;
 	std::cout << dye::light_yellow("  Arcane: ") << character.arcane << std::endl;
@@ -789,18 +699,6 @@ void Character::printCharacterStats(Character& character)
 	std::cout << dye::light_yellow("  Experience: ") << character.experience << "/" << character.experienceToNextLevel << std::endl;
 	std::cout << "\n";
 	std::cout << dye::light_yellow("  Gold: ") << character.gold << std::endl;
-}
-
-int Character::getStaminaCost(Item weapon)
-{
-	float staminaConsumed = weapon.damage * 2;
-	return staminaConsumed;
-}
-
-void Character::consumeStamina(Item weapon)
-{
-	float staminaConsumed = weapon.damage * 2;
-	this->staminaPoints -= staminaConsumed;
 }
 
 void Character::addItemToEnemy(Character enemy, Item item, Item::equip_slots slot)

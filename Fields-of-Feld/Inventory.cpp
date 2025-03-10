@@ -3,6 +3,16 @@
 #include <string>
 #include "color.hpp"
 
+
+
+//GENERAL METHODS:
+
+int Inventory::getItemWeight(Item item)
+{
+	int cumulativeWeight = item.quantity * item.weight;
+	return cumulativeWeight;
+}
+
 //LOOT ITEMS
 
 void Inventory::addLootItems(Item& item)
@@ -40,6 +50,34 @@ std::vector<Item> Inventory::getEquippedItems() {
 		items.push_back(equippedItems[i]);
 	}
 	return items;
+}
+
+void Inventory::getEquippedWeapons(Item& mainHand1, Item& mainHand2, Item& offHand1, Item& offHand2)
+{
+	//checks if the vector is empty first
+	if (!equippedItems.empty())
+	{
+		//sets the weapons by slot
+		for (int i = 0; i < equippedItems.size(); i++)
+		{
+			if (equippedItems[i].slot == Item::MAINHAND1)
+			{
+				mainHand1 = equippedItems[i];
+			}
+			if (equippedItems[i].slot == Item::MAINHAND2)
+			{
+				mainHand2 = equippedItems[i];
+			}
+			if (equippedItems[i].slot == Item::OFFHAND1)
+			{
+				offHand1 = equippedItems[i];
+			}
+			if (equippedItems[i].slot == Item::OFFHAND2)
+			{
+				offHand2 = equippedItems[i];
+			}
+		}
+	}
 }
 
 void Inventory::equipItem(Item& item, Item::equip_slots slot) {

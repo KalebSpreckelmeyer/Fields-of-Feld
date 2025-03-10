@@ -11,6 +11,9 @@
 
 class Inventory {
 public:
+	//GENERAL METHODS
+	int getItemWeight(Item item);
+
 	//lootable items (from an enemy or container)
 	std::vector<Item> lootItems;
 
@@ -23,8 +26,11 @@ public:
 	//equipped items
 	std::vector<Item> equippedItems;
 
-	//retrieve and return all equipped items
+	//retrieve and return all equipped items as a vector of items
 	std::vector<Item> getEquippedItems();
+
+	//Retrieves and sets 4 objects referring to the 4 slots a character can have an item equipped to
+	void getEquippedWeapons(Item& mainHand1, Item& mainHand2, Item& offHand1, Item& offHand2);
 
 	//equip an item to the relevant slot. It checks if the slot is used before adding it
 	void equipItem(Item& item, Item::equip_slots slot);

@@ -27,7 +27,6 @@ void printMainCombatMenu(Character player, Character enemy);
 //PRE: Character object must be initialized first with setCharacterClass() in order to have a health/mana/stamina value
 //POST: Prints health, stamina, or mana bar to console
 void printHealthBar(Character player);
-void printStaminaBar(Character player);
 void printManaBar(Character player);
 //DESC: Calls all 3 bar functions 
 //PRE: None
@@ -117,7 +116,6 @@ void printMainMenu(Character character)
 				easyEnemy.isAlive = true;
 				easyEnemy.health = 10;
 				easyEnemy.mana = 5;
-				easyEnemy.stamina = 15;
 				easyEnemy.strength = 10;
 				easyEnemy.agility = 18;
 				easyEnemy.luck = 2;
@@ -489,21 +487,12 @@ void openCombat(Character& player, Character& enemy)
 
 void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy)
 {
-	vector<Item> charItems = player.inventory.getEquippedItems();
-	Item mainHand;
-	Item offHand;
+	Item mainHand1;
+	Item mainHand2;
+	Item offHand1;
+	Item offHand2;
+	player.inventory.getEquippedWeapons(mainHand1, mainHand2, offHand1, offHand2);
 
-	for (int i = 0; i < charItems.size(); i++)
-	{
-		if (charItems[i].slot == Item::MAINHAND1)
-		{
-			mainHand = charItems[i];
-		}
-		if (charItems[i].slot == Item::OFFHAND1)
-		{
-			offHand = charItems[i];
-		}
-	}
 	for (int i = 0; i < 1; i++)
 	{
 		switch (choice)
@@ -514,9 +503,9 @@ void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy
 			{
 				for (int i = 0; i < 101;)
 				{
-					cout << dye::light_yellow("You strike forth with your ") << dye::light_yellow(mainHand.name) << endl;
-					enemy.takeDamage(mainHand.damage);
-					i += (100 - mainHand.attackSpeed);
+					cout << dye::light_yellow("You strike forth with your ") << dye::light_yellow(mainHand1.name) << endl;
+					enemy.takeDamage(player);
+					i += (100 - mainHand1.attackSpeed);
 				}
 			}
 
@@ -530,7 +519,7 @@ void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy
 			{
 				cout << "You stand close enough to reach out and touch your enemy, you can't move forward anymore!" << endl;
 				cout << "Select an option: " << endl;
-				if (mainHand.reach >= enemy.distanceFromPlayer)
+				if (mainHand1.reach >= enemy.distanceFromPlayer)
 				{
 					cout << dye::light_yellow("1. Attack!") << endl;
 				}
@@ -581,7 +570,7 @@ void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy
 
 			//this abuse of nature exists so that you can check the enemy without it consuming a turn
 			cout << "Select an option: " << endl;
-			if (mainHand.reach >= enemy.distanceFromPlayer)
+			if (mainHand1.reach >= enemy.distanceFromPlayer)
 			{
 				cout << dye::light_yellow("1. Attack!") << endl;
 			}
@@ -619,7 +608,7 @@ void playerTurn(int choice, bool& exitFight, Character& player, Character& enemy
 			{
 				//this abuse of nature exists so that you can check the enemy without it consuming a turn
 				cout << "Select an option: " << endl;
-				if (mainHand.reach >= enemy.distanceFromPlayer)
+				if (mainHand1.reach >= enemy.distanceFromPlayer)
 				{
 					cout << dye::light_yellow("1. Attack!") << endl;
 				}
@@ -684,22 +673,12 @@ void enemyTurn(Character& player, Character& enemy)
 {
 	bool turnOver = false;
 
-	//get enemy weapons
-	vector<Item> charItems = enemy.inventory.getEquippedItems();
-	Item mainHand;
-	Item offHand;
+	Item mainHand1;
+	Item mainHand2;
+	Item offHand1;
+	Item offHand2;
+	enemy.inventory.getEquippedWeapons(mainHand1, mainHand2, offHand1, offHand2);
 
-	for (int i = 0; i < charItems.size(); i++)
-	{
-		if (charItems[i].slot == Item::MAINHAND1)
-		{
-			mainHand = charItems[i];
-		}
-		if (charItems[i].slot == Item::OFFHAND1)
-		{
-			offHand = charItems[i];
-		}
-	}
 	//add more here if more potion types get implemented  
 	std::optional<Potion> healingPotionOpt = enemy.inventory.getHealingPotion();
 	if (healingPotionOpt.has_value())
@@ -720,19 +699,19 @@ void enemyTurn(Character& player, Character& enemy)
 		}
 	}
 	//if they're in range of the player with their weapon
-	if (mainHand.reach >= enemy.distanceFromPlayer && turnOver == false && enemy.isAlive == true)
+	if (mainHand1.reach >= enemy.distanceFromPlayer && turnOver == false && enemy.isAlive == true)
 	{
 		for (int i = 0; i < 101;)
 		{
 			cout << dye::light_yellow("The ") << dye::light_yellow(enemy.name) << dye::light_yellow(" strikes forward with their ") 
-				<< dye::light_yellow(mainHand.name) << endl;
-			player.takeDamage(mainHand.damage);
-			i += (100 - mainHand.attackSpeed);
+				<< dye::light_yellow(mainHand1.name) << endl;
+			player.takeDamage(enemy);
+			i += (100 - mainHand1.attackSpeed);
 			turnOver = true;
 		}
 	}
 	//move closer
-	else if (mainHand.reach < enemy.distanceFromPlayer && turnOver == false && enemy.isAlive == true)
+	else if (mainHand1.reach < enemy.distanceFromPlayer && turnOver == false && enemy.isAlive == true)
 	{
 		float distanceClosed;
 		if ((enemy.speed / 10) < 0)
@@ -749,10 +728,10 @@ void enemyTurn(Character& player, Character& enemy)
 		std::cout << "The " << enemy.name << " closes the distance by " << distanceClosed << " units!" << endl;
 	}
 }
+
 void printAllBars(Character character)
 {
 	printHealthBar(character);
-	printStaminaBar(character);
 	printManaBar(character);
 }
 
@@ -768,24 +747,6 @@ void printHealthBar(Character player) {
 		cout << dye::red("[]");
 	}
 	for (int i = 0; i < (player.maxHealthPoints - player.healthPoints) / 10; i++) {
-		cout << dye::light_yellow("[]");
-	}
-	cout << endl;
-	cout << endl;
-}
-
-void printStaminaBar(Character player) {
-	//green portion of stamina bar (stamina remaining)
-	int staminaRemainingSegments = player.staminaPoints / 10;
-	//white portion of stamina bar (stamina missing)
-	int numStaminaSegments = player.maxStaminaPoints / 10;
-	string staminaBarText = " Stamina Remaining: ";
-	cout << staminaBarText;
-	for (int i = 0; i < staminaRemainingSegments; i++)
-	{
-		cout << dye::green("[]");
-	}
-	for (int i = 0; i < (player.maxStaminaPoints - player.staminaPoints) / 10; i++) {
 		cout << dye::light_yellow("[]");
 	}
 	cout << endl;

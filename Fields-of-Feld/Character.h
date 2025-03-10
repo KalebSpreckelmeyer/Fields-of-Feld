@@ -21,7 +21,6 @@ public:
 	//Core Attributes
 	float health;
 	float mana;
-	float stamina;
 	float strength;
 	float agility;
 	float arcane;
@@ -33,8 +32,6 @@ public:
 	float maxHealthPoints;
 	float manaPoints;
 	float maxManaPoints;
-	float staminaPoints;
-	float maxStaminaPoints;
 	float speed;
 
 	//Derived Stats
@@ -43,6 +40,7 @@ public:
 	float blockChance;
 	float blockAmount;
 	float damageReduction;
+	float weightBurden;
 
 	float level;
 	float experience;
@@ -59,8 +57,8 @@ public:
 	Character();
 
 	//Main Constructor
-	Character(bool isAlive, bool isPlayer, bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float stamina, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
-		float manaPoints, float maxManaPoints, float staminaPoints, float maxStaminaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float level, float experience, float experienceToNextLevel,
+	Character(bool isAlive, bool isPlayer, bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
+		float manaPoints, float maxManaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float weightBurden, float level, float experience, float experienceToNextLevel,
 		float gold, Inventory inventory, float distanceFromPlayer, bool alert);
 
 	//Deconstructor
@@ -73,7 +71,7 @@ public:
 
 	void setArmorValues(std::vector<Item> items);
 
-	void takeDamage(int damage);
+	void takeDamage(Character damageDealer);
 
 	void receiveHealing(int healing);
 
@@ -83,27 +81,7 @@ public:
 
 	void killCharacter();
 
-	//Gets the weapon in the main hand. It can be a one-handed weapon with the MAINHAND1 enum, 
-	// a two-handed weapon with the BOTHHANDS enum, or a weapon that can be wielded in either hand with the HANDS enum
-	Item getMainWeapon1(Character& character);
-
-	//Gets the weapon in the main hand 2. It can be a one-handed weapon with the MAINHAND1 enum, 
-	// a two-handed weapon with the BOTHHANDS enum, or a weapon that can be wielded in either hand with the HANDS enum
-	Item getMainWeapon2(Character& character);
-
-	//Gets the weapon in the off hand. It can be a one-handed weapon with the MAINHAND1 enum, 
-	// a two-handed weapon with the BOTHHANDS enum, or a weapon that can be wielded in either hand with the HANDS enum
-	Item getOffhandWeapon1(Character& character);
-
-	//Gets the weapon in the off hand 2. It can be a one-handed weapon with the MAINHAND1 enum, 
-	// a two-handed weapon with the BOTHHANDS enum, or a weapon that can be wielded in either hand with the HANDS enum
-	Item getOffhandWeapon2(Character& character);
-
 	void printCharacterStats(Character& character);
-
-	int getStaminaCost(Item weapon);
-
-	void consumeStamina(Item weapon);
 
 	//Enemy Specifc Functions
 	
