@@ -3,59 +3,66 @@
 #include <vector>
 #include <iostream>
 #include "color.hpp"
+#include <random>
+#include <iomanip>
 
-Character::Character() {
+Character::Character()
+{
 
 }
-
-Character::Character(bool isAlive, bool isPlayer, bool active, enum classChoice classChoice, std::string name, std::string characterClass, float health, float mana, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
+Character::Character(bool namedCharacter, float confidenceLevel, bool isAlive, bool isPlayer, bool active, 
+	enum Character::CharacterClass classChoice, std::string name, std::string characterClass, float health, 
+	float mana, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
 	float manaPoints, float maxManaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float weightBurden, float level, float experience, float experienceToNextLevel,
 	float gold, Inventory inventory, float distanceFromPlayer, bool alert)
-{
-	this->isAlive = isAlive;
-	this->isPlayer = isPlayer;
-	this->active = active;
-	this->classChoice = classChoice;
-	this->characterClass = characterClass;
-	this->health = health;
-	this->mana = mana;;
-	this->strength = strength;
-	this->agility = agility;
-	this->arcane = arcane;
-	this->faith = faith;
-	this->luck = luck;
-	this->healthPoints = healthPoints;
-	this->maxHealthPoints = maxHealthPoints;
-	this->manaPoints = manaPoints;
-	this->maxManaPoints = maxManaPoints;
-	this->speed = speed;
-	this->critChance = critChance;
-	this->dodgeChance = dodgeChance;
-	this->blockChance = blockChance;
-	this->blockAmount = blockAmount;
-	this->damageReduction = damageReduction;
-	this->weightBurden = weightBurden;
-	this->level = level;
-	this->experience = experience;
-	this->experienceToNextLevel = experienceToNextLevel;
-	this->gold = gold;
-	this->inventory = inventory;
-	this->distanceFromPlayer = distanceFromPlayer;
-	this->alert = alert;
+	: confidenceLevel(confidenceLevel), isAlive(isAlive), isPlayer(isPlayer), active(active), classChoice(classChoice), name(name), characterClass(characterClass),
+	health(health), mana(mana), strength(strength), agility(agility), arcane(arcane), faith(faith), luck(luck),
+	healthPoints(healthPoints), maxHealthPoints(maxHealthPoints), manaPoints(manaPoints), maxManaPoints(maxManaPoints), speed(speed),
+	critChance(critChance), dodgeChance(dodgeChance), blockChance(blockChance), blockAmount(blockAmount), damageReduction(damageReduction), weightBurden(weightBurden),
+	level(level), experience(experience), experienceToNextLevel(experienceToNextLevel), gold(gold), inventory(inventory), distanceFromPlayer(distanceFromPlayer), alert(alert) {
 }
 
 Character::~Character() {
 
 }
-void Character::setCharacterClass(enum classChoice option)
+
+Character Character::createHumanoid(bool namedCharacter, bool isPlayer, std::string name, Character::CharacterClass classChoice, float health,
+	float mana, float strength, float agility, float arcane, float faith, float luck,
+	float confidenceLevel, float gold, float distanceFromPlayer, float level)
+{
+	Character human;
+	human.namedCharacter = namedCharacter;
+	human.active = true;
+	human.isAlive = true;
+	human.isPlayer = isPlayer;
+	human.confidenceLevel = confidenceLevel;
+	human.name = name;
+	human.classChoice = classChoice;
+	human.gold = gold;
+	human.distanceFromPlayer = distanceFromPlayer;
+	human.health = health;
+	human.mana = mana;
+	human.strength = strength;
+	human.agility = agility;
+	human.arcane = arcane;
+	human.faith = faith;
+	human.luck = luck;
+	human.level = level;
+	human.setCharacterClass(classChoice);
+	human.refreshCharacterStats();
+
+	return human;
+}
+void Character::setCharacterClass(CharacterClass option)
 {
 	switch (option)
 	{
-	case WIZARD:
+	case CharacterClass::WIZARD:
 	{
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		namedCharacter = true;
 		isAlive = true;
 		isPlayer = true;
 		active = true;
@@ -72,32 +79,27 @@ void Character::setCharacterClass(enum classChoice option)
 		MagicEffect effect = (MagicEffect("Damage Over Time", "The missile lingers in the target, doing a small amount of damage over time",
 			1, 0, 3, 3, 1, MagicEffect::stats_effected::NONE));
 		Spell startingSpell = Spell(effect, "Minor Magic Missile", "A small bolt of energy shot forth like a missile", 20, 0, 20, 10, 30, 10, Spell::magic_types::SORCERY, Spell::spell_effects::NONE);		//Mainhand default 1
-		Item startingSword = (Item("Weathered Arming Sword", "A short blade that could use a good sharpening",
-			Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 8, 0, 10, 1, 1, false, false, 7, 11));
+		Item startingSword = startingSword.createWeapon("Iron rapier", "A thin, sharp blade designed for thrusting", 10, 10, 70, 2, 15, false, false, Item::weapon_types::THRUSTINGSWORD, Item::physical_damage_types::PIERCE, Item::magic_damage_types::NOMAGICDAMAGE);
 		//Offhand default 1
-		Item startingWand = (Item("Oak Wand", "A basic wooden wand barely capable of casting magic",
-			Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::MAGIC, Item::OFFHAND1, 0, 1, 20, 20, 1, 1, false, false, 1, 10));
+		Item startingWand = startingWand.createTool("Oak Wand", "A basic wooden wand barely capable of casting magic", Item::ARCANETOOL, Item::WAND, 1, 20, 1, 20);
 		//Offhand default 2
-		Item startingShield = (Item("Plank Shield", "A small shield composed of several thin oak boards",
-			Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND2, 5, 2, 0, 10, 2, 1, false, false, 2, 3));
+		Item startingShield = startingShield.createWeapon("Sturdy Plank Shield", "A small shield composed of several thick oak boards bound together by rivets", 5, 2, 5, 5, 15, false, false, Item::weapon_types::MEDIUMSHIELD, Item::physical_damage_types::BLUNT, Item::magic_damage_types::NOMAGICDAMAGE);
 		//No weapon equipped
-		Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND,
-			0, 1, 0, 0, 0, 1, false, false, 3, 10);
 		inventory.equipItem(startingSword, Item::MAINHAND1);
 		inventory.equipItem(startingWand, Item::OFFHAND1);
 		inventory.equipItem(startingShield, Item::OFFHAND2);
-		inventory.addItemToBackpack(fists);
 		this->addSpell(startingSpell);
 		std::vector<Item> items = this->inventory.getEquippedItems();
 		setArmorValues(items);
 		refreshCharacterStats();
 		break;
 	}
-	case BATTLEMAGE:
+	case CharacterClass::BATTLEMAGE:
 	{
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
-
+		
+		namedCharacter = true;
 		isAlive = true;
 		isPlayer = true;
 		active = true;
@@ -115,66 +117,56 @@ void Character::setCharacterClass(enum classChoice option)
 			1, 0, 3, 3, 1, MagicEffect::stats_effected::NONE));
 		Spell startingSpell = Spell(effect, "Minor Magic Missile", "A small bolt of energy shot forth like a missile", 20, 0, 20, 10, 30, 10, Spell::magic_types::SORCERY, Spell::spell_effects::NONE);
 		//Mainhand default 1
-		Item startingAxe = (Item("Weathered Hand Axe", "An weathered axe of moderate size",
-			Item::WEAPON, Item::AXE, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 12, 0, 5, 4, 1, false, false, 11, 8));
+		Item startingAxe = startingAxe.createWeapon("Iron Battleaxe", "A hefty axe designed for cleaving through armor", 25, 5, 50, 5, 20, false, false, Item::weapon_types::AXE, Item::physical_damage_types::SLASH, Item::magic_damage_types::NOMAGICDAMAGE);
 		//Offhand default 1
-		Item startingWand = (Item("Oak Wand", "A basic wooden wand barely capable of casting magic",
-			Item::ARCANETOOL, Item::WAND, Item::BLUNT, Item::MAGIC, Item::OFFHAND1, 0, 1, 20, 20, 1, 1, false, false, 1, 10));
+		Item startingWand = startingWand.createTool("Oak Wand", "A basic wooden wand barely capable of casting magic", Item::ARCANETOOL, Item::WAND, 1, 20, 1, 20);
 		//Offhand default 2
-		Item startingShield = (Item("Sturdy Plank Shield", "A small shield composed of several thick oak boards bound together by rivets",
-			Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND2, 10, 2, 0, 5, 2, 1, false, false, 1, 5));
+		Item startingShield = startingShield.createWeapon("Sturdy Plank Shield", "A small shield composed of several thick oak boards bound together by rivets", 5, 2, 5, 5, 15, false, false, Item::weapon_types::MEDIUMSHIELD, Item::physical_damage_types::BLUNT, Item::magic_damage_types::NOMAGICDAMAGE);
 		//No weapon equipped
-		Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND,
-			0, 1, 0, 0, 0, 1, false, false, 3, 10);
 		inventory.equipItem(startingAxe, Item::MAINHAND1);
-		inventory.equipItem(startingWand, Item::MAINHAND2);
-		inventory.equipItem(startingShield, Item::OFFHAND1);
-		inventory.addItemToBackpack(fists);
+		inventory.equipItem(startingWand, Item::OFFHAND1);
+		inventory.equipItem(startingShield, Item::OFFHAND2);
 		this->addSpell(startingSpell);
 		std::vector<Item> items = this->inventory.getEquippedItems();
 		setArmorValues(items);
 		refreshCharacterStats();
 		break;
 	}
-	case KNIGHT:
+	case CharacterClass::KNIGHT:
 	{
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		namedCharacter = true;
 		isAlive = true;
 		isPlayer = true;
 		active = true;
 		characterClass = "Knight";
-		health = 16;
+		health = 22;
 		mana = 5;
 		strength = 16;
-		agility = 10;
+		agility = 16;
 		arcane = 5;
 		faith = 5;
 		luck = 10;
-		level = 1;
+		level = 5;
 		//Mainhand default 1
-		Item startingSword = (Item("Weathered Longsword", "A long blade that has seen a good amount of combat",
-			Item::WEAPON, Item::STRAIGHTSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 10, 0, 5, 1, 1, false, false, 6, 10));
+		Item startingSword = startingSword.createWeapon("Iron Longsword", "A long blade designed for slashing and thrusting", 15, 9, 60, 3, 15, false, false, Item::weapon_types::STRAIGHTSWORD, Item::physical_damage_types::SLASH, Item::magic_damage_types::NOMAGICDAMAGE);
 		//Offhand default 1
-		Item startingShield = (Item("Weathered Kite Shield", "A basic metal shield emblazened with a crest so faded it can't be made out",
-			Item::SHIELD, Item::MEDIUMSHIELD, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND1, 15, 2, 0, 5, 1, 1, false, false, 1, 5));
-		//No weapon equipped
-		Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND,
-			0, 1, 0, 0, 0, 1, false, false, 3, 10);
+		Item startingShield = startingShield.createWeapon("Sturdy Plank Shield", "A small shield composed of several thick oak boards bound together by rivets", 5, 2, 5, 5, 15, false, false, Item::weapon_types::MEDIUMSHIELD, Item::physical_damage_types::BLUNT, Item::magic_damage_types::NOMAGICDAMAGE);
 		inventory.equipItem(startingSword, Item::MAINHAND1);
 		inventory.equipItem(startingShield, Item::OFFHAND1);
-		inventory.addItemToBackpack(fists);
 		std::vector<Item> items = this->inventory.getEquippedItems();
 		setArmorValues(items);
 		refreshCharacterStats();
 		break;
 	}
-	case CLERIC:
+	case CharacterClass::CLERIC:
 	{
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
+		namedCharacter = true;
 		isAlive = true;
 		isPlayer = true;
 		active = true;
@@ -188,103 +180,89 @@ void Character::setCharacterClass(enum classChoice option)
 		luck = 10;
 		level = 1;
 		//Mainhand default 1
-		Item startingMace = (Item("Weathered Mace", "A hefty mace that, although weathered, could still crack a skull or two",
-			Item::WEAPON, Item::MACE, Item::BLUNT, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 15, 0, 5, 3, 1, false, false, 5, 7));
+		Item startingMace = startingMace.createWeapon("Iron Mace", "A heavy blunt weapon designed for crushing armor", 40, 3, 20, 5, 20, false, false, Item::weapon_types::MACE, Item::physical_damage_types::BLUNT, Item::magic_damage_types::NOMAGICDAMAGE);
 		//Offhand default 1
-		Item startingTalisman = (Item("Tarnished Talisman", "A basic talisman that cannels ones faith and allows the casting of miracles",
-			Item::HOLYTOOL, Item::TALISMAN, Item::BLUNT, Item::NOMAGICDAMAGE, Item::OFFHAND1, 0, 2, 20, 20, 1, 1, false, false, 1, 5));
-		//No weapon equipped
-		Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND,
-			0, 1, 0, 0, 0, 1, false, false, 3, 10);
+		Item startingTalisman = startingTalisman.createTool("Tattered Cloth Talisman", "A small piece of cloth with a holy symbol stitched into it", Item::HOLYTOOL, Item::TALISMAN, 1, 20, 1, 20);
 		inventory.equipItem(startingMace, Item::MAINHAND1);
 		inventory.equipItem(startingTalisman, Item::OFFHAND1);
-		inventory.addItemToBackpack(fists);
 		std::vector<Item> items = this->inventory.getEquippedItems();
 		setArmorValues(items);
 		refreshCharacterStats();
 		break;
 	}
-	case HUNTER:
+	case CharacterClass::HUNTER:
 	{
 		//clears items in case of a respec
-		inventory.removeAllItemsFromBackpack();
+		this->inventory.removeAllItemsFromBackpack();
 
-		isAlive = true;
-		isPlayer = true;
-		active = true;
-		characterClass = "Hunter";
-		health = 10;
-		mana = 5;
-		strength = 7;
-		agility = 20;
-		arcane = 10;
-		faith = 5;
-		luck = 10;
-		level = 1;
+		namedCharacter = true;
+		this->isAlive = true;
+		this->isPlayer = true;
+		this->active = true;
+		this->characterClass = "Hunter";
+		this->health = 10;
+		this->mana = 5;
+		this->strength = 7;
+		this->agility = 20;
+		this->arcane = 10;
+		this->faith = 5;
+		this->luck = 10;
+		this->level = 1;
 		//Mainhand default 1	
-		Item startingSword = (Item("Weathered Dagger", "A short blade mostly used for gutting fish and harvesting animal skins. It could stand to be sharpened",
-			Item::WEAPON, Item::DAGGER, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 5, 0, 10, 1, 1, false, false, 2, 15));
-		//Offhand default 1
-		Item startingBow = (Item("Hunting Bow", "A basic wooden bow of average build",
-			Item::WEAPON, Item::LONGBOW, Item::PIERCE, Item::NOMAGICDAMAGE, Item::OFFHAND1, 0, 10, 0, 10, 4, 1, false, true, 40, 5));
+		Item startingSword = startingSword.createWeapon("Hunter's Knife", "A small blade designed for gutting fish and game", 10, 3, 90, 1, 5, false, false, Item::weapon_types::DAGGER, Item::physical_damage_types::SLASH, Item::magic_damage_types::NOMAGICDAMAGE);
+		Item startingBow = startingBow.createWeapon("Hunting Bow", "A worn bow once used to hunt game", 5, 100, 50, 4, 20, true, true, Item::weapon_types::LONGBOW, Item::physical_damage_types::PIERCE, Item::magic_damage_types::NOMAGICDAMAGE);
 		//No weapon equipped
-		Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND,
-			0, 1, 0, 0, 0, 1, false, false, 3, 10);
-		inventory.equipItem(startingSword, Item::MAINHAND1);
-		inventory.equipItem(startingBow, Item::MAINHAND2);
-		inventory.addItemToBackpack(fists);
+		this->inventory.equipItem(startingSword, Item::MAINHAND2);
+		this->inventory.equipItem(startingBow, Item::MAINHAND1);
 		std::vector<Item> items = this->inventory.getEquippedItems();
-		setArmorValues(items);
-		refreshCharacterStats();
+		this->setArmorValues(items);
+		this->refreshCharacterStats();
 		break;
 	}
-	case HIGHLANDER:
+	case CharacterClass::HIGHLANDER:
+	{
+		//clears items in case of a respec
+		this->inventory.removeAllItemsFromBackpack();
+
+		namedCharacter = true;
+		this->isAlive = true;
+		this->isPlayer = true;
+		this->active = true;
+		this->characterClass = "Highlander";
+		this->health = 15;
+		this->mana = 3;
+		this->strength = 17;
+		this->agility = 16;
+		this->arcane = 3;
+		this->faith = 3;
+		this->luck = 10;
+		this->level = 1;
+
+		Item startingSword = startingSword.createWeapon("Claymore", "A large two-handed sword with a long blade", 20, 15, 40, 10, 20, false, false, Item::weapon_types::GREATSWORD, Item::physical_damage_types::SLASH, Item::magic_damage_types::NOMAGICDAMAGE);
+		this->inventory.equipItem(startingSword, Item::MAINHAND1);
+		std::vector<Item> items = this->inventory.getEquippedItems();
+		this->setArmorValues(items);
+		this->refreshCharacterStats();
+		break;
+	}
+	case CharacterClass::WRETCH:
 	{
 		//clears items in case of a respec
 		inventory.removeAllItemsFromBackpack();
 
-		isAlive = true;
-		isPlayer = true;
-		active = true;
-		characterClass = "Highlander";
-		health = 15;
-		mana = 3;
-		strength = 17;
-		agility = 16;
-		arcane = 3;
-		faith = 3;
-		luck = 10;
-		level = 1;
-
-		Item startingSword = (Item("Iron Claymore", "A massive blade that requires ample strength and two hands to wield. Typically used to cleave through horses it will makes short work of a man",
-			Item::WEAPON, Item::GREATSWORD, Item::SLASH, Item::NOMAGICDAMAGE, Item::MAINHAND1, 0, 25, 0, 30, 10, 1, true, false, 15, 5));
-		inventory.equipItem(startingSword, Item::MAINHAND1);
-		//No weapon equipped
-		Item fists = Item("Fists", "Your bare hands", Item::WEAPON, Item::FIST, Item::BLUNT, Item::NOMAGICDAMAGE, Item::BAREHAND,
-			0, 1, 0, 0, 0, 1, false, false, 3, 10);
-		inventory.addItemToBackpack(fists);
-		std::vector<Item> items = this->inventory.getEquippedItems();
-		setArmorValues(items);
-		refreshCharacterStats();
-		break;
-	}
-	case WRETCH:
-	{
-		//clears items in case of a respec
-		inventory.removeAllItemsFromBackpack();
-
-		isAlive = true;
-		isPlayer = true;
-		active = true;
-		characterClass = "Wretch";
-		health = 1;
-		mana = 1;
-		strength = 1;
-		agility = 1;
-		arcane = 1;
-		faith = 1;
-		luck = 1;
-		level = 1;
+		namedCharacter = true;
+		this->isAlive = true;
+		this->isPlayer = true;
+		this->active = true;
+		this->characterClass = "Wretch";
+		this->health = 1;
+		this->mana = 1;
+		this->strength = 1;
+		this->agility = 1;
+		this->arcane = 1;
+		this->faith = 1;
+		this->luck = 1;
+		this->level = 1;
 		std::vector<Item> items = this->inventory.getEquippedItems();
 		setArmorValues(items);
 		refreshCharacterStats();
@@ -317,9 +295,15 @@ void Character::refreshCharacterStats() {
 	manaPoints = maxManaPoints;
 
 	//this will be rolled against a random number between 1-100, if the random number wins it will not be a crit. If it does win, it will be a crit
-	//set to -9 at first so each class will start with 1 crit chance
-	(critChance >= 50) ? critChance = 50 : critChance = critChance;
-	critChance = -9 + luck * 1 + agility * 0.1;
+ 	critChance = luck * 1 + agility * 0.1 + strength * 0.1;
+	if (critChance > 50)
+	{
+		critChance = 50;
+	}
+	else
+	{
+		critChance = critChance;
+	}
 }
 
 void Character::setArmorValues(std::vector<Item> items)
@@ -342,51 +326,536 @@ void Character::setArmorValues(std::vector<Item> items)
 	}
 	damageReduction = armorValue / (armorValue + 500);
 }
-void Character::takeDamage(Character damageDealer)
+void Character::takeDamage(Item weapon, Character attacker, Item ammunition)
 {
-	Item mainhand1;
-	Item mainhand2;
-	Item offhand1;
-	Item offhand2;
-	damageDealer.inventory.getEquippedWeapons(mainhand1, mainhand2, offhand1, offhand2);
-	float damageTaken = mainhand1.damage - (mainhand1.damage * damageReduction);
-	healthPoints -= damageTaken;
-	if (isPlayer == true)
+	//retrieves the optional ammo object, if it exists, assigns it to the ammo variable. If it doesn't, creates a default ammo object
+	Item& ammo = attacker.inventory.findAmmunition(ammunition.name);
+	
+	//random number generator for crit chance, rolls a number between 1 - (100 - luck ). If the number is less than the crit chance, it's a crit
+	int randomNum = (rand() % 100 - attacker.luck) + 1;
+
+	//WEAPON SPECIFIC DAMAGE CALCULATIONS
+	
+	//archery
+	if (weapon.weaponType == Item::LONGBOW || weapon.weaponType == Item::COMPOUNDBOW || weapon.weaponType == Item::BALLISTA || weapon.weaponType == Item::CROSSBOW ||
+		weapon.weaponType == Item::GREATBOW || weapon.weaponType == Item::MINICROSSBOW)
 	{
-		if (damageReduction > 0.01)
+		//This is just Overwatch's damage falloff formula lmao
+		
+		//damage falloff variables
+		float minDamage = ammo.damage * .3;
+		float maxDamage = ammo.damage * 1.3;
+		float nearRange = 10;
+
+		float farRange = weapon.damage * 10;
+
+		//normalized distance of the attacker from their target
+		float normalizedDistance = (attacker.distanceFromPlayer - nearRange) / (farRange - nearRange);
+
+		//raw damage of the arrow
+		float arrowDamage = normalizedDistance * minDamage + (1.00 - normalizedDistance) * maxDamage;
+
+		//crit damage modifier
+		float critDamage = arrowDamage * 1.5;
+
+		//damage reduction modfiiers
+		float critDamageReduction = critDamage * damageReduction;
+		float normalDamageReduction = arrowDamage * damageReduction;
+
+		//final damage taken, either crit or non crit
+		float critDamageTaken = critDamage - critDamageReduction;
+		float damageTaken = arrowDamage - normalDamageReduction;
+
+		//critical hit
+		if (attacker.critChance >= randomNum)
 		{
-			std::cout << "Your armor absorbs " << mainhand1.damage * damageReduction << " points of damage!" << std::endl;
-			std::cout << "You take " << damageTaken << " points of damage!" << std::endl;
+			//Is player
+			if (isPlayer)
+			{
+				//arrow is fired from min or below range (extra damage)
+				if (critDamageTaken == minDamage)
+				{
+					//Character has armor/shield to absorb some damage
+					if (damageReduction > 0.01)
+					{
+						std::cout << dye::light_red("Critical Hit!") << std::endl;
+						std::cout << std::setprecision(2) << "Your armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
+						std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
+						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= critDamageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character has no armor/shield
+					else {
+						std::cout << dye::light_red("Critical Hit!") << std::endl;
+						std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
+						std::cout << std::setprecision(2) << std::setprecision(2) << "You take " << critDamageTaken << " points of from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= critDamageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character dies if health is less than 0
+
+					if (healthPoints <= 0) {
+						healthPoints = 0;
+						killCharacter();
+					}
+				}
+				//arrow is fired from maximum range (lowered damage)
+				else if (critDamageTaken == maxDamage)
+				{
+					//Character has armor/shield to absorb some damage
+					if (damageReduction > 0.01)
+					{
+						std::cout << dye::light_red("Critical Hit!") << std::endl;
+						std::cout << std::setprecision(2) << "Your armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
+						std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
+						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= critDamageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character has no armor/shield
+					else {
+						std::cout << dye::light_red("Critical Hit!") << std::endl;
+						std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
+						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= critDamageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character dies if health is less than 0
+
+					if (healthPoints <= 0) {
+						healthPoints = 0;
+						killCharacter();
+					}
+				}
+				else
+				{
+					//Character has armor/shield to absorb some damage
+					if (damageReduction > 0.01)
+					{
+						std::cout << dye::light_red("Critical Hit!") << std::endl;
+						std::cout << std::setprecision(2) << "Your armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
+						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= critDamageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character has no armor/shield
+					else {
+						std::cout << dye::light_red("Critical Hit!") << std::endl;
+						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= critDamageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character dies if health is less than 0
+
+					if (healthPoints <= 0) {
+						healthPoints = 0;
+						killCharacter();
+					}
+				}
+			}
+			//Is NPC
+			else
+			{
+				if (!isPlayer)
+				{
+					//arrow is fired from min or below range (extra damage)
+					if (critDamageTaken == minDamage)
+					{
+						//Character has armor/shield to absorb some damage
+						if (damageReduction > 0.01)
+						{
+							std::cout << dye::light_red("Critical Hit!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
+							std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= critDamageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character has no armor/shield
+						else {
+							std::cout << dye::light_red("Critical Hit!") << std::endl;
+							std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= critDamageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character dies if health is less than 0
+
+						if (healthPoints <= 0) {
+							healthPoints = 0;
+							killCharacter();
+						}
+					}
+					//arrow is fired from maximum range (lowered damage)
+					else if (critDamageTaken == maxDamage)
+					{
+						//Character has armor/shield to absorb some damage
+						if (damageReduction > 0.01)
+						{
+							std::cout << dye::light_red("Critical Hit!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
+							std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= critDamageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character has no armor/shield
+						else {
+							std::cout << dye::light_red("Critical Hit!") << std::endl;
+							std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= critDamageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character dies if health is less than 0
+
+						if (healthPoints <= 0) {
+							healthPoints = 0;
+							killCharacter();
+						}
+					}
+					else
+					{
+						//Character has armor/shield to absorb some damage
+						if (damageReduction > 0.01)
+						{
+							std::cout << dye::light_red("Critical Hit!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= critDamageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character has no armor/shield
+						else {
+							std::cout << dye::light_red("Critical Hit!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= critDamageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character dies if health is less than 0
+
+						if (healthPoints <= 0) {
+							healthPoints = 0;
+							killCharacter();
+						}
+					}
+				}
+			}
 		}
-		else {
-			std::cout << "You take " << damageTaken << " points of damage!" << std::endl;
-		}
-		if (healthPoints < 0) {
-			healthPoints = 0;
-			killCharacter();
+		//normal hit
+		else
+		{
+			//Is player
+			if (isPlayer)
+			{
+				//arrow is fired from min or below range (extra damage)
+				if (damageTaken == minDamage)
+				{
+					//Character has armor/shield to absorb some damage
+					if (damageReduction > 0.01)
+					{
+						std::cout << std::setprecision(2) << "Your armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
+						std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
+						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= damageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character has no armor/shield
+					else {
+						std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
+						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= damageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character dies if health is less than 0
+
+					if (healthPoints <= 0) {
+						healthPoints = 0;
+						killCharacter();
+					}
+				}
+				//arrow is fired from maximum range (lowered damage)
+				else if (damageTaken == maxDamage)
+				{
+					//Character has armor/shield to absorb some damage
+					if (damageReduction > 0.01)
+					{
+						std::cout << std::setprecision(2) << "Your armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
+						std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
+						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= damageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character has no armor/shield
+					else {
+						std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
+						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= damageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character dies if health is less than 0
+
+					if (healthPoints <= 0) {
+						healthPoints = 0;
+						killCharacter();
+					}
+				}
+				else
+				{
+					//Character has armor/shield to absorb some damage
+					if (damageReduction > 0.01)
+					{
+						std::cout << std::setprecision(2) << "Your armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
+						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= damageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character has no armor/shield
+					else {
+						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+						std::cout << std::setprecision(6);
+						this->healthPoints -= damageTaken;
+						attacker.inventory.consumeAmmunition(ammo);
+					}
+					//Character dies if health is less than 0
+
+					if (healthPoints <= 0) {
+						healthPoints = 0;
+						killCharacter();
+					}
+				}
+			}
+			//Is NPC
+			else
+			{
+				if (!isPlayer)
+				{
+					//arrow is fired from min or below range (extra damage)
+					if (damageTaken == minDamage)
+					{
+						//Character has armor/shield to absorb some damage
+						if (damageReduction > 0.01)
+						{
+								std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
+							std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= damageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character has no armor/shield
+						else {
+								std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= damageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character dies if health is less than 0
+
+						if (healthPoints <= 0) {
+							healthPoints = 0;
+							killCharacter();
+						}
+					}
+					//arrow is fired from maximum range (lowered damage)
+					else if (damageTaken == maxDamage)
+					{
+						//Character has armor/shield to absorb some damage
+						if (damageReduction > 0.01)
+						{
+								std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
+							std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= damageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character has no armor/shield
+						else {
+								std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= damageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character dies if health is less than 0
+
+						if (healthPoints <= 0) {
+							healthPoints = 0;
+							killCharacter();
+						}
+					}
+					else
+					{
+						//Character has armor/shield to absorb some damage
+						if (damageReduction > 0.01)
+						{
+								std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
+							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= damageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character has no armor/shield
+						else {
+								std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
+							std::cout << std::setprecision(6);
+							this->healthPoints -= damageTaken;
+							attacker.inventory.consumeAmmunition(ammo);
+						}
+						//Character dies if health is less than 0
+
+						if (healthPoints <= 0) {
+							healthPoints = 0;
+							killCharacter();
+						}
+					}
+				}
+			}
 		}
 	}
+	//magic
+	else if (weapon.weaponType == Item::weapon_types::TALISMAN || weapon.weaponType == Item::weapon_types::CHIME || weapon.weaponType == Item::weapon_types::TOME ||
+		weapon.weaponType == Item::weapon_types::WAND || weapon.weaponType == Item::weapon_types::STAFF || weapon.weaponType == Item::weapon_types::ORB)
+	{
+
+	}
+	//melee
 	else
 	{
-		if (damageReduction > 0.01)
+		float critDamage = 1.5 * weapon.damage;
+		float critDamageTaken = critDamage - (critDamage * damageReduction);;
+		float damageTaken = weapon.damage - (weapon.damage * damageReduction);
+
+		//critical hit
+		if (attacker.critChance >= randomNum)
 		{
-			std::cout << "The " << this->name << "'s armor absorbs " << mainhand1.damage * damageReduction << " points of damage!" << std::endl;
-			std::cout << "The " << this->name << " takes " << damageTaken << " points of damage!" << std::endl;
+			//Is player
+			if (isPlayer)
+			{
+				//Character has armor/shield to absorb some damage
+				if (damageReduction > 0.01)
+				{
+					std::cout << dye::light_red("Critical Hit!") << std::endl;
+					std::cout << std::setprecision(2) << "Your armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
+					std::cout << "You take " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
+					std::cout << std::setprecision(6);
+					this->healthPoints -= critDamageTaken;
+				}
+				//Character has no armor/shield
+				else {
+					std::cout << dye::light_red("Critical Hit!") << std::endl;
+					std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
+					std::cout << std::setprecision(6);
+					this->healthPoints -= critDamageTaken;
+				}
+				//Character dies if health is less than 0
+
+				if (healthPoints <= 0) {
+					healthPoints = 0;
+					killCharacter();
+				}
+			}
+			//Is NPC
+			else
+			{
+				//Character has armor/shield to absorb some damage
+				if (damageReduction > 0.01)
+				{
+					std::cout << dye::light_red("Critical Hit!") << std::endl;
+					std::cout << std::setprecision(2) << "The " << this->name << "'s armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
+					std::cout << "The " << this->name << " takes " << critDamageTaken << " points of damage from " << attacker.name << "'s " << weapon.name << "!" << std::endl;
+					std::cout << std::setprecision(6);
+					this->healthPoints -= critDamageTaken;
+				}
+				//Character has no armor/shield
+				else {
+					std::cout << dye::light_red("Critical Hit!") << std::endl;
+					std::cout << std::setprecision(2) << "The " << this->name << " takes " << critDamageTaken << " points of damage from " << attacker.name << "'s " << weapon.name << "!" << std::endl;
+					std::cout << std::setprecision(6);
+					this->healthPoints -= critDamageTaken;
+				}
+				//Character dies if health is less than 0
+				if (healthPoints <= 0) {
+					healthPoints = 0;
+					killCharacter();
+				}
+			}
 		}
-		else {
-			std::cout << "The " << this->name << " takes " << damageTaken << " points of damage!" << std::endl;
-		}
-		if (healthPoints < 0) {
-			healthPoints = 0;
-			killCharacter();
+		//normal hit
+		else
+		{
+			//Is player
+			if (isPlayer)
+			{
+				//Character has armor/shield to absorb some damage
+				if (damageReduction > 0.01)
+				{
+					std::cout << std::setprecision(2) << "Your armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
+					std::cout << "You take " << damageTaken << " points of damage from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
+					std::cout << std::setprecision(6);
+					this->healthPoints -= damageTaken;
+				}
+				//Character has no armor/shield
+				else {
+					std::cout << std::setprecision(2) << "You take " << damageTaken << " points of from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
+					std::cout << std::setprecision(6);
+					this->healthPoints -= damageTaken;
+				}
+				//Character dies if health is less than 0
+				if (healthPoints <= 0) {
+					healthPoints = 0;
+					killCharacter();
+				}
+			}
+			//Is NPC
+			else
+			{
+				//Character has armor/shield to absorb some damage
+				if (damageReduction > 0.01)
+				{
+					std::cout << std::setprecision(2) << "The " << this->name << "'s armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
+					std::cout << "The " << this->name << " takes " << damageTaken << " points of damage from " << attacker.name << "'s " << weapon.name << "!" << std::endl;
+					std::cout << std::setprecision(6);
+					this->healthPoints -= damageTaken;
+				}
+				//Character has no armor/shield
+				else {
+					std::cout << std::setprecision(2) << "The " << this->name << " takes " << damageTaken << " points of damage from " << attacker.name << "'s " << weapon.name << "!" << std::endl;
+					std::cout << std::setprecision(6);
+					this->healthPoints -= damageTaken;
+				}
+				//Character dies if health is less than 0
+				if (healthPoints <= 0) {
+					healthPoints = 0;
+					killCharacter();
+				}
+			}
 		}
 	}
-
 }
 
-void Character::receiveHealing(int healing)
-{
-	healthPoints += healing;
+void Character::receiveHealing(float healing) {
+	this->healthPoints += healing;
 	if (healthPoints > maxHealthPoints) {
 		healthPoints = maxHealthPoints;
 	}
@@ -411,7 +880,7 @@ void Character::gainExperience(Character enemy)
 void Character::levelUp(float exp)
 {
 	experience += exp;
-	float expDifference;
+	float expDifference = 0;
 	do
 	{
 		bool levelUpComplete = false;
@@ -437,13 +906,13 @@ void Character::levelUp(float exp)
 					{
 						std::cout << ">> ";
 						std::cin >> choice;
-						if (std::cin.fail() || choice > 7 || choice == 0)
+						if (std::cin.fail() || choice > 7 || choice == 0 || choice < 0)
 						{
 							std::cout << "Enter a number from 1 - 7" << std::endl;
 						}
 						std::cin.clear();
 						std::cin.ignore(10000, '\n');
-					} while (std::cin.fail() || choice > 7 || choice == 0);
+					} while (std::cin.fail() || choice > 7 || choice == 0 || choice < 0);
 
 					switch (choice)
 					{
@@ -484,13 +953,13 @@ void Character::levelUp(float exp)
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0);
 
 						if (areYouSure == 1)
 						{
@@ -511,13 +980,13 @@ void Character::levelUp(float exp)
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0);
 
 						if (areYouSure == 1)
 						{
@@ -538,13 +1007,13 @@ void Character::levelUp(float exp)
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0);
 
 						if (areYouSure == 1)
 						{
@@ -565,13 +1034,13 @@ void Character::levelUp(float exp)
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0);
 
 						if (areYouSure == 1)
 						{
@@ -592,13 +1061,13 @@ void Character::levelUp(float exp)
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0);
 
 						if (areYouSure == 1)
 						{
@@ -619,13 +1088,13 @@ void Character::levelUp(float exp)
 						{
 							std::cout << ">> ";
 							std::cin >> areYouSure;
-							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0)
+							if (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0)
 							{
 								std::cout << "Enter a number from 1 - 2" << std::endl;
 							}
 							std::cin.clear();
 							std::cin.ignore(10000, '\n');
-						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0);
+						} while (std::cin.fail() || areYouSure > 2 || areYouSure == 0 || choice < 0);
 
 						if (areYouSure == 1)
 						{
@@ -668,205 +1137,412 @@ void Character::levelUp(float exp)
 void Character::killCharacter()
 {
 	this->isAlive = false;
-	std::cout << this->name << " has taken" << dye::light_red(" fatal damage...") << std::endl;
+	if (this->isPlayer)
+	{
+		std::cout << dye::light_red("You have taken fatal damage...") << std::endl;
+	}
+	else
+	{
+		std::cout << "The " << this->name << " has taken" << dye::light_red(" fatal damage...") << std::endl;
+	}
 }
-
 void Character::openLootInterface(Character& container)
 {
-	int i = 0;
-
+	int tally = 1;
+	bool quit = false;
+	int input = 1;
 	int goldCount = container.gold;
 
-	//the number used to keep track of whether or not an item in one category exists
-	int tally = 0;
-	//the number to keep track of the total # of items in a list (loot items, equipped items, etc...)
-	int totalCategory = 0;
+	//iterate through this list first, sorting it by equipped items first, then backpack, then loot
 
-	std::vector<Item> loot;
-	std::vector<Potion> lootPotions;
-	std::cout << container.name << "'s spoils: " << std::endl;
-
-
-	//loot items go here
-
-
-	//looting 
-	int input;
-	int totalItems = totalCategory;
-	do
+	std::vector<Item> initialLootItems = container.inventory.equippedItems;
+	for (int i = 0; i < container.inventory.backpackItems.size(); i++)
 	{
-		if (!inventory.equippedItems.empty())
-		{
-			std::cout << "Equipment: " << std::endl;
-			for (int j = 0; j < container.inventory.equippedItems.size(); j++)
-			{
-				if (container.inventory.equippedItems[i].itemType == Item::WEAPON)
-				{
-					tally += 1;
-				}
-			}
-			if (tally != 0)
-			{
-				std::cout << "Weapons: " << std::endl;
-				for (i = 1; i < container.inventory.equippedItems.size() + 1; i++)
-				{
-					if (container.inventory.equippedItems[i - 1].itemType == Item::WEAPON)
-					{
-						std::cout << i << ") " << container.inventory.equippedItems[i - 1].name << ", damage: "
-							<< container.inventory.equippedItems[i - 1].damage << ", attack speed: "
-							<< container.inventory.equippedItems[i - 1].attackSpeed << ", weight: "
-							<< container.inventory.equippedItems[i - 1].weight << ", value: "
-							<< container.inventory.equippedItems[i - 1].value << std::endl;
-						totalCategory += 1;
-						loot.push_back(container.inventory.equippedItems[i - 1]);
-					}
-				}
-			}
-			tally = 0;
-			for (int j = 0; j < container.inventory.equippedItems.size(); j++)
-			{
-				if (container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::ARMOR)
-				{
-					tally += 1;
-				}
-			}
-			if (tally != 0)
-			{
-				std::cout << "Armor: " << std::endl;
-				for (i = i; i < container.inventory.equippedItems.size() + totalCategory - 1; i++)
-				{
-					if (container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::ARMOR)
-					{
-						std::cout << i << ") " << container.inventory.equippedItems[i - totalCategory - 1].name << ", defense: "
-							<< container.inventory.equippedItems[i - totalCategory - 1].defense << ", weight: "
-							<< container.inventory.equippedItems[i - totalCategory - 1].weight << ", value: "
-							<< container.inventory.equippedItems[i - totalCategory - 1].value << std::endl;
-						loot.push_back(container.inventory.equippedItems[i - totalCategory - 1]);
-						totalCategory += 1;
-
-					}
-				}
-			}
-			tally = 0;
-			for (int j = 0; j < container.inventory.equippedItems.size(); j++)
-			{
-				if (container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::ARCANETOOL ||
-					container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::HOLYTOOL)
-				{
-					tally += 1;
-				}
-			}
-			if (tally != 0)
-			{
-				std::cout << "Tools: " << std::endl;
-				tally = 0;
-				for (i = i; i < container.inventory.equippedItems.size() + totalCategory - 1; i++)
-				{
-					if (container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::ARCANETOOL ||
-						container.inventory.equippedItems[i - totalCategory - 1].itemType == Item::HOLYTOOL)
-					{
-						std::cout << i << ") " << container.inventory.equippedItems[i - totalCategory - 1].name << ", defense: "
-							<< container.inventory.equippedItems[i - totalCategory - 1].defense << ", weight: "
-							<< container.inventory.equippedItems[i - totalCategory - 1].weight << ", value: "
-							<< container.inventory.equippedItems[i - totalCategory - 1].value << ", Magic Adjust: "
-							<< container.inventory.equippedItems[i - totalCategory - 1].magicAdjust << std::endl;
-						loot.push_back(container.inventory.equippedItems[i - totalCategory - 1]);
-						totalCategory += 1;
-					}
-				}
-			}
-			tally = 0;
-			if (!container.inventory.potions.empty())
-			{
-				std::string types[] = { "Restore Health", "Restore Mana", "Cure Disease" };
-				std::cout << "Potions: " << std::endl;
-				tally = 0;
-				int num = container.inventory.potions.size() + totalCategory + 1;
-				for (i = i; i < num; i++)
-				{
-					std::cout << i << ") " << container.inventory.potions[i - totalCategory - 1].name << ", weight: "
-						<< container.inventory.potions[i - totalCategory - 1].weight << ", value: "
-						<< container.inventory.potions[i - totalCategory - 1].value << ", effect: "
-						<< types[container.inventory.potions[i - totalCategory - 1].effects] << ", quantity: "
-						<< container.inventory.potions[i - totalCategory - 1].quantity << std::endl;
-					lootPotions.push_back(container.inventory.potions[i - totalCategory - 1]);
-					totalCategory += 1;
-				}
-			}
-		}
-	} while (input != -2 || loot.empty() || lootPotions.empty());
-
-	std::cout << "Enter the number of the item you want to loot!" << std::endl;
-	std::cout << "Or, type -1 to loot everything!" << std::endl;
-	std::cout << "Enter -2 to stop looting!" << std::endl;
-	do
-	{
-		std::cout << ">> ";
-		std::cin >> input;
-		if (std::cin.fail() || input < -2 || input == 0 || input > totalItems)
-		{
-			std::cout << "Enter either -1 for all items, 1 - " << totalItems << " for a specific item, or -2 to stop looting" << std::endl;
-		}
-		std::cin.clear();
-		std::cin.ignore(10000, '\n');
-	} while (std::cin.fail() || input < -2 || input == 0 || input > totalItems);
-	if (!loot.empty())
-	{
-		if (input == -1)
-		{
-			for (int j = 0; j < loot.size(); j++)
-			{
-				if (!loot.empty())
-				{
-					this->inventory.backpackItems.push_back(loot[j]);
-					std::cout << loot[j].name << " added!" << std::endl;
-					container.inventory.equippedItems.erase(container.inventory.equippedItems.begin() + j);
-				}
-			}
-		}
-		else if (input == -2)
-		{
-			std::cout << "Looting ceased..." << std::endl;
-		}
-		else
-		{
-			if (input > 0 && input <= loot.size() && !loot.empty())
-			{
-				int end = input - 1;
-				this->inventory.backpackItems.push_back(loot[input - 1]);
-				std::cout << loot[input - 1].name << " added!" << std::endl;
-				//loot.erase(loot.begin() + end);
-			}
-		}
+		initialLootItems.push_back(container.inventory.backpackItems[i]);
 	}
-	if (!lootPotions.empty())
+	for (int i = 0; i < container.inventory.lootItems.size(); i++)
 	{
-		if (input == -1)
+		initialLootItems.push_back(container.inventory.lootItems[i]);
+	}
+	std::vector<Potion> initialLootPotions = container.inventory.potions;
+
+	//this will contain the sorted items from the first 2 vectors and will be iterated through for any loop but the first one
+	std::vector<Item> finalLootItems;
+	std::vector<Potion> finalLootPotions;
+
+	bool firstLoop = true;
+	do {
+		if (firstLoop == true)
 		{
-			for (int j = 0; j < lootPotions.size(); j++)
+			//printing the items available to loot
+			std::cout << "\n" << container.name << "'s spoils for the taking" << std::endl;
+			//equipped items
+
+			if (container.gold > 0)
 			{
-				if (!lootPotions.empty())
+				tally = 1;
+				std::cout << tally << "): " << container.gold << "x gold piece(s)" << std::endl;
+			}
+			if (!initialLootItems.empty())
+			{
+				for (int i = 0; i < initialLootItems.size(); i++)
 				{
-					this->inventory.potions.push_back(lootPotions[j]);
-					std::cout << lootPotions[j].name << " added!" << std::endl;
-					container.inventory.potions.erase(container.inventory.potions.begin() + j);
+					if (initialLootItems[i].itemType == Item::item_types::WEAPON)
+					{
+						tally += 1;
+						std::cout << tally << "): " << initialLootItems[i].quantity << "x "
+							<< initialLootItems[i].name << ", value: "
+							<< initialLootItems[i].value << ", damage: "
+							<< initialLootItems[i].damage << ", attack speed: "
+							<< initialLootItems[i].attackSpeed << ", reach: "
+							<< initialLootItems[i].reach << ", weight: "
+							<< initialLootItems[i].weight << std::endl;
+						finalLootItems.push_back(initialLootItems[i]);
+
+					}
+				}
+			}
+			if (!initialLootItems.empty())
+			{
+				for (int i = 0; i < initialLootItems.size(); i++)
+				{
+
+					if (initialLootItems[i].itemType == Item::item_types::ARMOR)
+					{
+						tally += 1;
+						std::cout << tally << "): " << initialLootItems[i].quantity << "x " <<
+							initialLootItems[i].name << ", value: "
+							<< initialLootItems[i].value << ", defense: "
+							<< initialLootItems[i].defense << ", weight: "
+							<< initialLootItems[i].weight << std::endl;
+						finalLootItems.push_back(initialLootItems[i]);
+					}
+
+				}
+			}
+			if (!initialLootItems.empty())
+			{
+				for (int i = 0; i < initialLootItems.size(); i++)
+				{
+
+					if (initialLootItems[i].itemType == Item::item_types::SHIELD)
+					{
+						tally += 1;
+						std::cout << tally << "): " << initialLootItems[i].quantity << "x "
+							<< initialLootItems[i].name << ", value: "
+							<< initialLootItems[i].value << ", defense: "
+							<< initialLootItems[i].defense << ", weight: "
+							<< initialLootItems[i].weight << std::endl;
+						finalLootItems.push_back(initialLootItems[i]);
+					}
+
+				}
+
+			}
+			if (!initialLootItems.empty())
+			{
+				for (int i = 0; i < initialLootItems.size(); i++)
+				{
+
+					if (initialLootItems[i].itemType == Item::item_types::ARCANETOOL ||
+						initialLootItems[i].itemType == Item::item_types::HOLYTOOL)
+					{
+						tally += 1;
+						std::cout << tally << "): " << initialLootItems[i].quantity << "x "
+							<< initialLootItems[i].name << ", value: "
+							<< initialLootItems[i].value << ", magic adjust: "
+							<< initialLootItems[i].magicDamageType << ", weight: "
+							<< initialLootItems[i].weight << std::endl;
+						finalLootItems.push_back(initialLootItems[i]);
+
+					}
+
+				}
+
+			}
+			if (!initialLootItems.empty())
+			{
+				for (int i = 0; i < initialLootItems.size(); i++)
+				{
+
+					if (initialLootItems[i].itemType == Item::item_types::TRINKET)
+					{
+
+					}
+					//TODO After trinkets and torches are implemented 
+
+				}
+			}
+			if (!initialLootItems.empty())
+			{
+				for (int i = 0; i < initialLootItems.size(); i++)
+				{
+					if (initialLootItems[i].itemType == Item::item_types::LOOT)
+					{
+						tally += 1;
+						std::cout << tally << "): " << initialLootItems[i].quantity << "x "
+							<< initialLootItems[i].name << ", value: "
+							<< initialLootItems[i].value << ", weight: "
+							<< initialLootItems[i].weight << std::endl;
+						finalLootItems.push_back(initialLootItems[i]);
+
+					}
+				}
+			}
+			//potions
+
+			std::string effects[] = { "Restores Health", "Restores Mana", "Cures Diseases" };
+			if (!initialLootPotions.empty())
+			{
+				for (int i = 0; i < initialLootPotions.size(); i++)
+				{
+					tally += 1;
+					std::cout << tally << "): " << initialLootPotions[i].quantity << "x "
+						<< initialLootPotions[i].name << ", value: "
+						<< initialLootPotions[i].value << ", effect: "
+						<< effects[initialLootPotions[i].effects] << ", weight: "
+						<< initialLootPotions[i].weight << std::endl;
+					finalLootPotions.push_back(initialLootPotions[i]);
+				}
+			}
+			firstLoop = false;
+		}
+		//loop 2
+		else if (firstLoop == false)
+		{
+			//printing the items available to loot
+			std::cout << "\n" << container.name << "'s spoils for the taking" << std::endl;
+			//equipped items
+
+			if (container.gold > 0)
+			{
+				tally = 1;
+				std::cout << tally << "): " << container.gold << "x gold piece(s)" << std::endl;
+			}
+			if (!finalLootItems.empty())
+			{
+				for (int i = 0; i < finalLootItems.size(); i++)
+				{
+					if (finalLootItems[i].itemType == Item::item_types::WEAPON)
+					{
+						tally += 1;
+						std::cout << tally << "): " << finalLootItems[i].quantity << "x "
+							<< finalLootItems[i].name << ", value: "
+							<< finalLootItems[i].value << ", damage: "
+							<< finalLootItems[i].damage << ", attack speed: "
+							<< finalLootItems[i].attackSpeed << ", reach: "
+							<< finalLootItems[i].reach << ", weight: "
+							<< finalLootItems[i].weight << std::endl;
+					}
+				}
+			}
+			if (!finalLootItems.empty())
+			{
+				for (int i = 0; i < finalLootItems.size(); i++)
+				{
+
+					if (finalLootItems[i].itemType == Item::item_types::ARMOR)
+					{
+						tally += 1;
+						std::cout << tally << "): " << finalLootItems[i].quantity << "x " <<
+							finalLootItems[i].name << ", value: "
+							<< finalLootItems[i].value << ", defense: "
+							<< finalLootItems[i].defense << ", weight: "
+							<< finalLootItems[i].weight << std::endl;
+					}
+
+				}
+			}
+			if (!finalLootItems.empty())
+			{
+				for (int i = 0; i < finalLootItems.size(); i++)
+				{
+
+					if (finalLootItems[i].itemType == Item::item_types::SHIELD)
+					{
+						tally += 1;
+						std::cout << tally << "): " << finalLootItems[i].quantity << "x "
+							<< finalLootItems[i].name << ", value: "
+							<< finalLootItems[i].value << ", defense: "
+							<< finalLootItems[i].defense << ", weight: "
+							<< finalLootItems[i].weight << std::endl;
+					}
+
+				}
+
+			}
+			if (!finalLootItems.empty())
+			{
+				for (int i = 0; i < finalLootItems.size(); i++)
+				{
+
+					if (finalLootItems[i].itemType == Item::item_types::ARCANETOOL ||
+						finalLootItems[i].itemType == Item::item_types::HOLYTOOL)
+					{
+						tally += 1;
+						std::cout << tally << "): " << finalLootItems[i].quantity << "x "
+							<< finalLootItems[i].name << ", value: "
+							<< finalLootItems[i].value << ", magic adjust: "
+							<< finalLootItems[i].magicDamageType << ", weight: "
+							<< finalLootItems[i].weight << std::endl;
+					}
+
+				}
+
+			}
+			if (!finalLootItems.empty())
+			{
+				for (int i = 0; i < finalLootItems.size(); i++)
+				{
+
+					if (finalLootItems[i].itemType == Item::item_types::TRINKET)
+					{
+
+					}
+					//TODO After trinkets and torches are implemented 
+
+				}
+			}
+			if (!finalLootItems.empty())
+			{
+				for (int i = 0; i < finalLootItems.size(); i++)
+				{
+					if (finalLootItems[i].itemType == Item::item_types::LOOT)
+					{
+						tally += 1;
+						std::cout << tally << "): " << finalLootItems[i].quantity << "x "
+							<< finalLootItems[i].name << ", value: "
+							<< finalLootItems[i].value << ", weight: "
+							<< finalLootItems[i].weight << std::endl;
+					}
+				}
+			}
+			//potions
+
+			std::string effects[] = { "Restores Health", "Restores Mana", "Cures Diseases" };
+			if (!finalLootPotions.empty())
+			{
+				for (int i = 0; i < finalLootPotions.size(); i++)
+				{
+					tally += 1;
+					std::cout << tally << "): " << finalLootPotions[i].quantity << "x "
+						<< finalLootPotions[i].name << ", value: "
+						<< finalLootPotions[i].value << ", effect: "
+						<< effects[finalLootPotions[i].effects] << ", weight: "
+						<< finalLootPotions[i].weight << std::endl;
 				}
 			}
 		}
-		else if (input == -2)
+		//selecting which items to loot
+
+		if (!finalLootItems.empty() || !finalLootPotions.empty())
 		{
-			std::cout << "Looting ceased..." << std::endl;
+			std::cout << "\nSelect the item to loot by typing the number besides its name" << std::endl;
+			std::cout << "Type -1 to loot everything" << std::endl;
+			std::cout << "Or, type -2 to leave the rest for the vultures" << std::endl;
+			do
+			{
+				std::cout << "\n>>";
+				std::cin >> input;
+				if (std::cin.fail() || input > tally || input == 0 || input < -2)
+				{
+					std::cout << "Enter a number from 1 - " << tally << ", or enter -1 or -2" << std::endl;
+				}
+				std::cin.clear();
+				std::cin.ignore(10000, '\n');
+			} while (std::cin.fail() || input > tally || input == 0 || input < -2);
+
+			if (input == -1)
+			{
+				this->gold += goldCount;
+				std::cout << goldCount << " gold pieces added to backpack!" << std::endl;
+				//select all
+				for (int i = 0; i < finalLootItems.size(); i++)
+				{
+					this->inventory.addItemToBackpack(finalLootItems[i]);
+					std::cout << finalLootItems[i].name << " added to backpack!" << std::endl;
+				}
+				for (int i = 0; i < finalLootPotions.size(); i++)
+				{
+					this->inventory.addPotion(finalLootPotions[i]);
+					std::cout << finalLootPotions[i].name << " added to backpack!" << std::endl;
+				}
+				quit = true;
+			}
+			if (input > 0 && input <= tally)
+				//individual selection
+			{
+				if (container.gold > 0)
+				{
+					if (input == 1)
+					{
+						this->gold += goldCount;
+						std::cout << goldCount << " gold pieces added to backpack!" << std::endl;
+						container.gold -= goldCount;
+						tally = 0;
+					}
+					else if (!finalLootItems.empty() && input < finalLootItems.size() + 2)
+					{
+						int num = input - 2;
+						this->inventory.addItemToBackpack(finalLootItems[num]);
+						std::cout << finalLootItems[num].name << " added to backpack!" << std::endl;
+						finalLootItems.erase(finalLootItems.begin() + num);
+						tally = 0;
+					}
+					else if (!finalLootPotions.empty() && input > finalLootItems.size() + 1)
+					{
+						int num = input - finalLootItems.size() - 2;
+						this->inventory.addPotion(finalLootPotions[num]);
+						std::cout << finalLootPotions[num].name << " added to backpack!" << std::endl;
+						finalLootPotions.erase(finalLootPotions.begin() + num);
+						tally = 0;
+					}
+					else
+					{
+						std::cout << "Item not found!" << std::endl;
+						tally = 0;
+					}
+				}
+				else
+				{
+					if (!finalLootItems.empty() && input < finalLootItems.size() + 1)
+					{
+						int num = input - 1;
+						this->inventory.addItemToBackpack(finalLootItems[num]);
+						std::cout << finalLootItems[num].name << " added to backpack!" << std::endl;
+						finalLootItems.erase(finalLootItems.begin() + num);
+						tally = 0;
+					}
+					else if (!finalLootPotions.empty() && input > finalLootItems.size())
+					{
+						int num = input - finalLootItems.size() - 1;
+						this->inventory.addPotion(finalLootPotions[num]);
+						std::cout << finalLootPotions[num].name << " added to backpack!" << std::endl;
+						finalLootPotions.erase(finalLootPotions.begin() + num);
+						tally = 0;
+					}
+					else
+					{
+						std::cout << "Item not found!" << std::endl;
+						tally = 0;
+					}
+
+				}
+			}
+			if (input == -2)
+			{
+				quit = true;
+				std::cout << "Departing..." << std::endl;
+			}
 		}
-		else if (input > loot.size() && !lootPotions.empty())
+		//loops so long as there are items left in any inventory of the containe or until the user opts to quit
+		if (finalLootItems.empty() && finalLootPotions.empty() && container.gold == 0)
 		{
-			int end = input - loot.size();
-			this->inventory.potions.push_back(lootPotions[input - loot.size() - 1]);
-			std::cout << lootPotions[input - loot.size() - 1].name << " added!" << std::endl;
-			//lootPotions.erase(lootPotions.begin() + end);
+			std::cout << "You've pillaged every morsel!" << std::endl;
+			quit = true;
 		}
-	}
+	} while (input != -2 && quit == false);
 }
-
 void Character::printCharacterStats(Character& character)
 {
 	std::cout << dye::light_yellow("  Class: ") << character.characterClass << std::endl;
@@ -900,14 +1576,512 @@ void Character::addItemToEnemy(Character enemy, Item item, Item::equip_slots slo
 
 }
 
-void Character::checkEnemy()
+void Character::checkPlayer()
 {
-	std::cout << dye::light_yellow("------------------------------------------------------------------------------") << std::endl;
-	std::cout << dye::light_yellow("  Name: ") << this->name << std::endl;
-	std::cout << dye::light_yellow("  Health: ") << this->healthPoints << std::endl;
-	std::cout << dye::light_yellow("  Mana: ") << this->manaPoints << std::endl;
-	std::cout << dye::light_yellow("  Speed: ") << this->speed << std::endl;
-	std::cout << dye::light_yellow("------------------------------------------------------------------------------") << std::endl;
+	std::cout << "Name: " << this->name << std::endl;
+	std::cout << "Class: " << this->characterClass << std::endl;
+	std::cout << "Level: " << this->level << std::endl;
+	std::cout << std::endl;
+	std::cout << "Health: " << this->health << std::endl;
+	std::cout << "Mana: " << this->mana << std::endl;
+	std::cout << "Strength: " << this->strength << std::endl;
+	std::cout << "Agility: " << this->agility << std::endl;
+	std::cout << "Arcane: " << this->arcane << std::endl;
+	std::cout << "Faith: " << this->faith << std::endl;
+	std::cout << "Luck: " << this->luck << std::endl;
+	std::cout << std::endl;
+	std::cout << "Health Points: " << this->healthPoints << "/" << this->maxHealthPoints << std::endl;
+	std::cout << "Mana Points: " << this->manaPoints << "/" << this->maxManaPoints << std::endl;
+	std::cout << std::endl;
+	std::cout << "Speed: " << this->speed << std::endl;
+	std::cout << "Damage Reduction: " << this->damageReduction << "%" << std::endl;
+	std::cout << "Critical Chance: " << this->critChance << "%" << std::endl;
+	std::cout << "Dodge Chance: " << this->dodgeChance << "%" << std::endl;
+	std::cout << "Block Chance: " << this->blockChance << "%" << std::endl;
+	std::cout << "Block Amount: " << this->blockAmount << std::endl;
+	std::cout << std::endl;
+	std::cout << "Experience: " << this->experience << "/" << this->experienceToNextLevel << std::endl;
+	std::cout << "Gold: " << this->gold << std::endl;
+}
+
+void Character::checkCharacterIntro(Character player)
+{
+	//get all equipped items the character has access to
+	std::vector<Potion> potions = this->inventory.potions;
+	std::vector<Item> items = this->inventory.getEquippedItems();
+	Item mainHand1;
+	Item mainHand2;
+	Item offHand1;
+	Item offHand2;
+	Item amulet;
+	Item ring1;
+	Item ring2;
+	Item misc;
+
+	//until I figure out how to ensure this is set to false by default, we need this because its true 
+	//  by default 
+	mainHand1.hasBeenInitialized = false;
+	mainHand2.hasBeenInitialized = false;
+	offHand1.hasBeenInitialized = false;
+	offHand2.hasBeenInitialized = false;
+	amulet.hasBeenInitialized = false;
+	ring1.hasBeenInitialized = false;
+	ring2.hasBeenInitialized = false;
+	misc.hasBeenInitialized = false;
+	for (int i = 0; i < items.size(); i++)
+	{
+		if (items[i].slot == Item::MAINHAND1)
+		{
+			mainHand1 = items[i];
+		}
+		else if (items[i].slot == Item::MAINHAND2)
+		{
+			mainHand2 = items[i];
+		}
+		else if (items[i].slot == Item::OFFHAND1)
+		{
+			offHand1 = items[i];
+		}
+		else if (items[i].slot == Item::OFFHAND2)
+		{
+			offHand2 = items[i];
+		}
+		else if (items[i].slot == Item::AMULET)
+		{
+			amulet = items[i];
+		}
+		else if (items[i].slot == Item::RING1)
+		{
+			ring1 = items[i];
+		}
+		else if (items[i].slot == Item::RING2)
+		{
+			ring2 = items[i];
+		}
+		else if (items[i].slot == Item::MISC)
+		{
+			misc = items[i];
+		}
+	}
+
+	//Level difference text
+	float levelDifference = (player.level / this->level);
+
+	//should only print out when they're above 76% health to show that their stature is getting weaker as they take damage
+	//their level is 50% greater than the player's level
+	if (this->namedCharacter)
+	{
+		if (levelDifference < .66 && this->healthPoints > maxHealthPoints / 1.34)
+		{
+			std::cout << dye::light_yellow(this->name) << " has a foreboding presence. You should take care..." << std::endl;
+		}
+		//their level is 50% less than the player's level
+		else if (levelDifference > 1.5 && this->healthPoints > maxHealthPoints / 1.34)
+		{
+			std::cout << dye::light_yellow(this->name) << " shuffles about nervously. You can take them." << std::endl;
+		}
+		else if (levelDifference > .83 && levelDifference < 1.25 && this->healthPoints > maxHealthPoints / 1.34)
+		{
+			std::cout << dye::light_yellow(this->name) << " and you appear to be evenly matched." << std::endl;
+		}
+	}
+	else
+	{
+		if (levelDifference < .66 && this->healthPoints > maxHealthPoints / 1.34)
+		{
+			std::cout << "The " << dye::light_yellow(this->name) << " has a foreboding presence. You should take care..." << std::endl;
+		}
+		//their level is 50% less than the player's level
+		else if (levelDifference > 1.5 && this->healthPoints > maxHealthPoints / 1.34)
+		{
+			std::cout << "The " << dye::light_yellow(this->name) << " shuffles about nervously. You can take them." << std::endl;
+		}
+		else if (levelDifference > .83 && levelDifference < 1.25 && this->healthPoints > maxHealthPoints / 1.34)
+		{
+			std::cout << "The " << dye::light_yellow(this->name) << " and you appear to be evenly matched." << std::endl;
+		}
+	}
+	
+	//weapon specific
+	//what weapon(s) they are using?
+
+	std::string weaponTypes[] = { "nothing", "dagger", "straight sword", "great sword",
+		"fist weapon", "mace", "great mace", "hatchet", "axe", "great axe",
+		"thrusting sword", "spear", "great spear", "halberd", "polehammer", "parrying shield",
+		"average-sized shield", "great shield", "longbow", "compound bow",
+		"great bow", "miniature crossbow", "crossbow", "handheld ballista",
+		"talisman", "chime", "arcane tome", "magic wand", "magic staff", "magic orb" };
+
+	//if they have an item in each hand
+	if (mainHand1.hasBeenInitialized == true && offHand1.hasBeenInitialized == true)
+	{
+		std::cout << "They carry a "
+			<< weaponTypes[mainHand1.weaponType] << " in their main hand, ";
+		std::cout << "and a " << weaponTypes[offHand1.weaponType] << " in their off hand." << std::endl;
+	}
+	//if they have an item in both of their hands, plus weapons they can readily switch to
+	else if (mainHand1.hasBeenInitialized == true && offHand1.hasBeenInitialized == true
+		&& mainHand2.hasBeenInitialized == true && offHand2.hasBeenInitialized == true)
+	{
+		std::cout << "They carry a "
+			<< weaponTypes[mainHand1.weaponType] << " in their main hand, ";
+		std::cout << "and a " << weaponTypes[offHand1.weaponType] << " in their off hand." << std::endl;
+		std::cout << "They also have a " << weaponTypes[mainHand2.weaponType] << " and a "
+			<< weaponTypes[offHand2.weaponType] << " at the ready on their person." << std::endl;
+	}
+	//if they have an item in both of their hands, plus a twohanded weapon they can switch to
+	else if (mainHand1.hasBeenInitialized == true && offHand1.hasBeenInitialized == true
+		&& mainHand2.hasBeenInitialized == true && mainHand2.twoHanded == true)
+	{
+		std::cout << "They carry a "
+			<< weaponTypes[mainHand1.weaponType] << " in their main hand,";
+		std::cout << "and a " << weaponTypes[offHand1.weaponType] << " in their off hand." << std::endl;
+		std::cout << "They also have a " << weaponTypes[mainHand2.weaponType] << " at the ready on their person." << std::endl;
+	}
+	//if they only have one weapon equipped
+	else if (mainHand1.hasBeenInitialized == true && offHand1.hasBeenInitialized == false
+		&& offHand2.hasBeenInitialized == false && mainHand1.hasBeenInitialized == false)
+	{
+		std::cout << "They carry nothing but a "
+			<< weaponTypes[mainHand1.weaponType] << " in their main hand." << std::endl;
+	}
+	//if they have a two handed weapon and nothing else
+	else if (mainHand1.hasBeenInitialized == true && mainHand1.twoHanded == true
+		&& offHand1.hasBeenInitialized == false && offHand2.hasBeenInitialized == false
+		&& mainHand2.hasBeenInitialized == false)
+	{
+		std::cout << "They wield a " << weaponTypes[mainHand1.weaponType] << " with both hands." << std::endl;
+	}
+	//if they have a two handed weapon and another twohanded weapon to switch to
+	else if (mainHand1.hasBeenInitialized == true && mainHand1.twoHanded == true
+		&& mainHand2.hasBeenInitialized == true && mainHand2.twoHanded == true)
+	{
+		std::cout << "They wield a " << weaponTypes[mainHand1.weaponType] << " with both hands." << std::endl;
+		std::cout << "They also have a " << weaponTypes[mainHand2.weaponType] << " holstered on their back." << std::endl;
+	}
+	//if they have a two handed weapon and two more one handed items to switch to
+	else if (mainHand1.hasBeenInitialized == true && mainHand1.twoHanded == true
+		&& mainHand2.hasBeenInitialized == true && offHand2.hasBeenInitialized == true)
+	{
+		std::cout << "They wield a " << weaponTypes[mainHand1.weaponType] << " with both hands." << std::endl;
+		std::cout << "They also have a " << weaponTypes[mainHand2.weaponType] << " and a " << weaponTypes[offHand1.weaponType] << " at the ready on their person." << std::endl;
+	}
+	else {
+		std::cout << "They have the gall to approach you empty handed." << std::endl;
+	}
+
+	//what armor they are wearing?
+
+	std::string armorTypes[] = { "not armor", "leather", "padded leather",
+		"studded leather", "chainmail", "lamellar", "metal scale",
+		"ringmail", "chain-plate", "full plate" };
+
+	int numLight = 0;
+	int numMedium = 0;
+	int numHeavy = 0;
+
+	//count the number of light, medium, and heavy armor pieces they have equipped
+	for (int i = 0; i < items.size(); i++)
+	{
+		if (items[i].armorType == Item::LEATHER ||
+			items[i].armorType == Item::PADDED ||
+			items[i].armorType == Item::STUDDEDLEATHER)
+		{
+			numLight++;
+		}
+		else if (items[i].armorType == Item::CHAIN ||
+			items[i].armorType == Item::LAMELLAR ||
+			items[i].armorType == Item::SCALE)
+		{
+			numMedium++;
+		}
+		else if (items[i].armorType == Item::CHAINPLATE ||
+			items[i].armorType == Item::FULLPLATE ||
+			items[i].armorType == Item::BEASTSCALE)
+		{
+			numHeavy++;
+		}
+	}
+
+	//outputs the kind of armor they are wearing at a glance. More detailed descriptions
+	//  can be found in the check enemy menu
+	if (numLight > 0 && numMedium == 0 && numHeavy == 0)
+	{
+		std::cout << "They are wearing light armor." << std::endl;
+	}
+	else if (numLight == 0 && numMedium > 0 && numHeavy == 0)
+	{
+		std::cout << "They are wearing medium armor." << std::endl;
+	}
+	else if (numLight == 0 && numMedium == 0 && numHeavy > 0)
+	{
+		std::cout << "They are wearing heavy armor." << std::endl;
+	}
+
+	//mixed armor types
+	else if (numLight > 0 && numMedium > 0 && numHeavy == 0)
+	{
+		std::cout << "They are wearing a mixture of light and medium armor." << std::endl;
+	}
+	else if (numLight > 0 && numMedium == 0 && numHeavy > 0)
+	{
+		std::cout << "They are wearing a mixture of light and heavy armor." << std::endl;
+	}
+	else if (numLight == 0 && numMedium > 0 && numHeavy > 0)
+	{
+		std::cout << "They are wearing a mixture of medium and heavy armor." << std::endl;
+	}
+	else if (numLight > 0 && numMedium > 0 && numHeavy > 0)
+	{
+		std::cout << "They are wearing a mixture of light, medium, and heavy armor." << std::endl;
+	}
+
+	//if they have no armor equipped
+	else if (numLight == 0 && numMedium == 0 && numHeavy == 0)
+	{
+		std::cout << "They are daring not to wear any armor." << std::endl;
+	}
+}
+void Character::checkCharacter(Character player)
+{
+	//get all equipped items the character has access to
+	std::vector<Potion> potions = this->inventory.potions;
+	std::vector<Item> items = this->inventory.getEquippedItems();
+	Item mainHand1;
+	Item mainHand2;
+	Item offHand1;
+	Item offHand2;
+	Item amulet;
+	Item ring1;
+	Item ring2;
+	Item misc;
+
+	//until I figure out how to ensure this is set to false by default, we need this because its true 
+	//  by default 
+	mainHand1.hasBeenInitialized = false;
+	mainHand2.hasBeenInitialized = false;
+	offHand1.hasBeenInitialized = false;
+	offHand2.hasBeenInitialized = false;
+	amulet.hasBeenInitialized = false;
+	ring1.hasBeenInitialized = false;
+	ring2.hasBeenInitialized = false;
+	misc.hasBeenInitialized = false;
+	for (int i = 0; i < items.size(); i++)
+	{
+		if (items[i].slot == Item::MAINHAND1)
+		{
+			mainHand1 = items[i];
+		}
+		else if (items[i].slot == Item::MAINHAND2)
+		{
+			mainHand2 = items[i];
+		}
+		else if (items[i].slot == Item::OFFHAND1)
+		{
+			offHand1 = items[i];
+		}
+		else if (items[i].slot == Item::OFFHAND2)
+		{
+			offHand2 = items[i];
+		}
+		else if (items[i].slot == Item::AMULET)
+		{
+			amulet = items[i];
+		}
+		else if (items[i].slot == Item::RING1)
+		{
+			ring1 = items[i];
+		}
+		else if (items[i].slot == Item::RING2)
+		{
+			ring2 = items[i];
+		}
+		else if (items[i].slot == Item::MISC)
+		{
+			misc = items[i];
+		}
+	}
+
+	//Health based text
+
+	//100%
+	if (this->healthPoints == this->maxHealthPoints)
+	{
+		std::cout << "The " << this->name << " is completely healthy." << std::endl;
+	}
+
+	//75%
+	else if (this->healthPoints >= maxHealthPoints * .75 && this->healthPoints <= maxHealthPoints)
+	{
+		std::cout << "The " << this->name << " has taken a few hits. Are they bleeding?" << std::endl;
+	}
+
+	//50%
+	else if (this->healthPoints >= maxHealthPoints * .5 && this->healthPoints < maxHealthPoints * .75)
+	{
+		std::cout << "The " << this->name << " has a few large wounds. Best not to let them become scars." << std::endl;
+	}
+
+	//25%
+	else if (this->healthPoints >= maxHealthPoints * .25 && this->healthPoints < maxHealthPoints * .75)
+	{
+		std::cout << "The " << this->name << " is on their last legs. Show them no mercy!" << std::endl;
+	}
+
+	//10%
+	else if (this->healthPoints < maxHealthPoints * .25)
+	{
+		std::cout << "It's a marvel that the " << this->name << " is still standing after the punishment they've endured." << std::endl;
+	}
+
+	//Mana based text
+
+	//100%
+	if (this->manaPoints == this->maxManaPoints)
+	{
+		std::cout << "They are alert and attentive. Their mana must be close to full." << std::endl;
+	}
+
+	//75%
+	else if (this->manaPoints >= maxManaPoints * .75 && this->manaPoints < maxManaPoints)
+	{
+		std::cout << "They look like they can keep the magic up for a while longer." << std::endl;
+	}
+
+	//50%
+	else if (this->manaPoints >= maxManaPoints * .5 && this->manaPoints <= maxManaPoints * .75)
+	{
+		std::cout << "They look somewhat disoriented. Are they running out of mana?" << std::endl;
+	}
+
+	//25%
+	else if (this->manaPoints >= maxManaPoints * .25&& this->manaPoints <= maxManaPoints * .5)
+	{
+		std::cout << "They look very disoriented. They must be running dry on mana." << std::endl;
+	}
+
+	//10%
+	else if (this->manaPoints <= maxManaPoints* .25)
+	{
+		std::cout << "They look like they don't have the magical energy to muster a spark." << std::endl;
+	}
+
+	checkCharacterIntro(player);
+
+	//if they are wearing jewelry
+
+	//if they have an item in each jewelry slot
+	if (amulet.hasBeenInitialized == true && ring1.hasBeenInitialized == true
+		&& ring2.hasBeenInitialized == true)
+	{
+		std::cout << "They are wearing a plethora of jewelry." << std::endl;
+	}
+
+	//if they have an amulet
+	else if (amulet.hasBeenInitialized == true && ring1.hasBeenInitialized == false
+		&& ring2.hasBeenInitialized == false)
+	{
+		std::cout << "An amulet gleams in the light upon " << this->name << "'s neck." << std::endl;
+	}
+
+	//if they have an amulet and a ring
+	else if (amulet.hasBeenInitialized == true && ring1.hasBeenInitialized == true
+		&& ring2.hasBeenInitialized == false)
+	{
+		std::cout << "An amulet gleams in the light upon " << this->name <<
+			"'s neck, and a ring glints on one of their fingers." << std::endl;
+	}
+
+	//if they are wearing just a ring
+	else if (amulet.hasBeenInitialized == false && ring1.hasBeenInitialized == true
+		&& ring2.hasBeenInitialized == false)
+	{
+		std::cout << "A ring glints on one of " << this->name << "'s fingers." << std::endl;
+	}
+
+	//if they are wearing two rings
+	else if (amulet.hasBeenInitialized == false && ring1.hasBeenInitialized == true
+		&& ring2.hasBeenInitialized == true)
+	{
+		std::cout << "Two rings glint in the light on " << this->name << "'s fingers." << std::endl;
+	}
+
+	//what potions do they have on them?
+
+	std::string effects[] = { "Restores Health", "Restores Mana", "Cures Diseases" };
+	int healingPotionCount = 0;
+	int manaPotionCount = 0;
+	int cureDiseaseCount = 0;
+
+	for (int i = 0; i < potions.size(); i++)
+	{
+		if (potions[i].effects == Potion::HEALING)
+		{
+			healingPotionCount += 1;
+		}
+		else if (potions[i].effects == Potion::MANA)
+		{
+			manaPotionCount += 1;
+		}
+		else if (potions[i].effects == Potion::CUREDISEASE)
+		{
+			cureDiseaseCount += 1;
+		}
+	}
+
+	//if they have all of one potion type
+	if (healingPotionCount > 0 && manaPotionCount == 0 && cureDiseaseCount == 0)
+	{
+		std::cout << "Healing potions clink about on the " << this->name << "'s belt" << std::endl;
+	}
+	else if (healingPotionCount == 0 && manaPotionCount > 0 && cureDiseaseCount == 0)
+	{
+		std::cout << "Mana potions clink about on the " << this->name << "'s belt" << std::endl;
+	}
+	else if (healingPotionCount == 0 && manaPotionCount == 0 && cureDiseaseCount > 0)
+	{
+		std::cout << "Cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
+	}
+
+	//if they have a mixture of types
+	else if (healingPotionCount > 0 && manaPotionCount > 0 && cureDiseaseCount == 0)
+	{
+		std::cout << "Healing and mana potions clink about on the " << this->name << "'s belt" << std::endl;
+	}
+	else if (healingPotionCount > 0 && manaPotionCount == 0 && cureDiseaseCount > 0)
+	{
+		std::cout << "Healing and cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
+	}
+	else if (healingPotionCount == 0 && manaPotionCount > 0 && cureDiseaseCount > 0)
+	{
+		std::cout << "Mana and cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
+	}
+	else if (healingPotionCount > 0 && manaPotionCount > 0 && cureDiseaseCount > 0)
+	{
+		std::cout << "Healing, mana, and cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
+	}
+
+	//do they have enough gold to be visible outside their pockets?
+	if (this->gold >= 50)
+	{
+		std::cout << "A coin purse hangs from the " << this->name << "'s belt." << std::endl;
+	}
+	else if (this->gold >= 100)
+	{
+		std::cout << "A heavy coin purse hangs from the " << this->name << "'s belt." << std::endl;
+	}
+	else if (this->gold >= 200)
+	{
+		std::cout << "A bulging coin purse hangs from the " << this->name << "'s belt." << std::endl;
+	}
+	else if (this->gold >= 500)
+	{
+		std::cout << "A sack of gold hangs from the " << this->name << "'s belt." << std::endl;
+	}
+	else if (this->gold >= 1000)
+	{
+		std::cout << "A small chest, clinking with gold as they move, hangs from the " << this->name << "'s back." << std::endl;
+	}
 }
 
 void Character::openPotionDialogue(bool& turnOver)
@@ -1055,76 +2229,6 @@ void Character::sellItem(Item& item) {
 		std::cout << "Item not sold" << std::endl;
 	}
 }
-
-//AMMO
-#pragma region AMMO
-Ammo Character::createAmmo(std::string name, int damage, int weight, int quantity, Ammo::ammo_Types ammoType)
-{
-	Ammo ammo;
-	ammo.name = name;
-	ammo.damage = damage;
-	ammo.weight = weight;
-	ammo.quantity = quantity;
-	ammo.ammoType = ammoType;
-
-	return ammo;
-}
-
-void Character::addAmmo(const Ammo& ammo) {
-	munitions.push_back(ammo);
-}
-
-void Character::removeAmmo(const Ammo& ammo)
-{
-	for (auto it = munitions.begin(); it != munitions.end(); ++it) {
-		if (it->name == ammo.name) {
-			munitions.erase(it);
-			return;
-		}
-	}
-	throw std::invalid_argument("Item not found");
-}
-
-Ammo& Character::findAmmo(const std::string& ammoName) {
-	for (Ammo& ammo : munitions) {
-		if (ammo.name == ammoName) {
-			return ammo;
-		}
-	}
-	throw std::invalid_argument("Item not found");
-}
-
-void Character::updateAmmoQuantity(const std::string& ammoName, int newQuantity) {
-	for (Ammo& ammo : munitions) {
-		if (ammo.name == ammoName) {
-			ammo.quantity = newQuantity;
-			return;
-		}
-	}
-	throw std::invalid_argument("Item not found");
-}
-
-int Character::getAmmoCount(Character character)
-{
-	int ammoCount = 0;
-	for (int i = 0; i < munitions.size(); i++)
-	{
-		ammoCount += 1;
-	}
-	return ammoCount;
-}
-
-void Character::depleteAmmo(Ammo& ammunition)
-{
-	if (ammunition.quantity == 1)
-	{
-		this->removeAmmo(ammunition);
-	}
-	else {
-		ammunition.quantity -= 1;
-	}
-}
-#pragma endregion AMMO
 
 //SPELLS
 #pragma region SPELLS

@@ -1,6 +1,17 @@
 #include "Spell.h"
-Spell::Spell() {
-
+Spell::Spell()
+{
+	effect = MagicEffect();
+	name = "NONE";
+	description = "NONE";
+	damage = 0;
+	healing = 0;
+	range = 0;
+	attackSpeed = 0;
+	manaCost = 0;
+	staminaCost = 0;
+	magicType = SORCERY;
+	spellEffect = NONE;
 }
 
 Spell::Spell(MagicEffect effect, std::string name, std::string description, int damage, int healing,
