@@ -16,7 +16,7 @@ Dialogue::~Dialogue()
 
 }
 
-void Dialogue::play() {
+void Dialogue::playConversation() {
 	if (!isAvailable()) {
 		return;
 	}
@@ -53,7 +53,7 @@ void Dialogue::play() {
 			}
 		} while (choice < 1 || choice > responses.size());
 
-		responses[choice - 1].play();
+		responses[choice - 1].playConversation();
 	}
 	else
 	{
@@ -63,6 +63,18 @@ void Dialogue::play() {
 	
 }
 
+void Dialogue::playQuip() {
+	if (!isAvailable()) {
+		return;
+	}
+	//Print the dialogue
+	std::cout << "=--->" << std::endl;
+	std::cout << dye::light_yellow(" ") << dye::light_yellow(speaker->name) << ": " << text << std::endl;
+	//Triggers the effect, if available
+	if (effect) {
+		effect();
+	}
+}
 //Check if dialogue is available
 bool Dialogue::isAvailable() const {
 	return condition ? condition() : true;

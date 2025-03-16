@@ -2,7 +2,7 @@
 #include <string>
 #include <stdexcept>
 
-Potion::Potion() : Item() {
+Potion::Potion() : Consumable() {
 
 }
 Potion::Potion(std::string name, std::string description, int magnitude, int value, int weight, int quantity, effect effects)

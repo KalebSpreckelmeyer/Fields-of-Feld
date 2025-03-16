@@ -2,9 +2,9 @@
 #define Potion_h
 
 #include <string>
-#include "Item.h"
+#include "Consumable.h"
 
-class Potion : public Item {
+class Potion : public Consumable {
 public:
 	std::string name;
 	std::string description;

@@ -15,7 +15,8 @@ public:
 	Dialogue(Character* speaker, Character* target, std::string text = "DEFAULT", std::string emotion = "DEFAULT", float gravity = 1.0f, int coolDown = 1.0f);
 	~Dialogue();
 	
-	void play();
+	void playConversation();
+	void playQuip();
 	bool isAvailable() const;
 
 	void addResponse(const Dialogue& response);

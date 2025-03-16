@@ -2,82 +2,129 @@
 #define Character_h
 
 #include <string>
+#include <vector>
 #include "Inventory.h"
 #include "Item.h"
-#include "Spell.h"
-#include "MagicEffect.h"
 #include <functional>
+#include "Ammunition.h"
+#include "ThrownConsumable.h"
 
+//forward declaration to avoid circular dependency
+class Human;
+class Creature;
+class Effect;
+class Spell;
+class Weapon;
 class Character
 {
 public:
-	bool namedCharacter = false; 
-	float confidenceLevel = 0.0f; 
-
-	bool isAlive = true; 
-	bool isPlayer = false; 
-	bool active = true; 
-	std::string name = "CHARACTER NAME PLS CHANGE"; 
-	enum class CharacterClass { DEFAULT, WIZARD, KNIGHT, CLERIC, HUNTER, HIGHLANDER, BATTLEMAGE, WRETCH, BANDIT };
-	CharacterClass classChoice = CharacterClass::DEFAULT; 
-	std::string characterClass = "Default"; 
-
-	//Core Attributes
-	float health = 10.0f; 
-	float mana = 10.0f; 
-	float strength = 10.0f; 
-	float agility = 10.0f; 
-	float arcane = 10.0f;
-	float faith = 10.0f; 
-	float luck = 10.0f; 
-
-	//Derived Attributes
-	float healthPoints = 100.0f; 
-	float maxHealthPoints = 100.0f; 
+	bool namedCharacter = false;
+	bool isAlive = true;
+	bool active = true;
+	bool alert = false;
+	std::string name = "CHARACTER NAME PLS CHANGE";
+	std::string description = "DESCRIPTION PLS CHANGE";
+	float confidenceLevel = 0.0f;
+	float healthPoints = 100.0f;
+	float maxHealthPoints = 100.0f;
 	float manaPoints = 50.0f;
 	float maxManaPoints = 50.0f;
 	float speed = 1.0f;
-
-	//Derived Stats
 	float critChance = 5.0f;
 	float dodgeChance = 5.0f;
-	float blockChance = 0.0f; 
-	float blockAmount = 0.0f; 
-	float damageReduction = 0.0f; 
-	float weightBurden = 0.0f; 
+	float blockChance = 0.0f;
+	float damageThreshold = 0.0f;
+	float damageResistance = 0.0f;
+	//Status effect variables
+	float bleedPoints = 0.0f;
+	float maxBleedPoints = 0.0f;
+	float burnPoints = 0.0f;
+	float maxBurnPoints = 0.0f;
+	float poisonPoints = 0.0f;
+	float maxPoisonPoints = 0.0f;
+	float frostPoints = 0.0f;
+	float maxFrostPoints = 0.0f;
+	float shockPoints = 0.0f;
+	float maxShockPoints = 0.0f;
+	float sleepPoints = 0.0f;
+	float maxSleepPoints = 0.0f;
+	float distanceFromPlayer = 0.0f;
+	float level = 1.0f;
 
-	float level = 1.0f; 
-	float experience = 0.0f; 
-	float experienceToNextLevel = 100.0f; 
-	float gold = 0.0f; 
+	//Flags for combat scenarios
+	enum class CombatFlags { NEUTRAL, BLEEDING, BURNING, FROSTBITTEN, POISONED, SHOCKED, SLEEPY, FEAR, FRENZY };
+	CombatFlags combatFlag = CombatFlags::NEUTRAL;
+	std::vector<CombatFlags> combatFlags;
 
-	Inventory inventory; 
+	Inventory inventory;
 
-	//Enemy Specific Stats
-	float distanceFromPlayer = 0.0f; 
-	bool alert = false; 
+	//must be a pointer because of *polymorphism*
+	std::vector<Effect*> effects; //Enchantments that are currently affecting the character
+	
+	//Tages for dialogue responses/conditions
+	std::vector<std::string> tags;
+
+	void addTag(std::string& tag);
+
+	//Virtual functions to be overridden by the human and creature classes
+	virtual float getLuck() const { return 0.0f; } 
+	virtual float getFaith() const { return 0.0f; } 
+	virtual float getArcane() const { return 0.0f; } 
+	virtual float getIntelligence() const { return 0.0f; } 
+	virtual float getCharisma() const { return 0.0f; } 
+	virtual float getAgility() const { return 0.0f; } 
+	virtual float getStrength() const { return 0.0f; } 
+	virtual float getMana() const { return 0.0f; } 
+	virtual float getHealth() const { return 0.0f; } 
+	virtual float getSpeed() const { return 0.0f; }
+	virtual float getLevel() const { return 0.0f; }
 
 	//Default Constructor
 	Character();
 
 	//Main Constructor
-	Character(bool namedCharacter, float confidenceLevel, bool isAlive, bool isPlayer, bool active, enum Character::CharacterClass classChoice, std::string name, std::string characterClass, float health, float mana, float strength, float agility, float arcane, float faith, float luck, float healthPoints, float maxHealthPoints,
-		float manaPoints, float maxManaPoints, float speed, float critChance, float dodgeChance, float blockChance, float blockAmount, float damageReduction, float weightBurden, float level, float experience, float experienceToNextLevel,
-		float gold, Inventory inventory, float distanceFromPlayer, bool alert);
+	Character(bool namedCharacter, bool isAlive, bool active, bool alert,
+		std::string name, std::string description, float confidenceLevel,
+		float healthPoints, float maxHealthPoints, float manaPoints,
+		float maxManaPoints, float speed, float critChance, float dodgeChance,
+		float blockChance, float damageThreshold, float damageResistance, float bleedPoints, float maxBleedPoints,
+		float burnPoints, float maxBurnPoints, float poisonPoints,
+		float maxPoisonPoints, float frostPoints, float maxFrostPoints,
+		float shockPoints, float maxShockPoints, float sleepPoints,
+		float maxSleepPoints, const Inventory& inventory, float distanceFromPlayer,
+		float level, CombatFlags combatFlag);
+
 
 	//Deconstructor
-	~Character();
+	virtual ~Character();
 
-	Character createHumanoid(bool namedCharacter, bool isPlayer, std::string name, Character::CharacterClass classChoice, float health,
-		float mana, float strength, float agility, float arcane, float faith, float luck,
-		float confidenceLevel, float gold, float distanceFromPlayer, float level);
+	//DESC: Chooses the ammunition to be used with a ranged weapon
+	//PRE: The character must have a ranged weapon equipped	
+	//POST: The ammunition will be selected and used in the takeDamage function
+	void chooseAmmunition(Weapon* weapon, Ammunition* ammunition, Character* target);
 
-	void setCharacterClass(CharacterClass option);
+	//DESC: Virtual function whose implementation is handled in the creature and human classes
+	//PRE: All parameters for the situation must be provided ex: attacking with a bow will need the weapon, ammunition, and target
+	//POST: Target will take damage, any effects will be applied, and ammunition will be decremented if necessary
+	virtual void takeDamage(Character* attacker, Character* target, Weapon* weapon, Ammunition* ammunition, 
+		ThrownConsumable* consumable, Spell* spell) = 0;
 
-	//called when the player stats need to be refreshed, either when first initializing them or when they level up
-	void refreshCharacterStats();
+	//DESC: Fires a ranged weapon at a provided target, decrementing or removing ammunition as necessary
+	//PRE: chooseAmmunition shoud be properly called and used to select the ammunition to be used and call this function
+	//POST: Ammunition will be decremented or removed from the inventory, damage values will be sent to the takeDamage function to apply to target
+	void consumeAmmo(Item* ammo);
+	
+	//DESC: Used in the take damage function, this function will decrement the consumable's quantity and remove if necessary
+	//PRE: The consumable must have a quantity greater than 0
+	//POST: The consumable's quantity will be decremented, or the consumable will be removed from the inventory if the quantity is 0
+	void consumeThrownConsumable(ThrownConsumable* consumable);
 
-	void setArmorValues(std::vector<Item> items);
+	//DESC: Kills the character, setting isAlive to false
+	//PRE: The character must be alive
+	//POST: The character will be dead
+	void killCharacter();
+
+	/*void setArmorValues(std::vector<Item> items);
 
 	void takeDamage(Item weapon, Character attacker, Item ammunition = Item());
 
@@ -93,55 +140,19 @@ public:
 
 	void printCharacterStats(Character& character);
 
-	//Enemy Specifc Functions
-	
-	void addItemToEnemy(Character enemy, Item item, Item::equip_slots slot);
-
 	void checkPlayer();
-		
+
 	void checkCharacterIntro(Character player);
 
 	void checkCharacter(Character player);
 
-	void openPotionDialogue(bool & turnOver);
-	
+	void openPotionDialogue(bool& turnOver);
+
 	void drinkPotion(Potion& potion);
 
-	void sellItem(Item& item);
+	void sellItem(Item& item);*/
 
-	//SPELLS
-#pragma region SPELLS
-	std::vector<Spell> spells;
-
-	void addSpell(const Spell& spell);
-
-	void removeSpell(const Spell& item);
-
-	void removeAllSpells();
-
-	Spell findSpell(const std::string& spellName);
-
-	void castSpell(Spell& spellName, Character& enemy);
-
-#pragma endregion SPELLS
-
-#pragma region MAGICEFFECTS
-	std::vector<MagicEffect> magicEffects;
-
-	void addMagicEffect(const MagicEffect& effect);
-
-	void removeMagicEffect(const MagicEffect& effect);
-
-	void removeAllMagicEffects();
-
-	MagicEffect findMagicEffect(const std::string& effectName);
-
-	MagicEffect createMagicEffect(std::string name, std::string description, int damage, int healing,
-		int turnsActive, int turnsRemaining, int magnitude, MagicEffect::stats_effected statEffected);
-
-#pragma endregion MAGICEFFECTS
 };
-
 #endif // !Character_h
 
 

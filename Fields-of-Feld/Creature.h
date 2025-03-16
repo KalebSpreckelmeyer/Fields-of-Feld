@@ -6,16 +6,18 @@
 class Creature : public Character
 {
 public:
-	float flatDamage; 
-	std::string name = "Creature";
 	float damage = 0.0f;
-	float damageResistance = 0.0f;
+	float defense = 0.0f;
+	float reach = 0.0f;
 
-	std::vector<Item> loot;
+	Creature();
 
-	Creature(std::string name, float damage, float damageResistnace);
+	Creature(float damage, float defense, float reach);
 
-	void lootExample();
+	~Creature();
+
+	void takeDamage(Character* attacker, Character* target, Weapon* weapon, Ammunition* ammunition,
+		ThrownConsumable* consumable, Spell* spell) override;
 };
 #endif // !CREATURE_H
 

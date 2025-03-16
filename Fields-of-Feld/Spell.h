@@ -1,34 +1,17 @@
-#ifndef Spell_h
-#define Spell_h
-
+#ifndef SPELL_H
+#define SPELL_H
 #include <string>
-#include "MagicEffect.h"
+#include <vector>
+#include "Effect.h"
 
-class Spell
-{
+class Spell : public Effect {
 public:
 
-	MagicEffect effect;
-	std::string name;
-	std::string description;
-	int damage;
-	int healing;
-	int range;
-	int attackSpeed;
-	int manaCost;
-	int staminaCost;
-	enum magic_types { SORCERY, MIRACLE, NATURE };
-	enum spell_effects { NONE, DAMAGEOVERTIME, HEALINGOVERTIME, STATDEBUFF };
-	magic_types magicType;
-	spell_effects spellEffect;
+	std::vector<Effect> effects;
 
 	Spell();
-
-	Spell(MagicEffect effect, std::string name, std::string description, int damage, int healing, 
-		int range, int attackSpeed, int manaCost, int staminaCost, 
-		magic_types magicType, spell_effects spellEffect);
-
+	Spell(std::string name, std::string description, float duration, float magnitude, bool stackable,
+		int stacks, int maxStacks);
 	~Spell();
 };
-#endif // !Spell_h
-
+#endif // !SPELL_H
