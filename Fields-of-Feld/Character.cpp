@@ -41,6 +41,7 @@ void Character::addTag(std::string& tag)
 	tags.push_back(tag);
 }
 
+//this doesnt need to have ammo passed to it 
 void Character::chooseAmmunition(Weapon* weapon, Ammunition* ammunition, Character* target)
 {
 	//get the ammo the player has stored in each quiver slot
@@ -66,52 +67,65 @@ void Character::chooseAmmunition(Weapon* weapon, Ammunition* ammunition, Charact
 		if (quiver[i]->slot == Item::EquipSlots::QUIVER1)
 		{
 			std::cout << " " << dye::light_yellow(i + 1) << dye::light_yellow(") ") << quiver[i]->name
-				<< "; damage: " << quiver[i]->damage << std::endl;
+				<< "; damage: " << quiver[i]->damage << "; quantity: " << quiver[i]->quantity << std::endl;
 			occupiedSlots++;
 		}
 		if (quiver[i]->slot == Item::EquipSlots::QUIVER2)
 		{
 			std::cout << " " << dye::light_yellow(i + 1) << dye::light_yellow(") ") << quiver[i]->name
-				<< "; damage: " << quiver[i]->damage << std::endl;
+				<< "; damage: " << quiver[i]->damage << "; quantity: " << quiver[i]->quantity << std::endl;
 			occupiedSlots++;
 		}
 		if (quiver[i]->slot == Item::EquipSlots::QUIVER3)
 		{
 			std::cout << " " << dye::light_yellow(i + 1) << dye::light_yellow(") ") << quiver[i]->name
-				<< "; damage: " << quiver[i]->damage << std::endl;
+				<< "; damage: " << quiver[i]->damage << "; quantity: " << quiver[i]->quantity << std::endl;
 			occupiedSlots++;
 		}
 		if (quiver[i]->slot == Item::EquipSlots::QUIVER4)
 		{
 			std::cout << " " << dye::light_yellow(i + 1) << dye::light_yellow(") ") << quiver[i]->name
-				<< "; damage: " << quiver[i]->damage << std::endl;
+				<< "; damage: " << quiver[i]->damage << "; quantity: " << quiver[i]->quantity << std::endl;
 			occupiedSlots++;
 		}
 	}
-	//prints out empty slots
-	for (int i = occupiedSlots; i < 4; i++)
+	if (occupiedSlots == 0)
 	{
-		std::cout << " " << dye::grey(i + 1) << dye::grey(") ") << dye::grey("Empty Slot") << std::endl;
+		std::cout << " You are out of ammunition!" << std::endl;
+		return;
 	}
-
-	//input validation
-	int choice = 0;
-	do
+	else
 	{
-		std::cout << dye::light_yellow(" Choose your ammunition: ");
-		std::cin >> choice;
-		if (std::cin.fail() || choice < 1 || choice > quiver.size())
+		//prints out empty slots
+		for (int i = occupiedSlots; i < 4; i++)
 		{
-			std::cout << dye::white(" Invalid choice. Please enter 1 - ") << quiver.size() << std::endl;
-			std::cin.clear();
-			std::cin.ignore(1000, '\n');
+			std::cout << " " << dye::grey(i + 1) << dye::grey(") ") << dye::grey("Empty Slot") << std::endl;
 		}
-	} while (choice < 1 || choice > quiver.size());
+		std::cout << " " << dye::light_yellow("5) Go Back...") << std::endl;
+		//input validation
+		int choice = 0;
+		do
+		{	
+			std::cout << dye::light_yellow(" Choose your ammunition: ");
+			std::cin >> choice;
+			if (choice == 5)
+			{
+				return;
+			}
+			if (std::cin.fail() || choice < 1 || choice > quiver.size())
+			{
+				std::cout << dye::white(" Invalid choice. Please enter 1 - ") << quiver.size() << std::endl;
+				std::cin.clear();
+				std::cin.ignore(1000, '\n');
+			}
+		} while (choice < 1 || choice > quiver.size());
 
-	//selects the ammo to be used
-	Ammunition* ammo = quiver[choice - 1];
+		
+		//selects the ammo to be used
+		Ammunition* ammo = quiver[choice - 1];
 
-	takeDamage(this, target, weapon, ammo, nullptr, nullptr);
+		takeDamage(this, target, weapon, ammo, nullptr, nullptr);
+	}
 }
 
 void Character::consumeAmmo(Item* ammo)

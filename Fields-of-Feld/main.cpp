@@ -96,25 +96,60 @@ int main()
 	npc->distanceFromPlayer = 50;
 	npc->name = "BANDIT";
 	npc->maxHealthPoints = 1000;
-	npc->healthPoints = 1000;
+	npc->healthPoints = 2000;
 	npc->maxPoisonPoints = 200;
 	npc->maxBleedPoints = 200;
 	npc->maxBurnPoints = 200;
 	npc->maxFrostPoints = 200;
 	npc->maxShockPoints = 200;
-	npc->maxShockPoints = 200;
+	npc->maxSleepPoints = 200;
+	npc->isAlive = true;
 	player->setCharacterClass(Human::CharacterClass::WIZARD);
-	Weapon* staff = new Weapon(false, "Testing Staff", "Testing", 5, 1, 5, 20, 1, 20, false, false, Weapon::WeaponType::STAFF, Weapon::PhysicalDamageType::BLUNT);
+	/*Weapon* staff = new Weapon(false, "Testing Staff", "Testing", 5, 1, 5, 20, 1, 20, false, false, Weapon::WeaponType::STAFF, Weapon::PhysicalDamageType::BLUNT);
 	Spell* fireBall = new Spell("Fireball", "A ball of fire that explodes on impact", 1, 100, false, 1, 1);
 	Effect* burn = new Effect("Burn", "The target catches flames", 3, 50, false, 1, 1);
-	fireBall->effects.push_back(*burn);
+	fireBall->effects.push_back(*burn);*/
+	//Weapon* sword = new Weapon(false, "Iron Dagger", "DESC", 20, 10, 20, 80, 5, 200, false, false, Weapon::WeaponType::STRAIGHTSWORD, Weapon::PhysicalDamageType::SLASH);
+	//Enchantment* enchant = new Enchantment("Poison", "DESC", 3, 50, false, 1, 1, false);
+	//sword->enchantments.push_back(enchant);
+	Weapon* bow = new Weapon(false, "Steel Longbow", "Desc", 10, 2, 200, 50, 10, 20, true, true, Weapon::WeaponType::LONGBOW, Weapon::PhysicalDamageType::PIERCE);
+	Ammunition* ironArrow = new Ammunition(false, true, "Iron Arrow", "Desc", 1, 0.01, 5, Item::EquipSlots::QUIVER1, 50, 50, Ammunition::AmmoType::ARROW, Ammunition::AmmoDamageType::PIERCE);
+	Ammunition* silverArrow = new Ammunition(true, true, "Silver Arrow", "Desc", 1, 0.01, 5, Item::EquipSlots::QUIVER1, 70, 50, Ammunition::AmmoType::ARROW, Ammunition::AmmoDamageType::PIERCE);
+	Enchantment* burning = new Enchantment("Burn", "The target catches flames", 3, 50, false, 1, 1, false);
+	silverArrow->enchantments.push_back(burning);
+	player->inventory.equippedItems.push_back(bow);
+	player->inventory.equippedItems.push_back(ironArrow);
+	player->inventory.equippedItems.push_back(silverArrow);
 	bool exitConditon = false;
 	do {
-
-
-		int stop;
-		cin >> stop;
-	} while (!exitConditon);
+		cout << "Bandit health: " << npc->healthPoints << endl;
+		float attackSpeed = 100 - bow->attackSpeed;
+		for (int i = 0; i < 101;)
+		{
+			int ammoCount = 0;
+			for (int i = 0; i < player->inventory.equippedItems.size(); i++)
+			{
+				if (Ammunition* ammo = dynamic_cast<Ammunition*>(player->inventory.equippedItems[i]))
+				{
+					ammoCount++;
+				}
+			}
+			if (ammoCount == 0)
+			{
+				exitConditon = true;
+				break;
+			}
+			i += attackSpeed;
+			player->chooseAmmunition(bow, ironArrow, npc);
+			for (Effect* effects : npc->effects)
+			{
+				effects->refreshEffects(*npc);
+				if (npc->healthPoints <= 0) break;
+			}
+			if (npc->healthPoints <= 0) break;
+			cout << "Bandit health: " << npc->healthPoints << endl;
+		}
+	} while (exitConditon == false);
 
     return 0;
 }
