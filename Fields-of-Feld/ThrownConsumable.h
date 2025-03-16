@@ -2,6 +2,9 @@
 #define THROWNCONSUMABLE_H
 #include <string>
 #include "Item.h"
+#include "Enchantment.h"
+#include <vector>
+class Enchantment;
 
 class ThrownConsumable :
     public Item

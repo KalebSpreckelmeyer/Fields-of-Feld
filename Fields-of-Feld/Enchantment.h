@@ -1,13 +1,14 @@
 #ifndef ENCHANTMENT_H
 #define ENCHANTMENT_H
 #include <string>
+#include <vector>
 #include "Effect.h"
 
 class Enchantment :
 	public Effect
 {
 public:
-	std::vector<Effect> effects;
+	std::vector<Effect*> effects;
 	//Virtual Destructor
 	virtual ~Enchantment();
 

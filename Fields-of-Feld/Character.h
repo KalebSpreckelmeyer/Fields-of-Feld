@@ -15,6 +15,8 @@ class Creature;
 class Effect;
 class Spell;
 class Weapon;
+class Ammunition;
+class ThrownConsumable;
 class Character
 {
 public:

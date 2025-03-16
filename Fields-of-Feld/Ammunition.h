@@ -1,6 +1,9 @@
 #ifndef AMMUNITION_H
 #define AMMUNITION_H
 #include "Item.h"
+#include <vector>
+#include "Enchantment.h"
+class Enchantment;
 
 class Ammunition :
     public Item

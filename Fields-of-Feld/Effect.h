@@ -2,8 +2,8 @@
 #define EFFECT_H
 #include <string>
 
-#include "Character.h"
- 
+class Character;
+
 class Effect
 {
 public:
@@ -11,14 +11,13 @@ public:
 	std::string description = "EFFECT DESC";
 	float duration = 0.0f;
 	float magnitude = 0.0f;
-	bool stackable = 0.0f;
+	bool stackable = false;
 	int stacks = 0;
 	int maxStacks = 0;
 
 	/*bool applied = false;*/
-
-	virtual ~Effect();
-	Effect() = default;
+	Effect();
+	virtual ~Effect() = default;
 	Effect(std::string name, std::string description, float duration, float magnitude, bool stackable, 
 		int stacks, int maxStacks);
 

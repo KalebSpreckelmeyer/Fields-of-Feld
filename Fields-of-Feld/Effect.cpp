@@ -2,15 +2,17 @@
 #include <string>
 #include <iostream>
 #include "color.hpp"
+#include "Character.h"
+Effect::Effect()
+{
+
+}
 
 Effect::Effect(std::string name, std::string description, float duration, float magnitude, bool stackable, int stacks, int maxStacks)
 	: name(name), description(description), duration(duration), magnitude(magnitude), stackable(stackable), stacks(stacks), maxStacks(maxStacks)
 {
 }
 
-Effect::~Effect()
-{
-}
 
 void Effect::refreshEffects(Character& target)
 {
