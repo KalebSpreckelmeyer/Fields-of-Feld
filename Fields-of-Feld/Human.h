@@ -17,7 +17,7 @@ public:
 	enum Personality { GENERIC, COWARDLY, BRAVE, EAGER, CRUEL, BRUTE, ROYAL, PEASANT, YOUNG, OLD };
 	Personality personality = Personality::GENERIC;
 	float health = 10.0f;
-	float mana = 10.0f;
+	float fatigue = 10.0f;
 	float strength = 10.0f;
 	float agility = 10.0f;
 	float charisma = 10.0f;
@@ -25,6 +25,7 @@ public:
 	float arcane = 10.0f;
 	float faith = 10.0f;
 	float luck = 10.0f;
+	float flatDefense = 0.0f;
 	float weightBurden = 0.0f;
 	float maxWeightBurden = 100.0f;
 	double experience = 0.0;
@@ -39,7 +40,7 @@ public:
 	virtual float getCharisma() const override { return charisma; }
 	virtual float getAgility() const override { return agility; }
 	virtual float getStrength() const override { return strength; }
-	virtual float getMana() const override { return mana; }
+	virtual float getFatigue() const override { return fatigue; }
 	virtual float getHealth() const override { return health; }
 	virtual float getSpeed() const override { return agility; }
 	virtual float getLevel() const override { return experience; }
@@ -47,12 +48,12 @@ public:
 
 	Human();
 
-	Human(bool isPlayer, CharacterClass classChoice, Personality personality, float health, float mana, float strength, float agility, float charisma,
+	Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality personality, float flatDefense, float health, float fatigue, float strength, float agility, float charisma,
 		float intelligence, float arcane, float faith, float luck, float weightBurden, float maxWeightBurden, 
 		double experience, double experienceToNextLevel,
 		int gold);
 
-	virtual ~Human(); 
+	~Human() override = default;
 
 	//DESC:
 	//PRE:
@@ -71,13 +72,19 @@ public:
 	//DESC:
 	//PRE:
 	//POST:
-	void setCharacterClass(Human::CharacterClass classChoice);
+	Human* setCharacterClass(Human::CharacterClass classChoice);
+
+	//DESC:
+	//PRE:
+	//POST:
+	float softCapMultiplier(float statValue);
 
 	//DESC:
 	//PRE:
 	//POST:
 	void takeDamage(Character* attacker, Character* target, Weapon* weapon, Ammunition* ammunition,
-		ThrownConsumable* consumable, Spell* spell) override;
+		ThrownConsumable* consumable, Spell* spell, std::optional<std::vector<Character*>>& allies,
+		std::optional<std::vector<Character*>>& enemyAllies) override;
 
 };
 

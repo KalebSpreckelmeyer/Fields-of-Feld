@@ -30,29 +30,10 @@ using json = nlohmann::json;
 //PRE: Min and max values must be passed in
 //POST: Returns the validated input
 int validateInput(int min, int max);
-//DESC: Prints the main menu and takes in user input to determine what to do next
-// PRE: None
-// POST: Returns a character object with the selected class
-//void printMainMenu(Character character);
-//DESC: Compares the speeds of two characters to determine who goes first
-//PRE: Character objects must be initialized with appropriate values
-//POST: Returns true if character 1 is faster, false if character 2 is faster
-//bool compareSpeeds(Character character1, Character character2);
 //DESC:
 //PRE:
 //POST:
-void openCombat(Character& player, optional<vector<Character*>>& allies, vector<Character*>& enemies);
-//DESC:
-//PRE:
-//POST:
-//DESC:
-//PRE:
-//POST:
-//void enemyTurn(Character& player, Character* enemy, vector<Character>& deadAllies, vector<Character>& livingAllies);
-//DESC:
-//PRE:
-//POST:
-//void printPotions(bool& progressRound, Character& character);
+void openCombat(Human* player, Character* enemy);
 //DESC: Gets a random, context sensitive banter line from the sender to the reciever
 //PRE: Sender and reciever must be initialized
 //POST: Reciever will be insulted, results printed to console (enemy characters will have their confidence lowered)
@@ -64,10 +45,8 @@ void openCombat(Character& player, optional<vector<Character*>>& allies, vector<
 //DESC:
 //PRE:
 //POST:
-//void enemySharePotion(Character& character, vector<Character>& allies);
-
-
-
+void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spell* spellChoice, Character* targetChoice, ThrownConsumable* thrownConsumableChoice,
+	Consumable* consumableChoice);
 #pragma endregion Function Declarations
 extern void setupDialogue(std::vector<Dialogue>& dialogues, Character* player, Character* npc);
 
@@ -89,69 +68,100 @@ int main()
 
 	delete player;
 	delete npc;*/
-	Human* player = new Human;
-	player->name = "BING BONG";
-	Human* npc = new Human;
-	npc->setCharacterClass(Human::CharacterClass::KNIGHT);
-	npc->distanceFromPlayer = 50;
-	npc->name = "BANDIT";
-	npc->maxHealthPoints = 1000;
-	npc->healthPoints = 2000;
-	npc->maxPoisonPoints = 200;
-	npc->maxBleedPoints = 200;
-	npc->maxBurnPoints = 200;
-	npc->maxFrostPoints = 200;
-	npc->maxShockPoints = 200;
-	npc->maxSleepPoints = 200;
-	npc->isAlive = true;
-	player->setCharacterClass(Human::CharacterClass::WIZARD);
-	/*Weapon* staff = new Weapon(false, "Testing Staff", "Testing", 5, 1, 5, 20, 1, 20, false, false, Weapon::WeaponType::STAFF, Weapon::PhysicalDamageType::BLUNT);
-	Spell* fireBall = new Spell("Fireball", "A ball of fire that explodes on impact", 1, 100, false, 1, 1);
-	Effect* burn = new Effect("Burn", "The target catches flames", 3, 50, false, 1, 1);
-	fireBall->effects.push_back(*burn);*/
-	//Weapon* sword = new Weapon(false, "Iron Dagger", "DESC", 20, 10, 20, 80, 5, 200, false, false, Weapon::WeaponType::STRAIGHTSWORD, Weapon::PhysicalDamageType::SLASH);
-	//Enchantment* enchant = new Enchantment("Poison", "DESC", 3, 50, false, 1, 1, false);
-	//sword->enchantments.push_back(enchant);
-	Weapon* bow = new Weapon(false, "Steel Longbow", "Desc", 10, 2, 200, 50, 10, 20, true, true, Weapon::WeaponType::LONGBOW, Weapon::PhysicalDamageType::PIERCE);
-	Ammunition* ironArrow = new Ammunition(false, true, "Iron Arrow", "Desc", 1, 0.01, 5, Item::EquipSlots::QUIVER1, 50, 50, Ammunition::AmmoType::ARROW, Ammunition::AmmoDamageType::PIERCE);
-	Ammunition* silverArrow = new Ammunition(true, true, "Silver Arrow", "Desc", 1, 0.01, 5, Item::EquipSlots::QUIVER1, 70, 50, Ammunition::AmmoType::ARROW, Ammunition::AmmoDamageType::PIERCE);
-	Enchantment* burning = new Enchantment("Burn", "The target catches flames", 3, 50, false, 1, 1, false);
-	silverArrow->enchantments.push_back(burning);
-	player->inventory.equippedItems.push_back(bow);
-	player->inventory.equippedItems.push_back(ironArrow);
-	player->inventory.equippedItems.push_back(silverArrow);
-	bool exitConditon = false;
-	do {
-		cout << "Bandit health: " << npc->healthPoints << endl;
-		float attackSpeed = 100 - bow->attackSpeed;
-		for (int i = 0; i < 101;)
-		{
-			int ammoCount = 0;
-			for (int i = 0; i < player->inventory.equippedItems.size(); i++)
-			{
-				if (Ammunition* ammo = dynamic_cast<Ammunition*>(player->inventory.equippedItems[i]))
-				{
-					ammoCount++;
-				}
-			}
-			if (ammoCount == 0)
-			{
-				exitConditon = true;
-				break;
-			}
-			i += attackSpeed;
-			player->chooseAmmunition(bow, ironArrow, npc);
-			for (Effect* effects : npc->effects)
-			{
-				effects->refreshEffects(*npc);
-				if (npc->healthPoints <= 0) break;
-			}
-			if (npc->healthPoints <= 0) break;
-			cout << "Bandit health: " << npc->healthPoints << endl;
-		}
-	} while (exitConditon == false);
+	//Human* npc = new Human();
+	////npc->setCharacterClass(Human::CharacterClass::KNIGHT);
+	//npc->name = "Knight";
+	//npc->healthPoints = 500;
+	//npc->maxHealthPoints = 500;
+	//npc->distanceFromPlayer = 5;
+	//Human* npc2 = new Human();
+	//npc->allies.push_back(npc2);
+	//Human* player = new Human();
+	//player->name = "BUNGUS";
 
-    return 0;
+
+	//do {
+	//	cout << "enemy health: " << npc->healthPoints << endl;
+	//	cout << "enemy distance: " << npc->distanceFromPlayer << endl;
+	//	player->chooseSpell(*staff, npc);
+	//	cout << "enemy health: " << npc->healthPoints << endl;
+	//	cout << "enemy distance: " << npc->distanceFromPlayer << endl;
+	//	Effect* effect = new Effect();
+	//	effect->refreshEffects(npc);
+	//} while (npc->healthPoints > 0);
+
+
+
+
+	Human* player = new Human();
+	Human* ally1 = new Human();
+	Human* bandit1 = new Human();
+	Human* bandit2 = new Human();
+	player->allies.push_back(ally1);
+	bandit1->allies.push_back(bandit2);
+	bandit2->allies.push_back(bandit1);
+	Creature* creature = new Creature();
+	creature->name = "TESTING";
+	creature->isAlive = true;
+	creature->isAlly = true;
+	player->allies.push_back(creature);
+	Weapon* staff = new Weapon(false, "Staff", "A simple wooden staff", 1, 200, 20, 1, 10, false, false, Weapon::WeaponType::STAFF, PhysicalDamageType::BLUNT, MagicDamageType::MAGIC, PhysicalDamageType::NONE, MagicDamageType::NONE, Item::EquipSlots::OFFHAND);
+	Spell* force = new Spell;
+	player->faith = 100;
+	force = force->getForceBurstEffect(*player);
+	player->attunedSpells.push_back(force);
+	bandit1->distanceFromPlayer = 10;
+	bandit2->distanceFromPlayer = 30;
+	Weapon* sword = new Weapon(false, "Sword", "A simple steel sword", 1, 10, 20, 1, 10, false, false, Weapon::WeaponType::STRAIGHTSWORD, PhysicalDamageType::SLASH, MagicDamageType::NONE, PhysicalDamageType::NONE, MagicDamageType::NONE, Item::EquipSlots::MAINHAND);
+	sword->setPhysicalDamage(PhysicalDamageType::SLASH, 10);
+	player->inventory.equippedItems.push_back(sword);
+	player->inventory.equippedItems.push_back(staff);
+	bandit1->name = "Bandit 1";
+	bandit2->name = "Bandit 2";
+	bandit1->speed = 250;
+	bandit2->speed = 100;
+	ally1->speed = 50;
+	player->speed = 500;
+	player->name = "BING BONG";
+	ally1->name = "ALLY 1";
+	staff->hasBeenInitialized = true;
+	player->isPlayer = true;
+	ally1->isAlly = true;
+	player->fatiguePoints = 500;
+	player->maxFatiguePoints = 500;
+	bandit1->healthPoints = 500;
+	bandit1->maxHealthPoints = 500;
+	bandit2->healthPoints = 500;
+	bandit2->maxHealthPoints = 500;
+	player->arcane = 100;
+
+	Spell* fireball = new Spell();
+	fireball = fireball->getFireBallEffect(*player);
+
+	Spell* armor = new Spell();
+	armor = armor->getOakenArmorEffect(*player);
+
+	Spell* summon = new Spell();
+	summon = summon->getSummonAnimalAllyEffect(*player);
+
+	Spell* bonetrousle = new Spell();
+	bonetrousle = bonetrousle->getBonetrousleEffect(*player);
+
+	Spell* grasp = new Spell();
+	grasp = grasp->getEndothermicGraspEffect(*player);
+
+	Spell* fruit = new Spell();
+	fruit = fruit->getFruitOfTheEarthEffect(*player);
+	player->attunedSpells.push_back(fruit);
+	player->attunedSpells.push_back(grasp);
+	player->attunedSpells.push_back(bonetrousle);
+	player->attunedSpells.push_back(summon);
+	player->attunedSpells.push_back(armor);
+	player->attunedSpells.push_back(fireball);
+
+	
+	openCombat(player, bandit1);
+	return 0;
 }
 
 int validateInput(int min, int max)
@@ -176,1655 +186,2461 @@ int validateInput(int min, int max)
 
 string getConfidenceDescription(Human* character)
 {
-	if (character->confidenceLevel >= 100) 
+	if (character->confidenceLevel >= 100)
 		return "They're jovial, as if you aren't a threat at all.";
 	else if (character->confidenceLevel >= 80 && character->confidenceLevel < 100)
 		return "They seem confident, but there's something there. Are they starting to get scared?";
 	else if (character->confidenceLevel >= 60 && character->confidenceLevel < 80)
 		return "If you weren't mistaken, you'd think they're scared of you.";
-	
+
 	else if (character->confidenceLevel >= 40 && character->confidenceLevel < 60)
 		return "They're eyeing you like a coinpurse. Is it fear in their eyes?";
-	
+
 	else if (character->confidenceLevel >= 20 && character->confidenceLevel < 40)
 		return "They're looking around as if for an exit.";
-	
+
 	else if (character->confidenceLevel >= 0 && character->confidenceLevel < 20)
 		return "You can feel the terror in their veins from here.";
 	else
 		return "You're not quite sure how confident they are.";
-	
+
 }
 
-//void openCombat(Character& player, optional<vector<Character*>>& allies, vector<Character*>& enemies)
-//{
-//	//set this condition to true if the fight ends for any reason
-//	bool exitFight = false;
-//	do
-//	{
-//
-//		//SETS ALL NECESSARY VARIABLES FOR THE COMBAT LOOP
-//
-//		//Get player equipment 
-//		Weapon* mainhand1 = nullptr, *mainhand2 = nullptr, *offhand1 = nullptr, *offhand2 = nullptr;
-//
-//		Armor* headArmor = nullptr, *chestArmor = nullptr, *armArmor = nullptr, *legArmor = nullptr;
-//
-//		Trinket* amulet = nullptr, *ring1 = nullptr, *ring2 = nullptr, *misc = nullptr;
-//		
-//		player.inventory.getEquippedItems(mainhand1, mainhand2, offhand1, offhand2, headArmor, chestArmor, armArmor, legArmor, amulet, ring1, ring2, misc);
-//
-//		//checks for values beyond what should be possible. I need to look at the classes and ensure that the values are being set correctly
-//		if (mainhand1->reach > 500) mainhand1->reach = 0;
-//		if (mainhand2->reach > 500) mainhand2->reach = 0;
-//		if (offhand1->reach > 500) offhand1->reach = 0;
-//		if (offhand2->reach > 500) offhand2->reach = 0;
-//
-//		if (mainhand1->quantity > 1) mainhand1->quantity = 0;
-//		if (mainhand2->quantity > 1) mainhand2->quantity = 0;
-//		if (offhand1->quantity > 1) offhand1->quantity = 0;
-//		if (offhand2->quantity > 1) offhand2->quantity = 0;
-//
-//		//check if player has equipment to swap to (changes menu color to represent this)
-//		bool hasStowedWeapons = false;
-//
-//		if (mainhand2->hasBeenInitialized || offhand2->hasBeenInitialized)
-//		{
-//			hasStowedWeapons = true;
-//		}
-//
-//		//Used to track the player's consumables and grey out the consumable option if they have none
-//		/*vector<Item*> consumables = player.inventory.consumables();
-//		vector<Item*> throwingWeapons = player.inventory.getThrownWeapons();*/
-//
-//		//tracks the spent ammunition and throwing weapons to be returned at the end of the turn (based on luck and proficiency with item skill)
-//		vector<Item> spentProjectiles;
-//
-//		//tracks the living/dead allies and enemies
-//		vector<Character> deadAllies;
-//		vector<Character> deadEnemies;
-//
-//		vector<Character*> livingAlliesPointers;
-//		vector<Character*> livingEnemiesPointers;
-//
-//		//checks if the allies and enemies are alive and adds them to the living/dead vectors
-//		if (allies)
-//		{
-//			for (auto* ally : *allies)
-//			{
-//				if (ally->isAlive)
-//				{
-//					livingAlliesPointers.push_back(ally);
-//				}
-//				else
-//				{
-//					deadAllies.push_back(*ally);
-//				}
-//			}
-//		}
-//		if (enemies.size() > 0)
-//		{
-//			for (auto* enemy : enemies)
-//			{
-//				if (enemy->isAlive)
-//				{
-//					livingEnemiesPointers.push_back(enemy);
-//				}
-//				else
-//				{
-//					deadEnemies.push_back(*enemy);
-//				}
-//			}
-//		}
-//
-//		vector<Spell> spells;
-//
-//		//general variables for the combat loop
-//		int playerOptionChoice;
-//
-//		//finds the minimum distance from the player to an enemy from the group
-//		float minDistanceFromPlayer = 1000;
-//		for (int i = 0; i < livingEnemiesPointers.size(); i++)
-//		{
-//			if (livingEnemiesPointers[i]->distanceFromPlayer < minDistanceFromPlayer)
-//			{
-//				minDistanceFromPlayer = livingEnemiesPointers[i]->distanceFromPlayer;
-//			}
-//		}
-//
-//		//used to determine the color of menu text in the attack option (gold for in range, grey for out of range)
-//		// they will not be able to select out of range options and this will help them intuit why
-//		// set to 1000 initially as range will never be this high in practice 
-//		bool inRange = false;
-//		if (minDistanceFromPlayer <= mainhand1->reach || minDistanceFromPlayer <= offhand1->reach)
-//		{
-//			inRange = true;
-//		}
-//
-//		//Option 1 variables
-//		Item weaponChoice;
-//		Item* ammoChoice = nullptr; //this will be a pointer to the ammo choice so that the quantity can be updated
-//		Spell spellChoice;
-//		Character* targetChoice = nullptr; //this is a pointer to the target choice so that the target's health can be updated
-//
-//		//Option 2 variables
-//		//NONE
-//
-//		//Option 3 variables
-//		//NONE
-//
-//		//Option 4 variables
-//		Potion* potionChoice = nullptr; //this is a pointer to the potion choice so that the quantity can be updated
-//		Character* potionTarget = nullptr; //this is a pointer to the target choice so that the target's health can be updated
-//		//ADD MORE AS MORE POTION TYPES GET IMPLEMENTED
-//		//Used to track the player's potions and grey out the potion option if they have none
-//		vector<Item*> healingPotions;
-//		vector<Item*> manaPotions;
-//
-//		int numPotionCategories = 0;
-//		for (Item* item : player.inventory.backpackItems)
-//		{
-//			if (AppliedConsumable* consumable = dynamic_cast<AppliedConsumable*>(item))
-//			{
-//				if (consumable->potionType == AppliedConsumable::PotionType::HEALING)
-//				{
-//					healingPotions.push_back(consumable);
-//					numPotionCategories++;
-//				}
-//				if (consumable->potionType == AppliedConsumable::PotionType::MANA)
-//				{
-//					manaPotions.push_back(consumable);
-//					numPotionCategories++;
-//				}
-//			}
-//		}
-//
-//		bool hasPotion = false;
-//
-//		//EXPAND AS MORE POTIONS GET ADDED
-//		if (healingPotions.size() > 0 || manaPotions.size() > 0)
-//		{
-//			hasPotion = true;
-//		}
-//
-//		//Option 5 variables
-//		Item* itemChoice = nullptr; //this is a pointer to the item choice so that the quantity can be updated
-//		Character* itemTarget = nullptr; //this is a pointer to the target choice so that the target's health can be updated
-//		vector<Item*> consumables;
-//		vector<Item*> throwingWeapons;
-//
-//		for (Item* item : player.inventory.backpackItems)
-//		{
-//			//gets throwing weapons and consumables
-//			if (ThrownConsumable* consumable = dynamic_cast<ThrownConsumable*>(item))
-//			{
-//				throwingWeapons.push_back(consumable);
-//			}
-//			if (AppliedConsumable* consumable = dynamic_cast<AppliedConsumable*>(item))
-//			{
-//				if (consumable->consumableType != AppliedConsumable::ConsumableType::POTION)
-//				{
-//					consumables.push_back(consumable);
-//				}
-//			}
-//		}
-//
-//		//Option 6 variables
-//		//NONE
-//
-//		//Option 7 variables
-//		//NONE
-//
-//		//Option 8 variables
-//		//NONE
-//
-//		//Option 9 variables
-//		//NONE
-//
-//		//Option 10 variables
-//		//NONE
-//
-//
-//		//INITIAL SANITY CHECKS
-//
-//
-//		//check if player is dead
-//		if (!player.isAlive)
-//		{
-//			cout << dye::light_red("You have fallen...") << endl;
-//			exitFight = true;
-//			break;
-//		}
-//		if (player.isAlive && enemies.size() == 0)
-//		{
-//			std::cout << "\n=--->\n" << std::endl;
-//			cout << "The battlefield is quiet once again..." << endl;
-//		}
-//		//End of combat encounter rewards for player (repeated in case the loop terminates here)
-//		if (player.isAlive && enemies.size() == 0)
-//		{
-//			for (int i = 0; i < deadEnemies.size(); i++)
-//			{
-//				/*player.gainExperience(deadEnemies[i]);
-//				player.openLootInterface(deadEnemies[i]);*/
-//			}
-//			exitFight = true;
-//		}
-//
-//		//set to false initially, true once this has been played. Exists so this text only gets played once
-//		bool playedBefore = false;
-//
-//		//INITIAL ENCOUNTER TEXT
-//		//Player is alive, at least one ally is alive, and at least one enemy is alive
-//		if (player.isAlive && livingEnemiesPointers.size() > 0 && livingAlliesPointers.size() > 0 && !playedBefore)
-//		{
-//			//Encounter text
-//			std::cout << "\n=--->\n" << std::endl;
-//			cout << "You encounter";
-//			for (int i = 0; i < livingEnemiesPointers.size(); i++)
-//			{
-//				if (livingEnemiesPointers.size() == 1 && !livingEnemiesPointers[i]->namedCharacter)
-//				{
-//					cout << " a " << dye::light_yellow(livingEnemiesPointers[i]->name) << "!" << endl;
-//				}
-//				else
-//				{
-//					if (i == livingEnemiesPointers.size() - 1)
-//					{
-//						cout << " and";
-//					}
-//					if (!livingEnemiesPointers[i]->namedCharacter)
-//					{
-//						cout << " a " << dye::light_yellow(livingEnemiesPointers[i]->name);
-//					}
-//					else
-//					{
-//						cout << " " << dye::light_yellow(livingEnemiesPointers[i]->name);
-//					}
-//					if (i < livingEnemiesPointers.size() - 1)
-//					{
-//						cout << ",";
-//					}
-//					if (i == livingEnemiesPointers.size() - 1)
-//					{
-//						cout << "!" << endl;
-//					}
-//				}
-//			}
-//			//Allies text
-//			std::cout << "\n=--->\n" << std::endl;
-//			cout << "Your allies, ";
-//			for (int i = 0; i < livingEnemiesPointers.size(); i++)
-//			{
-//				if (livingEnemiesPointers.size() == 1)
-//				{
-//					cout << " a " << livingEnemiesPointers[i]->name << "!" << endl;
-//				}
-//				else
-//				{
-//					if (i == livingEnemiesPointers.size() - 1)
-//					{
-//						cout << " and";
-//					}
-//					if (!livingEnemiesPointers[i]->namedCharacter)
-//					{
-//						cout << " a " << dye::light_yellow(livingEnemiesPointers[i]->name);
-//					}
-//					else
-//					{
-//						cout << " " << dye::light_yellow(livingEnemiesPointers[i]->name);
-//					}
-//					if (i < livingEnemiesPointers.size() - 1)
-//					{
-//						cout << ",";
-//					}
-//					if (i == livingEnemiesPointers.size() - 1)
-//					{
-//						cout << "!" << endl;
-//					}
-//				}
-//			}
-//			playedBefore = true;
-//		}
-//		//Player is alive, all allies dead or nonexistant, and at least one enemy is alive
-//		if (player.isAlive == true && livingEnemiesPointers.size() > 0 && livingAlliesPointers.size() == 0 && !playedBefore)
-//		{
-//			//Encounter text
-//			std::cout << "\n=--->\n" << std::endl;
-//			cout << "You encounter";
-//			for (int i = 0; i < livingEnemiesPointers.size(); i++)
-//			{
-//				if (livingEnemiesPointers.size() == 1 && !livingEnemiesPointers[i]->namedCharacter)
-//				{
-//					cout << " a " << dye::light_yellow(livingEnemiesPointers[i]->name) << "!" << endl;
-//				}
-//				else
-//				{
-//					if (i == livingEnemiesPointers.size() - 1)
-//					{
-//						cout << " and";
-//					}
-//					if (!livingEnemiesPointers[i]->namedCharacter)
-//					{
-//						cout << " a " << dye::light_yellow(livingEnemiesPointers[i]->name);
-//					}
-//					else
-//					{
-//						cout << " " << dye::light_yellow(livingEnemiesPointers[i]->name);
-//					}
-//					if (i < livingEnemiesPointers.size() - 1)
-//					{
-//						cout << ",";
-//					}
-//					if (i == livingEnemiesPointers.size() - 1)
-//					{
-//						cout << "!" << endl;
-//					}
-//				}
-//			}
-//			//Allies text
-//			std::cout << "\n=--->\n" << std::endl;
-//			cout << "You have no allies to assist you..." << endl;
-//			playedBefore = true;
-//		}
-//
-//		//Intro Context Sensitive Text (repeated in check enemy option along with more details)
-//		/*for (int i = 0; i < livingEnemiesPointers.size(); i++) ----------------------------------------------------------< TODO
-//		{
-//			std::cout << "\n=--->\n" << std::endl;
-//			livingEnemiesPointers[i]->checkCharacterIntro(player);
-//		}*/
-//
-//		//COMBAT LOOP
-//		//set this condition to true once the player commits to an option all the way through their submenus
-//		bool inputChosen = false;
-//		do
-//		{
-//			std::cout << "\n=--->\n" << std::endl;
-//			//print out the main combat menu
-//
-//			//Option 1: Attack
-//			if (inRange)
-//			{
-//				cout << dye::light_yellow("1) Attack!") << endl;
-//			}
-//			else
-//			{
-//				cout << dye::grey("1) Attack") << endl;
-//			}
-//
-//			//Option 2: Swap Weapons
-//			if (hasStowedWeapons)
-//			{
-//				cout << dye::light_yellow("2) Swap to Your Stored weapons") << endl;
-//			}
-//			else
-//			{
-//				cout << dye::grey("2) Swap to Your Stored weapons") << endl;
-//			}
-//
-//			//Option 3: View Spells
-//			if (spells.size() > 0)
-//			{
-//				cout << dye::light_yellow("3) View Spells") << endl;
-//			}
-//			else
-//			{
-//				cout << dye::grey("3) View Spells") << endl;
-//			}
-//
-//			//Option 4: Use Potion
-//			if (healingPotions.size() > 0 || manaPotions.size() > 0)
-//			{
-//				cout << dye::light_yellow("4) Use Potion") << endl;
-//			}
-//			else
-//			{
-//				cout << dye::grey("4) Use Potion") << endl;
-//			}
-//
-//			//Option 5: Use Item
-//			if (consumables.size() > 0 || throwingWeapons.size() > 0)
-//			{
-//				cout << dye::light_yellow("5) Use Item") << endl;
-//			}
-//			else
-//			{
-//				cout << dye::grey("5) Use Item") << endl;
-//			}
-//
-//			//Option 6: Taunt Enemy
-//			if (livingEnemiesPointers.size() == 0)
-//			{
-//				cout << dye::light_yellow("6) Taunt Your Enemy") << endl;
-//			}
-//			else
-//			{
-//				cout << dye::light_yellow("6) Taunt Your Enemies") << endl;
-//			}
-//
-//			//Option 7: Check Enemy
-//			if (livingEnemiesPointers.size() == 0)
-//			{
-//				cout << dye::light_yellow("7) Check Your Enemy") << endl;
-//			}
-//			else
-//			{
-//				cout << dye::light_yellow("7) Check Your Enemies") << endl;
-//			}
-//
-//			//Option 8: Check Ally/Self
-//			if (livingAlliesPointers.size() == 0)
-//			{
-//				cout << dye::light_yellow("8) Check Self") << endl;
-//			}
-//			else if (livingAlliesPointers.size() == 1)
-//			{
-//				cout << dye::light_yellow("8) Check Self or Ally") << endl;
-//			}
-//			else
-//			{
-//				cout << dye::light_yellow("8) Check Self or Allies") << endl;
-//			}
-//
-//			//Option 9: Check Ally/Self Equipment
-//			if (livingAlliesPointers.size() == 0)
-//			{
-//				cout << dye::light_yellow("9) Check Equipment") << endl;
-//			}
-//			else if (livingAlliesPointers.size() == 1)
-//			{
-//				cout << dye::light_yellow("9) Check Equipment for Self or Ally") << endl;
-//			}
-//			else
-//			{
-//				cout << dye::light_yellow("9) Check Equipment for Self or Allies") << endl;
-//			}
-//
-//			//Option 10: Flee
-//			cout << dye::light_yellow("10) Flee from Combat") << endl;
-//
-//			//input validation
-//			int initialChoice = validateInput(1, 10);
-//
-//			switch (initialChoice)
-//			{
-//			case 1: // ATTACK
-//			{
-//				if (!inRange)
-//				{
-//					cout << dye::white("\n You are out of range of any enemies!") << endl;
-//					break;
-//				}
-//				else
-//				{
-//					//TODO GREY EACH OPTION OUT OF UNAVAILABLE
-//					cout << dye::light_yellow(" 1) Advance and Attack!") << endl;
-//					cout << dye::light_yellow(" 2) Stand Your Ground and Attack!") << endl;
-//					cout << dye::light_yellow(" 3) Retreat and Attack!") << endl;
-//					cout << dye::light_yellow(" 4) Go back") << endl;
-//
-//					//input validation
-//					int attackChoice = validateInput(1, 4);
-//
-//					switch (attackChoice)
-//					{
-//					case 1: // ADVANCE AND ATTACK
-//					{
-//						//TODO
-//						cout << dye::light_yellow(" 1) Advance and Attack!") << endl;
-//						break;
-//					}
-//					case 2: // STAND YOUR GROUND AND ATTACK
-//					{
-//						//TODO
-//						cout << dye::light_yellow(" 2) Stand Your Ground and Attack!") << endl;
-//						break;
-//					}
-//					case 3: // RETREAT AND ATTACK
-//					{
-//						//TODO
-//						cout << dye::light_yellow(" 3) Retreat and Attack!") << endl;
-//						break;
-//					}
-//					case 4: // GO BACK
-//					{
-//						break;
-//					}
-//					default:
-//					{
-//						cout << dye::white("\n  Enter a number between 1 - 4") << endl;
-//						break;
-//					}
-//					}
-//				}
-//				break;
-//			}
-//			case 2: // SWAP WEAPONS
-//			{
-//				if (hasStowedWeapons)
-//				{
-//					//TODO
-//					std::cout << "\n=--->\n" << std::endl;
-//					cout << dye::light_yellow(" 1) Swap to Your Stowed Weapons") << endl;
-//					cout << dye::light_yellow(" 2) Go back") << endl;
-//
-//					//input validation
-//					int swapWeaponChoice = validateInput(1, 2);
-//
-//					if (swapWeaponChoice == 1)
-//					{
-//						std::cout << "\n";
-//						std::cout << "=--->" << std::endl;
-//						std::cout << "\n";
-//						cout << "PLACEHOLDER SWAP WEAPON  TEXT" << endl;
-//						break;
-//					}
-//					else
-//					{
-//						break;
-//					}
-//
-//				}
-//				else //NO STOWED WEAPONS, GO BACK
-//				{
-//					std::cout << "\n=--->\n" << std::endl;
-//					cout << dye::white("\n You have no stowed weapons to swap to!") << endl;
-//					break;
-//				}
-//			}
-//			case 3: // VIEW SPELLS
-//			{
-//				if (spells.size() > 0)
-//				{
-//					std::cout << "\n=--->\n" << std::endl;
-//					cout << dye::light_yellow(" 1) View Spells") << endl;
-//					cout << dye::light_yellow(" 2) Go back") << endl;
-//					break;
-//				}
-//				else //NO SPELLS, GO BACK
-//				{
-//					std::cout << "\n=--->\n" << std::endl;
-//					cout << dye::white("\n You have no spells to view!") << endl;
-//					break;
-//				}
-//
-//				//input validation
-//				int spellChoice = validateInput(1, 2);
-//
-//				if (spellChoice == 1)
-//				{
-//					//TODO
-//					std::cout << "\n=--->\n" << std::endl;
-//					cout << dye::light_yellow(" SPELL PLACEHOLDER TEXT") << endl;
-//					break;
-//				}
-//				else //GO BACK
-//				{
-//					break;
-//				}
-//			}
-//			case 4: // USE POTION
-//			{
-//				if (hasPotion)
-//				{
-//					std::cout << "\n=--->\n" << std::endl;
-//					cout << dye::light_yellow(" 1) Drink Potion") << endl;
-//					if (livingAlliesPointers.size() > 0)
-//					{
-//						cout << dye::light_yellow(" 2) Share with a Friend") << endl;
-//						cout << dye::light_yellow(" 3) Go back") << endl;
-//					}
-//					else
-//					{
-//						cout << dye::grey(" 2) Share with a Friend") << endl;
-//						cout << dye::light_yellow(" 3) Go back") << endl;
-//					}
-//
-//					//input validation
-//					int potionChoice = validateInput(1, 3);
-//
-//					switch (potionChoice)
-//					{
-//					case 1: // DRINK POTION
-//					{
-//						//TODO
-//						std::cout << "\n=--->\n" << std::endl;
-//						cout << dye::light_yellow(" DRINK POTION PLACEHOLDER TEXT") << endl;
-//
-//						int potionSubChoice = validateInput(1, numPotionCategories);
-//						break;
-//					}
-//					case 2: // SHARE POTION
-//					{
-//						if (livingAlliesPointers.size() > 0)
-//						{
-//							//TODO
-//							std::cout << "\n=--->\n" << std::endl;
-//							cout << dye::light_yellow(" SHARE POTION PLACEHOLDER TEXT") << endl;
-//							int potionSubChoice = validateInput(1, numPotionCategories);
-//							break;
-//						}
-//						else //NO ALLIES, GO BACK
-//						{
-//							std::cout << "\n=--->\n" << std::endl;
-//							cout << dye::white("\n You have no allies to share a potion with!") << endl;
-//							break;
-//						}
-//					}
-//					case 3: // GO BACK
-//					{
-//						break;
-//					}
-//					}
-//				}
-//				else //NO POTIONS, GO BACK
-//				{
-//					std::cout << "\n=--->\n" << std::endl;
-//					cout << dye::white("\n You have no potions to use!") << endl;
-//					break;
-//				}
-//				break;
-//			case 5: // USE ITEM
-//			{
-//				if (consumables.size() > 0 || throwingWeapons.size() > 0)
-//				{
-//					std::cout << "\n=--->\n" << std::endl;
-//					if (consumables.size() > 0)
-//					{
-//						cout << dye::light_yellow(" 1) Use Consumable") << endl;
-//					}
-//					else
-//					{
-//						cout << dye::grey(" 1) Use Consumable") << endl;
-//					}
-//					if (throwingWeapons.size() > 0)
-//					{
-//						cout << dye::light_yellow(" 2) Use Throwing Weapon") << endl;
-//					}
-//					else
-//					{
-//						cout << dye::grey(" 2) Use Throwing Weapon") << endl;
-//					}
-//					cout << dye::light_yellow(" 3) Go back") << endl;
-//
-//					//input validation
-//					int consumableChoice = validateInput(1, 3);
-//
-//					switch (consumableChoice)
-//					{
-//					case 1: // THROWING WEAPON
-//					{
-//						if (!throwingWeapons.empty())
-//						{
-//							cout << "THROWING WEAPON GO" << endl;
-//							break;
-//						}
-//						else //NO THROWING WEAPONS, GO BACK
-//						{
-//							std::cout << "\n=--->\n" << std::endl;
-//							cout << "\n You have no throwing weapons to use!" << endl;
-//							break;
-//						}
-//						break;
-//					}
-//					case 2: // CONSUMABLE
-//					{
-//						if (!consumables.empty())
-//						{
-//							// TODO
-//							cout << "CONSUMABLE GO" << endl;
-//							break;
-//						}
-//						else //NO CONSUMAMBLES, GO BACK
-//						{
-//							std::cout << "\n=--->\n" << std::endl;
-//							cout << "\n You have no consumables to use!" << endl;
-//							break;
-//						}
-//						break;
-//					}
-//					case 3: // GO BACK
-//					{
-//						break;
-//					}
-//					}
-//				}
-//				else
-//				{
-//					std::cout << "\n=--->\n" << std::endl;
-//					cout << "\n You have no items to use!" << endl;
-//				}
-//				break;
-//			}
-//			case 6: // TAUNT ENEMY
-//			{
-//				std::cout << "\n=--->\n" << std::endl;
-//				cout << dye::light_yellow("1) By the Book") << endl;
-//				cout << dye::light_yellow("2) Make Something Up") << endl;
-//				cout << dye::light_yellow("3) Go back") << endl;
-//
-//				//input validation
-//				int tauntChoice = validateInput(1, 3);
-//				switch (tauntChoice)
-//				{
-//				case 1: // PRESELECTED TAUNT
-//				{
-//					//TODO TAUNT FUNCTION
-//					cout << dye::light_yellow("PLACEHOLDER TAUNT") << endl;
-//					break;
-//				}
-//				case 2: // USER INPUT TAUNT
-//				{
-//					string taunt;
-//					std::cout << "\n=--->\n" << std::endl;
-//					cout << dye::light_yellow(" Give them your best shot: ");
-//					cin.ignore(10000, '\n');
-//					getline(cin, taunt);
-//
-//					//TODO TAUNT FUNCTION
-//					break;
-//				}
-//				case 3: // GO BACK
-//				{
-//					break;
-//				}
-//				}
-//				break;
-//			}
-//			case 7: // CHECK ENEMY
-//			{
-//				std::cout << "\n=--->\n" << std::endl;
-//				for (int i = 0; i < livingEnemiesPointers.size(); i++)
-//				{
-//					string confidenceDescription = getConfidenceDescription(dynamic_cast<Human*>(livingEnemiesPointers[i]));
-//					cout << dye::light_yellow(i + 1) << ") " << dye::light_yellow(livingEnemiesPointers[i]->name) << dye::light_yellow("; ") << dye::white(confidenceDescription) << endl;
-//				}
-//				cout << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") Go back") << endl;
-//
-//				//input validation
-//				int checkEnemyChoice = validateInput(1, livingEnemiesPointers.size() + 1);
-//
-//				if (checkEnemyChoice == livingEnemiesPointers.size() + 1) // GO BACK
-//				{
-//					break;
-//				}
-//				else // CHECK ENEMY
-//				{
-//					//TODO
-//					cout << dye::light_yellow("PLACEHOLDER CHECK ENEMY") << endl;
-//					break;
-//				}
-//				break;
-//			}
-//			case 8: // CHECK ALLY/SELF
-//			{
-//				std::cout << "\n=--->\n" << std::endl;
-//				if (!livingAlliesPointers.empty())
-//				{
-//					cout << dye::light_yellow("1") << ") " << dye::light_yellow(player.name) << " " << dye::white(player.healthPoints) << "/" << dye::white(player.maxHealthPoints) << dye::light_yellow(" HP")
-//						<< " " << dye::white(player.manaPoints) << "/" << dye::white(player.maxManaPoints) << dye::light_yellow(" MP") << endl;
-//					for (int i = 0; i < livingAlliesPointers.size(); i++)
-//					{
-//						cout << dye::light_yellow(i + 2) << ") " << dye::white(livingAlliesPointers[i]->name) << " " << dye::white(livingAlliesPointers[i]->healthPoints) << "/" << dye::light_yellow(livingAlliesPointers[i]->maxHealthPoints) << " HP"
-//							<< " " << dye::white(livingAlliesPointers[i]->manaPoints) << "/" << dye::white(livingAlliesPointers[i]->maxManaPoints) << dye::light_yellow(" MP") << endl;
-//					}
-//					cout << dye::light_yellow(livingAlliesPointers.size() + 1) << dye::light_yellow(") Go back") << endl;
-//					
-//					//input validation
-//					int checkAllyChoice = validateInput(1, livingAlliesPointers.size() + 1);
-//					if (checkAllyChoice == livingAlliesPointers.size() + 1) // GO BACK
-//					{
-//						break;
-//					}
-//					else // CHECK ALLY
-//					{
-//						//TODO
-//						cout << dye::light_yellow("PLACEHOLDER CHECK ALLY") << endl;
-//						break;
-//					}
-//				}
-//				else if (livingAlliesPointers.empty())
-//				{
-//					cout << dye::light_yellow("1") << ") " << dye::light_yellow(player.name) << " " << dye::white(player.healthPoints) << "/" << dye::white(player.maxHealthPoints) << dye::light_yellow(" HP")
-//						<< " " << dye::white(player.manaPoints) << "/" << dye::white(player.maxManaPoints) << dye::light_yellow(" MP") << endl;
-//					cout << dye::light_yellow("2") << dye::light_yellow(") Go back") << endl;
-//					//input validation
-//					int checkAllyChoice = validateInput(1, 2);
-//					if (checkAllyChoice == 2) // GO BACK
-//					{
-//						break;
-//					}
-//					else // CHECK SELF
-//					{
-//						//TODO
-//						cout << dye::light_yellow("PLACEHOLDER CHECK SELF") << endl;
-//						break;
-//					}
-//				}
-//				break;
-//			}
-//			case 9: // CHECK ALLY/SELF EQUIPMENT
-//			{
-//				//To be assigned to each character's equipment
-//				Item* mainhand, *offhand, *mainhand2, *offhand2;
-//				std::cout << "\n=--->\n" << std::endl;
-//				if (!livingAlliesPointers.empty())
-//				{
-//					player.inventory.getEquippedWeapons(mainhand, offhand, mainhand2, offhand2);
-//					cout << dye::light_yellow("1") << ") " << dye::light_yellow(player.name) << " "
-//						<< dye::white(mainhand->name) << dye::light_yellow("; ") << dye::white(offhand->name) << endl;
-//					for (int i = 0; i < livingAlliesPointers.size(); i++)
-//					{
-//						livingAlliesPointers[i]->inventory.getEquippedWeapons(mainhand, offhand, mainhand2, offhand2);
-//						cout << dye::light_yellow(i + 2) << ") " << dye::light_yellow(livingAlliesPointers[i]->name) << " "
-//							<< dye::white(mainhand->name) << dye::light_yellow("; ") << dye::white(offhand->name) << endl;
-//					}
-//					cout << dye::light_yellow(livingAlliesPointers.size() + 1) << dye::light_yellow(") Go back") << endl;
-//
-//					//input validation
-//					int checkAllyChoice = validateInput(1, livingAlliesPointers.size() + 1);
-//					if (checkAllyChoice == livingAlliesPointers.size() + 1) // GO BACK
-//					{
-//						break;
-//					}
-//					else // CHECK ALLY EQUIPMENT DETAILS
-//					{
-//						//TODO
-//						cout << dye::light_yellow("PLACEHOLDER CHECK ALLY EQUIPMENT") << endl;
-//						break;
-//					}
-//				}
-//				else if (livingAlliesPointers.empty())
-//				{
-//					player.inventory.getEquippedWeapons(mainhand, offhand, mainhand2, offhand2);
-//					cout << dye::light_yellow("1") << ") " << dye::light_yellow(player.name) << " "
-//						<< dye::white(mainhand->name) << dye::light_yellow("; ") << dye::white(offhand->name) << endl;
-//					cout << dye::light_yellow("2") << dye::light_yellow(") Go back") << endl;
-//
-//					//input validation
-//					int checkAllyChoice = validateInput(1, 2);
-//					if (checkAllyChoice == 2) // GO BACK
-//					{
-//						break;
-//					}
-//					else // CHECK SELF EQUIPMENT DETAILS
-//					{
-//						//TODO
-//						cout << dye::light_yellow("PLACEHOLDER CHECK SELF EQUIPMENT") << endl;
-//						break;
-//					}
-//				}
-//				break;
-//			}
-//			case 10: // FLEE
-//			{
-//				//TODO
-//				break;
-//			}
-//			}
-//			}
-//		} while (inputChosen == false);
-//
-//		//input 1: attack target
-//		// -> present option to attack forward, attack in place, attack in retreat, or go back
-//		// -> 1) Advance and Attack!
-//		// -> 2) Stand your ground and Attack!
-//		// -> -> (sub menu) 1) normal attack
-//		// -> -> (sub menu) 2) grapple enemy (strength check; if success, enemy is grappled and loses their turn + damage; if fail, player wastes turn & chance to take damage)
-//		// -> 3) Retreat and Attack!
-//		// -> 4) Go back
-//		// -> -> display all targets, greying out targets not in range of selected attack option with longest weapon or go back
-//		// -> -> 1) _____; ten stage health descriptor: _____; ten stage mana descriptor: _____; ten stage confidence descriptor: _____; (always highest level enemy)
-//		// -> -> 2) _____; ten stage health descriptor: _____; ten stage mana descriptor: _____; ten stage confidence descriptor: _____; (lowest level enemy)
-//		// -> -> 3) Go back
-//		// -> -> -> display all attack options (mainhand, offhand, spells if either main or offhands are casting tools) 
-//		// -> -> -> -> 1) Mainhand: _____; Damage: _____; Reach: _____; Speed: _____; Damgage Type: _____; Magic Damage Type: _____ (only if applicable)
-//		// -> -> -> -> 2) Offhand: _____; Damage: _____; Reach: _____; Speed: _____; Damgage Type: _____; Magic Damage Type: _____ (only if applicable)
-//		// -> -> -> -> (sub menu) 1) Spell: _____; Damage: _____; Reach: _____; Speed: _____; Damgage Type: _____; (only if applicable) Magic Damage Type: _____ 
-//		// -> -> -> -> (sub menu) 2) Bash them with your catalyst (always second to last option)
-//		// -> -> -> -> (sub menu) 3) Go back
-//		// -> -> -> -> 3) Go back
-//		// -> -> -> -> -------------------------
-//		// -> -> -> -> (sub menu) 1) Arrow: _____; Damage: _____; Reach: _____; Damgage Type: _____; Magic Damage Type: _____ (only if applicable)
-//		// -> -> -> -> (sub menu) 2) Bolt: _____; Damage: _____; Reach: _____; Damgage Type: _____; Magic Damage Type: _____ (only if applicable)
-//		// -> -> -> -> (sub menu) 3) Go back
-//		// -> -> -> -> grey out attack options not in range of specified target (ex: mainhand is spear offhand is dagger, offhand out of range but mainhand in range) or go back
-//		// -> -> -> -> -> 1) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage mana descriptor; 10 stage confidence descriptor
-//		// -> -> -> -> -> 2) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage mana descriptor; 10 stage confidence descriptor
-//		// -> -> -> -> -> 3) Go back
-//		// -> -> -> -> set values for player option choice, weapon choice, spell choice, and target choice
-//
-//		//input 2: swap from mainhand and offhand to back items and vice versa
-//		// -> present option to swap mainhand and offhand with back items or go back
-//		// -> 1) Swap to your stowed weapons
-//		// -> -> - MAINHAND1 -> MAINHAND2
-//		// -> -> - OFFHAND1 -> OFFHAND2
-//		// -> 2) Go back
-//		// -> -> set values for player option choice (function will handle getting the quipped items and transferring them between slots)
-//
-//		//input 3: view spells
-//		// -> present short list of all attuned spells (max of 10)
-//		// -> =---> Name: _____; Damage: _____; Mana Cost: _____; Reach: _____; Speed: _____; Damage Type: _____; (if applicable) Magic Damage Type: _____
-//		// -> =---> Name: _____; Damage: _____; Mana Cost: _____; Reach: _____; Speed: _____; Damage Type: _____; (if applicable) Magic Damage Type: _____
-//
-//		//input 4: use potion
-//		// -> present short list of all potions
-//		// -> 1) _____ Potion; Magnitude: __; Quantity: __
-//		// -> 2) _____ Potion; Magnitude: __; Quantity: __
-//		// -> 3) Go back
-//		// -> -> present option to use on self, ally, or go back
-//		// -> -> -> self: set values for player option choice, potion choice, and target choice
-//		// -> -> -> ally: display all allies, greying out allies at full health
-//		// -> -> -> -> set values for player option choice, potion choice, and target choice
-//
-//		//input 5: use item
-//		// -> present short list of all usable items in backpack (food, tools, etc)
-//		// -> 1) _____; Damage/Healing/Effect: __; Quantity: __
-//		// -> 2) _____; Damage/Healing/Effect: __; Quantity: __
-//		// -> 3) Go back
-//		// -> -> present option to use on self, ally, enemy, or go back
-//		// -> -> -> self: set values for player option choice, item choice, and target choice
-//		// -> -> -> ally: display all allies, greying out allies at full health
-//		// -> -> -> -> set values for player option choice, item choice, and target choice
-//
-//		//input 6: check allies or self
-//		// -> display all allies and self
-//		// -> 1) _____; Health: __; Mana: __; Confidence: __ (always player)
-//		// -> 2) _____; Health: __; Mana: __; Confidence: __
-//		// -> 3) Go back
-//		// -> -> (self) display flavor text about your condition and equipped items
-//		// -> -> (ally) display flavor text about ally condition and equipped items
-//
-//		//input 7: check enemies
-//		// -> display all enemies (sort by level)
-//		// -> 1) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage mana descriptor; 10 stage confidence descriptor
-//		// -> 2) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage mana descriptor; 10 stage confidence descriptor
-//		// -> 3) Go back
-//
-//		//input 8: taunt enemies (confidence boost allies, makes enemy focus on you)
-//		// -> present all enemies
-//		// -> 1) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage mana descriptor; 10 stage confidence descriptor
-//		// -> 2) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage mana descriptor; 10 stage confidence descriptor
-//		// -> 3) Go back
-//		// -> -> 1) Taunt _____;
-//		// -> -> 2) Make something up
-//
-//		//input 9: check allies or self equipment
-//		// -> Display all allies or self brief equipment overview
-//		// -> 1) _____; HP: _____; Mainhand: __; Offhand: __; Backslot1: __; Backslot2: __;
-//		// -> 2) _____; HP: _____; Mainhand: __; Offhand: __; Backslot1: __; Backslot2: __;
-//		// -> 3) Go back
-//		// -> -> (self) display all equipped items and their stats
-//		// -> -> (ally) display all equipped items and their stats
-//
-//		//input 10: attempt to flee
-//		// -> Display 10 stage descriptor at odds of getting away
-//		// -> 1) Attempt to flee
-//		// -> 2) Go back
-//
-//
-//	} while (exitFight == false);
-//}
+void openCombat(Human* player, Character* enemy)
+{
+	//set this condition to true if the fight ends for any reason
+	bool exitFight = false;
+	do
+	{
 
-//void openCombat(Character& player, vector<Character>& enemies)
-//{
-//
-//	//if (player.isAlive == false)
-//	//{
-//	//	cout << "You are dead and cannot fight" << endl;
-//	//	return;
-//	//}
-//	//vector<Character> deadEnemies;
-//
-//	//Item mainhand1, mainhand2, offhand1, offhand2;
-//	//player.inventory.getEquippedWeapons(mainhand1, mainhand2, offhand1, offhand2);
-//
-//	//Item headArmor, chestArmor, armArmor, legArmor;
-//	//player.inventory.getEquippedArmor(headArmor, chestArmor, armArmor, legArmor);
-//
-//	//Item amulet, ring1, ring2, misc;
-//	//player.inventory.getEquippedMisc(amulet, ring1, ring2, misc);
-//
-//	//if (mainhand1.reach > 500) mainhand1.reach = 0;
-//	//if (mainhand2.reach > 500) mainhand2.reach = 0;
-//	//if (offhand1.reach > 500) offhand1.reach = 0;
-//	//if (offhand2.reach > 500) offhand2.reach = 0;
-//
-//	//if (mainhand1.quantity > 1) mainhand1.quantity = 0;
-//	//if (mainhand2.quantity > 1) mainhand2.quantity = 0;
-//	//if (offhand1.quantity > 1) offhand1.quantity = 0;
-//	//if (offhand2.quantity > 1) offhand2.quantity = 0;
-//
-//	////Printing encounter information
-//
-//	////Intro should only output one time
-//
-//	////Encounter text
-//	//
-//	//std::cout << "=--->" << std::endl;
-//	//std::cout << "\n";
-//	//cout << "You encounter";
-//	//for (int i = 0; i < enemies.size(); i++)
-//	//{
-//	//	if (enemies.size() == 1)
-//	//	{
-//	//		cout << " a " << enemies[i].name << "!" << endl;
-//	//	}
-//	//	else
-//	//	{
-//	//		if (i == enemies.size() - 1)
-//	//		{
-//	//			cout << " and";
-//	//		}
-//	//		cout << " a " << enemies[i].name;
-//	//		if (i < enemies.size() - 1)
-//	//		{
-//	//			cout << ",";
-//	//		}
-//	//		if (i == enemies.size() - 1)
-//	//		{
-//	//			cout << "!" << endl;
-//	//		}
-//	//	}
-//	//}
-//
-//	////Intro Context Sensitive Text (repeated in check enemy option along with more details)
-//	//for (int i = 0; i < enemies.size(); i++)
-//	//{
-//	//	std::cout << "\n";
-//	//	std::cout << "=--->" << std::endl;
-//	//	std::cout << "\n";
-//	//	enemies[i].checkCharacterIntro(player);
-//	//	
-//	//}
-//
-//	////used in edge cases to control if the round progresses or not
-//	//bool progressRound = true;
-//
-//	////used to chose the weapon used to attack with. A value of 1 means mainhand, 2 means offhand
-//	//int weaponChoice = 0;
-//
-//	////used to chose the enemy to attack. A value of 0 means no enemy has been selected so another option is selected
-//	//int attackChoice = 0;
-//
-//	////used in the retreat option to end the fight early if they are fast enough to get away
-//	//bool exitFight = false;
-//
-//	////Used to determine if the player is retreating or not to play context sensitive text when appropriate
-//	//bool isRetreating = false;
-//
-//	////used in two places; one to determine advance/retreat speed and another time in the part where everyone gets their turns
-//	////  to print out that the player is retreating
-//	//float distanceTravelled = player.speed / 10;
-//	////main fight loop
-//	//do
-//	//{
-//	//	//function gets kicked back here if they select an option that shouldn't progress to anyone's turn
-//	//	//  (trying to attack when not in range)
-//	//start:
-//	//	//if player is killed
-//	//	if (player.isAlive == false)
-//	//	{
-//	//		return;
-//	//	}
-//	//	//if player killed all enemies
-//	//	if (player.isAlive == true && enemies.size() == 0)
-//	//	{
-//	//		std::cout << "\n";
-//	//		std::cout << "=--->" << std::endl;
-//	//		std::cout << "\n";
-//	//		cout << "The battlefield is quiet once again..." << endl;
-//	//		std::cout << "\n";
-//	//		std::cout << "=--->" << std::endl;
-//	//		std::cout << "\n";
-//	//	}
-//	//	//End of combat encounter rewards for player (repeated in case the loop terminates here)
-//	//	if (player.isAlive == true && enemies.size() == 0)
-//	//	{
-//	//		for (int i = 0; i < deadEnemies.size(); i++)
-//	//		{
-//	//			player.gainExperience(deadEnemies[i]);
-//	//			player.openLootInterface(deadEnemies[i]);
-//	//		}
-//	//		exitFight = true;
-//	//	}
-//
-//
-//	//	//if player is alive and there are still enemies
-//	//	if (player.isAlive == true && enemies.size() > 0)
-//	//	{
-//	//		int choice = 0;
-//
-//	//		//checks if any enemies are in range of the player
-//	//		int inRange = 0;
-//	//		for (int i = 0; i < enemies.size(); i++)
-//	//		{
-//	//			if (enemies[i].isAlive == true)
-//	//			{
-//	//				if (mainhand1.reach >= enemies[i].distanceFromPlayer ||
-//	//					offhand1.reach >= enemies[i].distanceFromPlayer)
-//	//				{
-//	//					inRange += 1;
-//	//				}
-//	//			}
-//	//		}
-//	//		for (int i = 0; i < enemies.size(); i++)
-//	//		{
-//	//			cout << enemies[i].name << ", distance: " << enemies[i].distanceFromPlayer << endl;
-//	//		}
-//	//		cout << "=--->" << endl;
-//	//		cout << "Select an option: " << endl;
-//	//		if (inRange > 0)
-//	//		{
-//	//			cout << dye::light_yellow("1. Attack!") << endl;
-//	//		}
-//	//		else {
-//	//			cout << dye::grey("1. Attack!") << endl;
-//	//		}
-//	//		cout << "2. Move" << endl;
-//	//		cout << "3. Check Self" << endl;
-//	//		cout << "4. Check Enemy" << endl;
-//	//		cout << "5. Use Potion" << endl;
-//	//		cout << "6. Check Inventory" << endl;
-//	//		cout << "7. Attempt to Flee" << endl;
-//
-//	//		//input validation
-//	//		do
-//	//		{
-//	//			cout << "\n>> ";
-//	//			cin >> choice;
-//	//			if (cin.fail() || choice > 7 || choice == 0)
-//	//			{
-//	//				cout << "Enter a number from 1 - 7" << endl;
-//	//			}
-//	//			cin.clear();
-//	//			cin.ignore(10000, '\n');
-//	//		} while (cin.fail() || choice > 7 || choice == 0);
-//
-//
-//	//		if (choice == 1 && inRange == 0)
-//	//		{
-//	//			cout << "You are not in range of any enemies!" << endl;
-//	//			goto start;
-//	//		}
-//
-//	//		//Attack submenu
-//	//		if (choice == 1)
-//	//		{
-//	//			for (int i = 0; i < enemies.size(); i++)
-//	//			{
-//	//				if (mainhand1.reach >= enemies[i].distanceFromPlayer ||
-//	//					offhand1.reach >= enemies[i].distanceFromPlayer)
-//	//				{
-//	//					cout << dye::light_yellow(i + 1) << dye::light_yellow(") Attack: ")
-//	//						<< dye::light_yellow(enemies[i].name) << endl;
-//	//				}
-//	//				else
-//	//				{
-//	//					cout << dye::grey(i + 1) << dye::grey(") Attack: ")
-//	//						<< dye::grey(enemies[i].name) << endl;
-//	//				}
-//	//			}
-//	//			cout << enemies.size() + 1 << ") Go back" << endl;
-//
-//	//			//input validation
-//	//			do
-//	//			{
-//	//				cout << "\n>> ";
-//	//				cin >> attackChoice;
-//	//				if (cin.fail() || attackChoice > enemies.size() + 1 || attackChoice == 0)
-//	//				{
-//	//					cout << "Enter a number from 1 - " << enemies.size() + 1 << endl;
-//	//				}
-//	//				cin.clear();
-//	//				cin.ignore(10000, '\n');
-//	//			} while (cin.fail() || attackChoice > enemies.size() + 1 || attackChoice == 0);
-//
-//	//			if (attackChoice == enemies.size() + 1)
-//	//			{
-//	//				//must be reset here for the loop logic; if they select attack and then another option it will still
-//	//				//  have the previous loop's value stored and it will cause unintended behavior
-//	//				attackChoice = 0;
-//	//				goto start;
-//	//			}
-//	//			else if (mainhand1.reach < enemies[attackChoice - 1].distanceFromPlayer && mainhand1.hasBeenInitialized == true ||
-//	//				offhand1.reach < enemies[attackChoice - 1].distanceFromPlayer && offhand1.hasBeenInitialized == true)
-//	//			{
-//	//				cout << "You are not in range of that enemy!" << endl;
-//	//				//must be reset here for the loop logic; if they select attack and then another option it will still
-//	//				//  have the previous loop's value stored and it will cause unintended behavior
-//	//				attackChoice = 0;
-//	//				goto start;
-//	//			}
-//	//			else
-//	//			{
-//	//				if (mainhand1.quantity >= 1 && offhand1.quantity >= 1)
-//	//				{
-//	//					cout << "Strike with your: " << endl;
-//	//					cout << "1)" << mainhand1.name << endl;
-//	//					cout << "2)" << offhand1.name << endl;
-//	//					cout << "3)" << "Go back" << endl;
-//
-//	//					//input validation
-//	//					do
-//	//					{
-//	//						cout << "\n>> ";
-//	//						cin >> weaponChoice;
-//	//						if (cin.fail() || weaponChoice > 3 || weaponChoice == 0)
-//	//						{
-//	//							cout << "Enter a number from 1 - 3" << endl;
-//	//						}
-//	//						cin.clear();
-//	//						cin.ignore(10000, '\n');
-//	//					} while (cin.fail() || weaponChoice > 3 || weaponChoice == 0);
-//
-//	//					if (weaponChoice == 3)
-//	//					{
-//	//						//go back
-//	//						goto start;
-//	//					}
-//	//				}
-//	//				else if (mainhand1.quantity >= 1 && offhand1.quantity == 0)
-//	//				{
-//	//					weaponChoice = 1;
-//	//				}
-//	//				else if (mainhand1.quantity == 1 && offhand1.quantity >= 0)
-//	//				{
-//	//					weaponChoice = 2;
-//	//				}
-//	//			}
-//	//		}
-//	//		if (choice == 2)
-//	//		{
-//	//			float distanceTravelled = player.speed / 10;
-//	//			bool inRangeWhileRetreating = false;
-//	//			for (int i = 0; i < enemies.size(); i++)
-//	//			{
-//	//				if (mainhand1.reach >= enemies[i].distanceFromPlayer + distanceTravelled && mainhand1.hasBeenInitialized == true ||
-//	//					offhand1.reach >= enemies[i].distanceFromPlayer + distanceTravelled && offhand1.hasBeenInitialized == true)
-//	//				{
-//	//					inRangeWhileRetreating = true;
-//	//				}
-//	//			}
-//	//			//move
-//	//			cout << "Move: " << endl;
-//	//			cout << "1) Forward" << endl;
-//	//			cout << "2) Backward" << endl;
-//	//			if (inRangeWhileRetreating == true)
-//	//			{
-//	//				cout << dye::light_yellow("3) Backwards and attack") << endl;
-//	//			}
-//	//			else
-//	//			{
-//	//				cout << dye::grey("3) Backwards and attack") << endl;
-//	//			}
-//	//			cout << "4) Go back" << endl;
-//
-//	//			int moveChoice = 0;
-//	//			//input validation
-//	//			do
-//	//			{
-//	//				cout << "\n>> ";
-//	//				cin >> moveChoice;
-//	//				if (cin.fail() || moveChoice > 4 || moveChoice == 0)
-//	//				{
-//	//					cout << "Enter a number from 1 - 4" << endl;
-//	//				}
-//	//				cin.clear();
-//	//				cin.ignore(10000, '\n');
-//	//			} while (cin.fail() || moveChoice > 4 || moveChoice == 0);
-//
-//	//			if (moveChoice == 4)
-//	//			{
-//	//				goto start;
-//	//			}
-//	//			else if (moveChoice == 1)
-//	//			{
-//	//				//move forward
-//	//				for (int i = 0; i < enemies.size(); i++)
-//	//				{
-//	//					enemies[i].distanceFromPlayer -= distanceTravelled;
-//	//				}
-//	//				cout << "You advance forward by " << distanceTravelled << " units" << endl;
-//
-//	//			}
-//	//			else if (moveChoice == 2)
-//	//			{
-//	//				//move backward
-//	//				for (int i = 0; i < enemies.size(); i++)
-//	//				{
-//	//					enemies[i].distanceFromPlayer += distanceTravelled * .7;
-//	//				}
-//	//				cout << "You retreat backward by " << distanceTravelled << " units" << endl;
-//
-//	//			}
-//	//			else if (moveChoice == 3 && inRangeWhileRetreating == false)
-//	//			{
-//	//				cout << "The enemies are too far away from you, especially if you back up" << endl;
-//	//				goto start;
-//	//			}
-//	//			else if (moveChoice == 3 && inRangeWhileRetreating == true)
-//	//			{
-//	//				//move backward and attack
-//	//				for (int i = 0; i < enemies.size(); i++)
-//	//				{
-//	//					//move backwards slightly slower than forwards
-//	//					enemies[i].distanceFromPlayer += distanceTravelled * .7;
-//	//				}
-//	//				cout << "Attack which enemy: " << endl;
-//	//				for (int i = 0; i < enemies.size(); i++)
-//	//				{
-//	//					if (mainhand1.reach >= enemies[i].distanceFromPlayer + distanceTravelled * .7 ||
-//	//						offhand1.reach >= enemies[i].distanceFromPlayer + distanceTravelled * .7)
-//	//					{
-//	//						cout << dye::light_yellow(i + 1) << dye::light_yellow(") Attack: ")
-//	//							<< dye::light_yellow(enemies[i].name) << endl;
-//	//					}
-//	//					else
-//	//					{
-//	//						cout << dye::grey(i + 1) << dye::grey(") Attack: ")
-//	//							<< dye::grey(enemies[i].name) << endl;
-//	//					}
-//	//				}
-//	//				cout << enemies.size() + 1 << ") Go back" << endl;
-//
-//	//				//input validation
-//	//				do
-//	//				{
-//	//					cout << "\n>> ";
-//	//					cin >> attackChoice;
-//	//					if (cin.fail() || attackChoice > enemies.size() + 1 || attackChoice == 0)
-//	//					{
-//	//						cout << "Enter a number from 1 - " << enemies.size() + 1 << endl;
-//	//					}
-//	//					cin.clear();
-//	//					cin.ignore(10000, '\n');
-//	//				} while (cin.fail() || attackChoice > enemies.size() + 1 || attackChoice == 0);
-//
-//	//				if (attackChoice == enemies.size() + 1)
-//	//				{
-//	//					attackChoice = 0;
-//	//					goto start;
-//	//				}
-//	//				else if (mainhand1.reach < enemies[attackChoice - 1].distanceFromPlayer + distanceTravelled * .7 && mainhand1.hasBeenInitialized == true ||
-//	//					offhand1.reach < enemies[attackChoice - 1].distanceFromPlayer + distanceTravelled * .7 && offhand1.hasBeenInitialized == true)
-//	//				{
-//	//					cout << "You are not in range of that enemy!" << endl;
-//	//					attackChoice = 0;
-//	//					goto start;
-//	//				}
-//	//				else
-//	//				{
-//	//					if (mainhand1.quantity >= 1 && offhand1.quantity >= 1)
-//	//					{
-//	//						cout << "Strike with your: " << endl;
-//	//						cout << "1)" << mainhand1.name << endl;
-//	//						cout << "2)" << offhand1.name << endl;
-//	//						cout << "3)" << "Go back" << endl;
-//	//						//input validation
-//	//						do
-//	//						{
-//	//							cout << "\n>> ";
-//	//							cin >> weaponChoice;
-//	//							if (cin.fail() || weaponChoice > 3 || weaponChoice == 0)
-//	//							{
-//	//								cout << "Enter a number from 1 - 3" << endl;
-//	//							}
-//	//							cin.clear();
-//	//							cin.ignore(10000, '\n');
-//	//						} while (cin.fail() || weaponChoice > 3 || weaponChoice == 0);
-//	//						if (weaponChoice == 3)
-//	//						{
-//	//							//go back
-//	//							goto start;
-//	//						}
-//	//					}
-//	//					else if (mainhand1.quantity >= 1 && offhand1.quantity == 0)
-//	//					{
-//	//						weaponChoice = 1;
-//	//					}
-//	//					else if (mainhand1.quantity == 1 && offhand1.quantity >= 0)
-//	//					{
-//	//						weaponChoice = 2;
-//	//					}
-//	//				}
-//	//				isRetreating = true;
-//	//			}
-//	//		}
-//	//		if (choice == 3)
-//	//		{
-//	//			//check self
-//	//			std::cout << "\n";
-//	//			std::cout << "=--->" << std::endl;
-//	//			std::cout << "\n";
-//	//			player.checkPlayer();
-//	//			std::cout << "\n";
-//	//			std::cout << "=--->" << std::endl;
-//	//			std::cout << "\n";
-//	//			goto start;
-//	//		}
-//	//		if (choice == 4)
-//	//		{
-//	//			//check enemy
-//	//			for (int i = 0; i < enemies.size(); i++)
-//	//			{
-//	//				cout << dye::light_yellow(i + 1) << dye::light_yellow(") Check: ")
-//	//					<< dye::light_yellow(enemies[i].name) << endl;
-//	//			}
-//	//			cout << enemies.size() + 1 << ") Go back" << endl;
-//	//			int checkChoice = 0;
-//	//			//input validation
-//	//			do
-//	//			{
-//	//				cout << "\n>> ";
-//	//				cin >> checkChoice;
-//	//				if (cin.fail() || checkChoice > enemies.size() + 1 || checkChoice == 0)
-//	//				{
-//	//					cout << "Enter a number from 1 - " << enemies.size() + 1 << endl;
-//	//				}
-//	//				cin.clear();
-//	//				cin.ignore(10000, '\n');
-//	//			} while (cin.fail() || checkChoice > enemies.size() + 1 || checkChoice == 0);
-//	//			if (checkChoice == enemies.size() + 1)
-//	//			{
-//	//				goto start;
-//	//			}
-//	//			else
-//	//			{
-//	//				bool playExtra = false;
-//	//				std::cout << "\n";
-//	//				std::cout << "=--->" << std::endl;
-//	//				std::cout << "\n";
-//	//				enemies[checkChoice - 1].checkCharacter(player);
-//	//				goto start;
-//	//			}
-//	//		}
-//	//		if (choice == 5)
-//	//		{
-//	//			//use potion
-//	//			std::cout << "\n";
-//	//			std::cout << "=--->" << std::endl;
-//	//			std::cout << "\n";
-//	//			printPotions(progressRound, player);
-//	//			if (progressRound == false)
-//	//			{
-//	//				goto start;
-//	//			}
-//	//		}
-//	//		if (choice == 6)
-//	//		{
-//	//			//check inventory
-//	//			std::cout << "\n";
-//	//			std::cout << "=--->" << std::endl;
-//	//			std::cout << "\n";
-//	//			cout << "This is everything you have access to in the heat of battle..." << endl;
-//	//			std::cout << "\n";
-//	//			for (int i = 0; i < player.inventory.equippedItems.size(); i++)
-//	//			{
-//	//				if (player.inventory.equippedItems[i].itemType == Item::WEAPON)
-//	//				{
-//	//					cout << "Weapon: " << player.inventory.equippedItems[i].name <<
-//	//						", damage " << player.inventory.equippedItems[i].damage <<
-//	//						", reach " << player.inventory.equippedItems[i].reach <<
-//	//						", attack speed " << player.inventory.equippedItems[i].attackSpeed << endl;
-//	//				}
-//	//				if (player.inventory.equippedItems[i].itemType == Item::ARMOR)
-//	//				{
-//	//					cout << "Armor: " << player.inventory.equippedItems[i].name <<
-//	//						", defense " << player.inventory.equippedItems[i].defense << endl;
-//	//				}
-//	//				if (player.inventory.equippedItems[i].itemType == Item::TRINKET)
-//	//				{
-//	//					cout << "Jewelry: " << player.inventory.equippedItems[i].name << endl;
-//	//				}
-//	//				if (player.inventory.equippedItems[i].itemType == Item::HOLYTOOL ||
-//	//					player.inventory.equippedItems[i].itemType == Item::ARCANETOOL)
-//	//				{
-//	//					cout << "Tool: " << player.inventory.equippedItems[i].name <<
-//	//						", magic adjust " << player.inventory.equippedItems[i].magicAdjust << endl;
-//	//				}
-//	//			}
-//	//			int healingTally = 0;
-//	//			int manaTally = 0;
-//	//			int cureDiseaseTally = 0;
-//	//			for (int i = 0; i < player.inventory.potions.size(); i++)
-//	//			{
-//	//				if (player.inventory.potions[i].effects == Potion::HEALING)
-//	//				{
-//	//					healingTally += player.inventory.potions[i].quantity;
-//	//				}
-//	//				if (player.inventory.potions[i].effects == Potion::MANA)
-//	//				{
-//	//					manaTally += player.inventory.potions[i].quantity;
-//	//				}
-//	//				if (player.inventory.potions[i].effects == Potion::CUREDISEASE)
-//	//				{
-//	//					cureDiseaseTally += player.inventory.potions[i].quantity;
-//	//				}
-//	//			}
-//	//			std::cout << dye::light_yellow("Healing Potions: x") << dye::light_yellow(healingTally) << std::endl;
-//	//			std::cout << dye::light_yellow("Mana Potions: x") << dye::light_yellow(manaTally) << std::endl;
-//	//			std::cout << dye::light_yellow("Cure Disease Potions: x") << dye::light_yellow(cureDiseaseTally) << std::endl;
-//	//			std::cout << "\n";
-//	//			std::cout << "=--->" << std::endl;
-//	//			std::cout << "\n";
-//	//			goto start;
-//	//		}
-//	//		if (choice == 7)
-//	//		{
-//	//			//attempt to flee
-//	//			float highestSpeed = 0;
-//	//			for (int i = 0; i < enemies.size(); i++)
-//	//			{
-//	//				if (enemies[i].speed > highestSpeed)
-//	//				{
-//	//					highestSpeed = enemies[i].speed;
-//	//				}
-//	//			}
-//
-//	//			//setting up random number generator for speed tie
-//	//			std::mt19937 generator(time(nullptr));
-//	//			std::uniform_int_distribution<int> distribution(player.luck, 100);
-//	//			int randomNum = distribution(generator);
-//
-//	//			if (player.speed > highestSpeed)
-//	//			{
-//	//				cout << "Your superior speed allows you to get away safely!" << endl;
-//	//				exitFight = true;
-//	//				break;
-//	//			}
-//	//			else if (player.speed == highestSpeed)
-//	//			{
-//	//				if (randomNum < 50)
-//	//				{
-//	//					cout << "You're neck and neck with them but you managed to slip away!" << endl;
-//	//					exitFight = true;
-//	//					break;
-//	//				}
-//	//				else
-//	//				{
-//	//					cout << "You're neck and neck with them but you just can't get away!" << endl;
-//	//				}
-//	//			}
-//	//			else if (player.speed >= highestSpeed * .7)
-//	//			{
-//	//				cout << "You manage to slip away from them!" << endl;
-//	//				exitFight = true;
-//	//				break;
-//	//			}
-//	//			else
-//	//			{
-//	//				cout << "You're too slow to get away!" << endl;
-//	//			}
-//	//		}
-//
-//	//		//determining turn order
-//
-//	//		vector<Character*> combatants;
-//	//		for (int i = 0; i < enemies.size(); i++)
-//	//		{
-//	//			combatants.push_back(&enemies[i]);
-//	//		}
-//	//		combatants.push_back(&player);
-//
-//	//		sort(combatants.begin(), combatants.end(), compareSpeeds);
-//
-//	//		//Loops through every combatant and gives everyone a turn
-//	//		for (int i = 0; i < combatants.size(); i++)
-//	//		{
-//	//			if (combatants[i]->isPlayer == true && player.isAlive == true)
-//	//			{
-//	//				if (attackChoice > 0)
-//	//				{
-//	//					if (isRetreating == true)
-//	//					{
-//	//						cout << "You retreat backward by " << distanceTravelled << " units" << endl;
-//	//					}
-//	//					//only handles attacking the selected enemy
-//	//					std::cout << "=--->" << std::endl;
-//	//					attackEnemy(attackChoice, weaponChoice, progressRound, inRange, player, enemies, deadEnemies, mainhand1, mainhand2, offhand1, offhand2, headArmor,
-//	//						chestArmor, armArmor, legArmor, amulet, ring1, ring2, misc);
-//	//				}
-//	//			}
-//	//			else
-//	//			{
-//	//				if (!enemies.empty())
-//	//				{
-//	//					if (player.isAlive == false)
-//	//					{
-//	//						//make a function for death taunts here lmao
-//	//					}
-//	//					else
-//	//					{
-//	//						if (combatants[i]->isAlive == true)
-//	//						{
-//	//							enemyTurn(player, *combatants[i], deadEnemies, enemies);
-//	//						}
-//	//						if (player.isAlive == false)
-//	//						{
-//	//							exitFight = true;
-//	//						}
-//	//					}
-//	//				}
-//	//			}
-//	//		}
-//	//	}
-//	//} while (exitFight == false);
-//}
+		//SETS ALL NECESSARY VARIABLES FOR THE COMBAT LOOP
 
-//bool compareSpeeds(Character character1, Character character2)
-//{
-//	if (character1.speed > character2.speed)
-//	{
-//		return true;
-//	}
-//	else
-//	{
-//		return false;
-//	}
-//}
+		//Get player equipment 
+		Weapon* mainHand = new Weapon(), * reserve1 = new Weapon(), * offHand = new Weapon(), * reserve2 = new Weapon();
 
+		Armor* headArmor = new Armor(), * chestArmor = new Armor(), * armArmor = new Armor(), * legArmor = new Armor();
+
+		Trinket* amulet = new Trinket(), * ring1 = new Trinket(), * ring2 = new Trinket(), * misc = new Trinket();
+
+		player->inventory.getEquippedItems(mainHand, offHand, reserve1, reserve2, headArmor, chestArmor, armArmor, legArmor, amulet, ring1, ring2, misc);
+
+		//check if player has equipment to swap to (changes menu color to represent this)
+		bool hasStowedWeapons = false;
+
+		if ((reserve2->reach > 0) || (reserve1->reach > 0))
+		{
+			hasStowedWeapons = true;
+		}
+
+		//Used to track the player's consumables and grey out the consumable option if they have none
+		/*vector<Item*> consumables = player->inventory.consumables();
+		vector<Item*> throwingWeapons = player->inventory.getThrownWeapons();*/
+
+		//tracks the spent ammunition and throwing weapons to be returned at the end of the turn (based on luck and proficiency with item skill)
+		vector<Item> spentProjectiles;
+
+		//tracks the living/dead allies and enemies
+		vector<Character*> deadAllies;
+		vector<Character*> deadEnemies;
+
+		vector<Character*> livingAlliesPointers;
+		vector<Character*> livingEnemiesPointers;
+		
+		//checks if the allies and enemies are alive and adds them to the living/dead vectors
+		if (player->allies.size() > 0)
+		{
+			for (Character* ally : player->allies)
+			{
+				if (ally->isAlive)
+				{
+					livingAlliesPointers.push_back(ally);
+				}
+				else
+				{
+					deadAllies.push_back(ally);
+				}
+			}
+		}
+		if (enemy->allies.size() > 0)
+		{
+			for (Character* enemy : enemy->allies)
+			{
+				if (enemy->isAlive)
+				{
+					livingEnemiesPointers.push_back(enemy);
+				}
+				else
+				{
+					deadEnemies.push_back(enemy);
+				}
+			}
+		}
+		//Add the enemy to the list of living enemies
+		if (enemy->isAlive)	livingEnemiesPointers.push_back(enemy);
+
+		//general variables for the combat loop
+		int playerOptionChoice = 0;
+
+		//finds the minimum distance from the player to an enemy from the group
+		float minDistanceFromPlayer = 1000;
+		for (int i = 0; i < livingEnemiesPointers.size(); i++)
+		{
+			if (livingEnemiesPointers[i]->distanceFromPlayer <= minDistanceFromPlayer)
+			{
+				minDistanceFromPlayer = livingEnemiesPointers[i]->distanceFromPlayer;
+			}
+		}
+		cout << minDistanceFromPlayer << endl;
+		//used to determine the color of menu text in the attack option (gold for in range, grey for out of range)
+		// they will not be able to select out of range options and this will help them intuit why
+		// set to 1000 initially as range will never be this high in practice 
+		bool inRange = false;
+		//check if any spells attuned are in range
+		int spellsInRange = 0;
+		for (int i = 0; i < player->attunedSpells.size(); i++)
+		{
+			if (player->attunedSpells[i]->range >= minDistanceFromPlayer)
+			{
+				spellsInRange++;
+			}
+		}
+		//check if any spells, mainhand, or offhand weapons are in range
+		if (minDistanceFromPlayer <= mainHand->reach || minDistanceFromPlayer <= offHand->reach || spellsInRange > 0)
+		{
+			inRange = true;
+		}
+
+		//INITIAL SANITY CHECKS
+
+
+		//check if player is dead
+		if (!player->isAlive)
+		{
+			cout << dye::light_red("You have fallen...") << endl;
+			exitFight = true;
+			break;
+		}
+		if (player->isAlive && livingEnemiesPointers.size() == 0)
+		{
+			std::cout << "\n=--->\n" << std::endl;
+			cout << "The battlefield is quiet once again..." << endl;
+		}
+		//End of combat encounter rewards for player (repeated in case the loop terminates here)
+		if (player->isAlive && livingEnemiesPointers.size() == 0)
+		{
+			for (int i = 0; i < deadEnemies.size(); i++)
+			{
+				/*player->gainExperience(deadEnemies[i]);
+				player->openLootInterface(deadEnemies[i]); ---------------------------------------------------------- < TODO */
+			}
+			exitFight = true;
+		}
+
+		//set to false initially, true once this has been played. Exists so this text only gets played once
+		bool playedBefore = false;
+
+		//INITIAL ENCOUNTER TEXT
+		//Player is alive, at least one ally is alive, and at least one enemy is alive
+		if (player->isAlive && livingEnemiesPointers.size() > 0 && livingAlliesPointers.size() > 0 && !playedBefore)
+		{
+			//Encounter text
+			std::cout << "\n=--->\n" << std::endl;
+			cout << "You encounter";
+			for (int i = 0; i < livingEnemiesPointers.size(); i++)
+			{
+				if (livingEnemiesPointers.size() == 1 && !livingEnemiesPointers[i]->namedCharacter)
+				{
+					cout << " a " << dye::light_yellow(livingEnemiesPointers[i]->name) << "!" << endl;
+				}
+				else
+				{
+					if (i == livingEnemiesPointers.size() - 1)
+					{
+						cout << " and";
+					}
+					if (!livingEnemiesPointers[i]->namedCharacter)
+					{
+						cout << " a " << dye::light_yellow(livingEnemiesPointers[i]->name);
+					}
+					else
+					{
+						cout << " " << dye::light_yellow(livingEnemiesPointers[i]->name);
+					}
+					if (i < livingEnemiesPointers.size() - 1)
+					{
+						cout << ",";
+					}
+					if (i == livingEnemiesPointers.size() - 1)
+					{
+						cout << "!" << endl;
+					}
+				}
+			}
+			//Allies text
+			std::cout << "\n=--->\n" << std::endl;
+			if (player->allies.size() > 1) cout << "Your allies,";
+			if (player->allies.size() == 1) cout << "Your ally,";
+			for (int i = 0; i < livingAlliesPointers.size(); i++)
+			{
+				if (livingAlliesPointers.size() == 1)
+				{
+					cout << " a " << dye::light_yellow(livingAlliesPointers[i]->name) << " joins you!" << endl;
+				}
+				else
+				{
+					if (i == livingAlliesPointers.size() - 1)
+					{
+						cout << " and";
+					}
+					if (!livingAlliesPointers[i]->namedCharacter)
+					{
+						cout << " a " << dye::light_yellow(livingAlliesPointers[i]->name);
+					}
+					else
+					{
+						cout << " " << dye::light_yellow(livingAlliesPointers[i]->name);
+					}
+					if (i < livingAlliesPointers.size() - 1)
+					{
+						cout << ",";
+					}
+					if (i == livingAlliesPointers.size() - 1)
+					{
+						cout << " joins you!" << endl;
+					}
+				}
+			}
+			playedBefore = true;
+		}
+		//Player is alive, all allies dead or nonexistant, and at least one enemy is alive
+		if (player->isAlive == true && livingEnemiesPointers.size() > 0 && livingAlliesPointers.size() == 0 && !playedBefore)
+		{
+			//Encounter text
+			std::cout << "\n=--->\n" << std::endl;
+			cout << "You encounter";
+			for (int i = 0; i < livingEnemiesPointers.size(); i++)
+			{
+				if (livingEnemiesPointers.size() == 1 && !livingEnemiesPointers[i]->namedCharacter)
+				{
+					cout << " a " << dye::light_yellow(livingEnemiesPointers[i]->name) << "!" << endl;
+				}
+				else
+				{
+					if (i == livingEnemiesPointers.size() - 1)
+					{
+						cout << " and";
+					}
+					if (!livingEnemiesPointers[i]->namedCharacter)
+					{
+						cout << " a " << dye::light_yellow(livingEnemiesPointers[i]->name);
+					}
+					else
+					{
+						cout << " " << dye::light_yellow(livingEnemiesPointers[i]->name);
+					}
+					if (i < livingEnemiesPointers.size() - 1)
+					{
+						cout << ",";
+					}
+					if (i == livingEnemiesPointers.size() - 1)
+					{
+						cout << "!" << endl;
+					}
+				}
+			}
+			//Allies text
+			std::cout << "\n=--->\n" << std::endl;
+			cout << "You have no allies to assist you..." << endl;
+			playedBefore = true;
+		}
+
+		//Intro Context Sensitive Text (repeated in check enemy option along with more details)
+		/*for (int i = 0; i < livingEnemiesPointers.size(); i++) ----------------------------------------------------------< TODO
+		{
+			std::cout << "\n=--->\n" << std::endl;
+			livingEnemiesPointers[i]->checkCharacterIntro(player);
+		}*/
+
+		//only play a round if exitFight = false (there are living enemies and the player is alive)
+		if (exitFight == false)
+		{
+			
+			//set this condition to true once the player has defeated all enemies or all allies have been defeated
+			bool exitCombat = false;
+			//COMBAT LOOP
+			do
+			{
+
+				//set this condition to true once the player commits to an option all the way through their submenus
+				bool inputChosen = false;
+
+				//Option 1 variables
+				Weapon* weaponChoice = nullptr;;
+				Ammunition* ammoChoice = nullptr; //this will be a pointer to the ammo choice so that the quantity can be updated
+				Spell* spellChoice = nullptr;;
+				Character* targetChoice = nullptr; //this is a pointer to the target choice so that the target's health can be updated
+
+				//Option 2 variables
+				//NONE
+
+				//Option 3 variables
+				//NONE
+
+				//Option 4 variables
+				Consumable* potionChoice = nullptr; //this is a pointer to the potion choice so that the quantity can be updated
+				Character* potionTarget = nullptr; //this is a pointer to the target choice so that the target's health can be updated
+
+				//ADD MORE AS MORE POTION TYPES GET IMPLEMENTED
+				//Used to track the player's potions and grey out the potion option if they have none
+				vector<Consumable*> fatiguePotions;
+				vector<Consumable*> healingPotions;
+				vector<Consumable*> Potions;
+
+				int numPotionCategories = 0;
+				for (Item* item : player->inventory.backpackItems)
+				{
+					if (Consumable* consumable = dynamic_cast<Consumable*>(item))
+					{
+						if (consumable->potionType == Consumable::PotionType::HEALING)
+						{
+							healingPotions.push_back(consumable);
+							numPotionCategories++;
+						}
+						if (consumable->potionType == Consumable::PotionType::FATIGUE)
+						{
+							fatiguePotions.push_back(consumable);
+							numPotionCategories++;
+						}
+					}
+				}
+
+				bool hasPotion = false;
+
+				//EXPAND AS MORE POTIONS GET ADDED
+				if (healingPotions.size() > 0 || fatiguePotions.size() > 0)
+				{
+					hasPotion = true;
+				}
+
+				//Option 5 variables
+				ThrownConsumable* thrownConsumableChoice = nullptr;
+				Consumable* consumableChoice = nullptr;
+				Character* consumableTarget = nullptr;
+				Character* thrownConsumableTarget = nullptr;
+				vector<Item*> consumables;
+				vector<Item*> throwingWeapons;
+
+				for (Item* item : player->inventory.backpackItems)
+				{
+					//gets throwing weapons and consumables
+					if (ThrownConsumable* consumable = dynamic_cast<ThrownConsumable*>(item))
+					{
+						throwingWeapons.push_back(consumable);
+					}
+					if (Consumable* consumable = dynamic_cast<Consumable*>(item))
+					{
+						consumables.push_back(consumable);
+					}
+				}
+
+				//Option 6 variables
+				//NONE
+
+				//Option 7 variables
+				//NONE
+
+				//Option 8 variables
+				//NONE
+
+				//Option 9 variables
+				//NONE
+
+				//Option 10 variables
+				//NONE
+
+				std::cout << "\n=--->\n" << std::endl;
+				//print out the main combat menu
+
+				//Option 1: Attack
+				if (inRange)
+				{
+					cout << dye::light_yellow(" 1) Attack!") << endl;
+				}
+				else
+				{
+					cout << dye::grey(" 1) Attack") << endl;
+				}
+
+				//Option 2: Swap Weapons
+				if (hasStowedWeapons)
+				{
+					cout << dye::light_yellow(" 2) Swap to Your Stored weapons") << endl;
+				}
+				else
+				{
+					cout << dye::grey(" 2) Swap to Your Stored weapons") << endl;
+				}
+
+				//Option 3: View Spells
+				if (player->attunedSpells.size() > 0)
+				{
+					cout << dye::light_yellow(" 3) View Spells") << endl;
+				}
+				else
+				{
+					cout << dye::grey(" 3) View Spells") << endl;
+				}
+
+				//Option 4: Use Potion
+				if (healingPotions.size() > 0 || fatiguePotions.size() > 0)
+				{
+					cout << dye::light_yellow(" 4) Use Potion") << endl;
+				}
+				else
+				{
+					cout << dye::grey(" 4) Use Potion") << endl;
+				}
+
+				//Option 5: Use Item
+				if (consumables.size() > 0 || throwingWeapons.size() > 0)
+				{
+					cout << dye::light_yellow(" 5) Use Item") << endl;
+				}
+				else
+				{
+					cout << dye::grey(" 5) Use Item") << endl;
+				}
+
+				//Option 6: Taunt Enemy
+				if (livingEnemiesPointers.size() == 0)
+				{
+					cout << dye::light_yellow(" 6) Taunt Your Enemy") << endl;
+				}
+				else
+				{
+					cout << dye::light_yellow(" 6) Taunt Your Enemies") << endl;
+				}
+
+				//Option 7: Check Enemy
+				if (livingEnemiesPointers.size() == 0)
+				{
+					cout << dye::light_yellow(" 7) Check Your Enemy") << endl;
+				}
+				else
+				{
+					cout << dye::light_yellow(" 7) Check Your Enemies") << endl;
+				}
+
+				//Option 8: Check Ally/Self
+				if (livingAlliesPointers.size() == 0)
+				{
+					cout << dye::light_yellow(" 8) Check Self") << endl;
+				}
+				else if (livingAlliesPointers.size() == 1)
+				{
+					cout << dye::light_yellow(" 8) Check Self or Ally") << endl;
+				}
+				else
+				{
+					cout << dye::light_yellow(" 8) Check Self or Allies") << endl;
+				}
+
+				//Option 9: Check Ally/Self Equipment
+				if (livingAlliesPointers.size() == 0)
+				{
+					cout << dye::light_yellow(" 9) Check Equipment") << endl;
+				}
+				else if (livingAlliesPointers.size() == 1)
+				{
+					cout << dye::light_yellow(" 9) Check Equipment for Self or Ally") << endl;
+				}
+				else
+				{
+					cout << dye::light_yellow(" 9) Check Equipment for Self or Allies") << endl;
+				}
+
+				//Option 10: Flee
+				cout << dye::light_yellow(" 10) Flee from Combat") << endl;
+
+				//input validation
+				int initialChoice = validateInput(1, 10);
+
+				switch (initialChoice)
+				{
+				case 1: // ATTACK
+				{
+
+					if (!inRange)
+					{
+						cout << dye::white("\n You are out of range of any enemies!") << endl;
+						break;
+					}
+					else
+					{
+						float distanceTraveled = player->speed / 15;
+						int numEnemiesInRange = 0;
+						int numEnemiesInRangeForward = 0;
+						int numEnemiesInRangeBackward = 0;
+						for (int i = 0; i < livingEnemiesPointers.size(); i++)
+						{
+							if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach
+								|| livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach)
+							{
+								numEnemiesInRangeForward++;
+							}
+							if (livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled * 0.8 <= mainHand->reach
+								|| livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled * 0.8 <= offHand->reach)
+							{
+								numEnemiesInRangeBackward++;
+							}
+							if (livingEnemiesPointers[i]->distanceFromPlayer <= mainHand->reach || livingEnemiesPointers[i]->distanceFromPlayer <= offHand->reach)
+							{
+								numEnemiesInRange++;
+							}
+						}
+						if (numEnemiesInRangeForward > 0 || spellsInRange > 0) cout << dye::light_yellow(" 1) Advance and Attack!") << endl;
+						else cout << dye::grey(" 1) Advance and Attack!") << endl;
+						if (numEnemiesInRange > 0 || spellsInRange > 0) cout << dye::light_yellow(" 2) Stand Your Ground and Attack!") << endl;
+						else cout << dye::grey(" 2) Stand Your Ground and Attack!") << endl;
+						if (numEnemiesInRangeBackward > 0 || spellsInRange > 0) cout << dye::light_yellow(" 3) Retreat and Attack!") << endl;
+						else cout << dye::grey(" 3) Retreat and Attack!") << endl;
+						cout << dye::light_yellow(" 4) Go back") << endl;
+
+						//input validation
+						int attackChoice = validateInput(1, 4);
+
+						switch (attackChoice)
+						{
+						case 1: // ADVANCE AND ATTACK
+						{
+							if (numEnemiesInRangeBackward > 0)
+							{
+								//get enemies in range of a spell if they move forward and attack and check if player has fatiuge to cast spell
+								spellsInRange = 0;
+								for (Spell* spells : player->attunedSpells)
+								{
+									if (spells->range >= minDistanceFromPlayer - distanceTraveled && spells->fatigueCost <= player->fatiguePoints)
+									{
+										spellsInRange++;
+									}
+								}
+								for (int i = 0; i < livingEnemiesPointers.size(); i++)
+								{
+									//in range of both weapons and at least one spell
+									if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach &&
+										livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach &&
+										spellsInRange > 0)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
+											<< ", and " << offHand->name << ", and attuned spell(s)" << endl;
+									}
+									//in range of both weapons and no spells
+									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach &&
+										livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach &&
+										spellsInRange == 0)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
+											<< ", and " << offHand->name << endl;
+									}
+									//in range of mainhand and at least one spell
+									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach &&
+										spellsInRange > 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > offHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
+											<< ", and attuned spell(s)" << endl;
+									}
+									//in range of mainhand and no spells
+									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach &&
+										spellsInRange == 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > offHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name << endl;
+									}
+									//in range of offhand and at least one spell
+									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach &&
+										spellsInRange > 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > mainHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name
+											<< ", and attuned spell(s)" << endl;
+									}
+									//in range of offhand and no spells
+									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach &&
+										spellsInRange == 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > mainHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name << endl;
+									}
+									//in range of at least one spell
+									else if (spellsInRange > 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > offHand->reach
+										&& livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > mainHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of attuned spell(s)" << endl;
+									}
+									else
+									{
+										cout << dye::grey(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << endl;
+									}
+								}
+								int advanceChoice = 0;
+								advanceChoice = validateInput(1, livingEnemiesPointers.size());
+
+								//check if the player is in range of the enemy they selected
+								if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled > mainHand->reach
+									&& livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled > offHand->reach
+									&& spellsInRange == 0)
+								{
+									//They're not in range of choice, go back
+									cout << "You are not in range of that enemy!" << endl;
+									break;
+								}
+								else // they're in range and chose a target, ask which weapon to hit them with
+								{
+									//if they have two weapons to attack with, ask which one they want to use
+									if (mainHand->hasBeenInitialized && offHand->hasBeenInitialized)
+									{
+										cout << "Which weapon would you like to attack with?" << endl;
+										cout << dye::light_yellow(" 1) " + mainHand->name) << endl;
+										cout << dye::light_yellow(" 2) " + offHand->name) << endl;
+										cout << dye::light_yellow(" 3) Go back") << endl;
+										int mainOrOffChoice = validateInput(1, 3);
+										switch (mainOrOffChoice)
+										{
+										case 1: // MAINHAND
+										{
+											//CAST SPELL
+											std::cout << "\n=--->\n" << std::endl;
+											if (mainHand->weaponType == Weapon::WeaponType::TALISMAN || mainHand->weaponType == Weapon::WeaponType::CHIME ||
+												mainHand->weaponType == Weapon::WeaponType::TOME || mainHand->weaponType == Weapon::WeaponType::ORB ||
+												mainHand->weaponType == Weapon::WeaponType::STAFF || mainHand->weaponType == Weapon::WeaponType::WAND)
+											{
+												//check if player has enough fatigue to cast any spells
+												int spellsPlayerCanCast = 0;
+												for (Spell* spell : player->attunedSpells)
+												{
+													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+												}
+
+												if (spellsPlayerCanCast == 0)
+												{
+													cout << "You don't have enough fatigue to cast any spells!" << endl;
+													break;
+												}
+
+												////print all enemies
+												//cout << " Which target do you pick?" << endl;
+												//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												//{
+												//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												//}
+												////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+												//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+												//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+												// choose to cast a spell
+												bool spellAttackCommitted = player->chooseSpell(*mainHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+												if (spellAttackCommitted)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+													weaponChoice = mainHand;
+													inputChosen = true;
+												}
+												break;
+											}
+											//PROJECTILE WEAPON
+											else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+												mainHand->weaponType == Weapon::WeaponType::GREATBOW || mainHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+												mainHand->weaponType == Weapon::WeaponType::CROSSBOW || mainHand->weaponType == Weapon::WeaponType::BALLISTA)
+											{
+												//print all enemies
+												/*cout << " Which target do you pick?" << endl;
+												for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												{
+													cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												}
+												cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);*/
+
+												bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+												if (projectileAttackCommitted)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1];
+													weaponChoice = mainHand;
+													inputChosen = true;
+													break;
+												}
+												else
+												{
+													break;
+												}
+											}
+											else
+											{
+												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled <= mainHand->reach)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1];
+													weaponChoice = mainHand;
+													inputChosen = true;
+													break;
+												}
+												else
+												{
+													cout << "You are not in range of that enemy!" << endl;
+													break;
+												}
+											}
+
+										}
+										case 2: // OFFHAND
+										{
+											//CAST SPELL
+											std::cout << "\n=--->\n" << std::endl;
+											if (offHand->weaponType == Weapon::WeaponType::TALISMAN || offHand->weaponType == Weapon::WeaponType::CHIME ||
+												offHand->weaponType == Weapon::WeaponType::TOME || offHand->weaponType == Weapon::WeaponType::ORB ||
+												offHand->weaponType == Weapon::WeaponType::STAFF || offHand->weaponType == Weapon::WeaponType::WAND)
+											{
+												//check if player has enough fatigue to cast any spells
+												int spellsPlayerCanCast = 0;
+												for (Spell* spell : player->attunedSpells)
+												{
+													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+												}
+
+												if (spellsPlayerCanCast == 0)
+												{
+													cout << "You don't have enough fatigue to cast any spells!" << endl;
+													break;
+												}
+
+												////print all enemies
+												//cout << " Which target do you pick?" << endl;
+												//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												//{
+												//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												//}
+												////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+												//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+												//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+												// choose to cast a spell
+												bool spellAttackCommitted = player->chooseSpell(*offHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+												if (spellAttackCommitted)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+													weaponChoice = offHand;
+													inputChosen = true;
+												}
+												break;
+											}
+											//PROJECTILE WEAPON
+											else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+												offHand->weaponType == Weapon::WeaponType::GREATBOW || offHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+												offHand->weaponType == Weapon::WeaponType::CROSSBOW || offHand->weaponType == Weapon::WeaponType::BALLISTA)
+											{
+												//print all enemies
+												/*cout << " Which target do you pick?" << endl;
+												for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												{
+													cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												}
+												cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);*/
+
+												bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+												weaponChoice = offHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled <= mainHand->reach)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1];
+													weaponChoice = offHand;
+													inputChosen = true;
+													break;
+												}
+												else
+												{
+													cout << "You are not in range of that enemy!" << endl;
+													break;
+												}
+											}
+										}
+										case 3: // GO BACK
+										{
+											break;
+										}
+										default:
+										{
+											cout << dye::white("\n  Enter a number between 1 - 3") << endl;
+											break;
+										}
+										}
+									}
+									//if only mainhand is available
+									else if (mainHand->hasBeenInitialized && !offHand->hasBeenInitialized)
+									{
+										//CAST SPELL
+										std::cout << "\n=--->\n" << std::endl;
+										if (mainHand->weaponType == Weapon::WeaponType::TALISMAN || mainHand->weaponType == Weapon::WeaponType::CHIME ||
+											mainHand->weaponType == Weapon::WeaponType::TOME || mainHand->weaponType == Weapon::WeaponType::ORB ||
+											mainHand->weaponType == Weapon::WeaponType::STAFF || mainHand->weaponType == Weapon::WeaponType::WAND)
+										{
+											//check if player has enough fatigue to cast any spells
+											int spellsPlayerCanCast = 0;
+											for (Spell* spell : player->attunedSpells)
+											{
+												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+											}
+
+											if (spellsPlayerCanCast == 0)
+											{
+												cout << "You don't have enough fatigue to cast any spells!" << endl;
+												break;
+											}
+
+											////print all enemies
+											//cout << " Which target do you pick?" << endl;
+											//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											//{
+											//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											//}
+											////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+											//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+											//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+											// choose to cast a spell
+											bool spellAttackCommitted = player->chooseSpell(*mainHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+											if (spellAttackCommitted)
+											{
+												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+												weaponChoice = mainHand;
+												inputChosen = true;
+											}
+											break;
+										}
+										//PROJECTILE WEAPON
+										else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+											mainHand->weaponType == Weapon::WeaponType::GREATBOW || mainHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+											mainHand->weaponType == Weapon::WeaponType::CROSSBOW || mainHand->weaponType == Weapon::WeaponType::BALLISTA)
+										{
+											//print all enemies
+											/*cout << " Which target do you pick?" << endl;
+											for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											{
+												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											}
+											cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);*/
+
+											bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+											weaponChoice = mainHand;
+											inputChosen = true;
+											break;
+										}
+										else
+										{
+											if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled <= mainHand->reach)
+											{
+												targetChoice = livingEnemiesPointers[advanceChoice - 1];
+												weaponChoice = mainHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												cout << "You are not in range of that enemy!" << endl;
+												break;
+											}
+										}
+									}
+									//if only offhand is available
+									else if (offHand->hasBeenInitialized && !mainHand->hasBeenInitialized)
+									{
+										//CAST SPELL
+										std::cout << "\n=--->\n" << std::endl;
+										if (offHand->weaponType == Weapon::WeaponType::TALISMAN || offHand->weaponType == Weapon::WeaponType::CHIME ||
+											offHand->weaponType == Weapon::WeaponType::TOME || offHand->weaponType == Weapon::WeaponType::ORB ||
+											offHand->weaponType == Weapon::WeaponType::STAFF || offHand->weaponType == Weapon::WeaponType::WAND)
+										{
+											//check if player has enough fatigue to cast any spells
+											int spellsPlayerCanCast = 0;
+											for (Spell* spell : player->attunedSpells)
+											{
+												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+											}
+
+											if (spellsPlayerCanCast == 0)
+											{
+												cout << "You don't have enough fatigue to cast any spells!" << endl;
+												break;
+											}
+
+											////print all enemies
+											//cout << " Which target do you pick?" << endl;
+											//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											//{
+											//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											//}
+											////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+											//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+											//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+											// choose to cast a spell
+											bool spellAttackCommitted = player->chooseSpell(*offHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+											if (spellAttackCommitted)
+											{
+												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+												weaponChoice = offHand;
+												inputChosen = true;
+											}
+											break;
+										}
+										//PROJECTILE WEAPON
+										else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+											offHand->weaponType == Weapon::WeaponType::GREATBOW || offHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+											offHand->weaponType == Weapon::WeaponType::CROSSBOW || offHand->weaponType == Weapon::WeaponType::BALLISTA)
+										{
+											////print all enemies
+											//cout << " Which target do you pick?" << endl;
+											//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											//{
+											//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											//}
+											//cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											//int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);
+
+											bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+											weaponChoice = offHand;
+											inputChosen = true;
+											break;
+										}
+										else
+										{
+											//print all enemies
+											cout << " Which target do you pick?" << endl;
+											for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											{
+												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											}
+											int meleeAttackChoice = validateInput(1, livingEnemiesPointers.size());
+											if (livingEnemiesPointers[meleeAttackChoice - 1]->distanceFromPlayer - distanceTraveled <= offHand->reach)
+											{
+												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
+												inputChosen = true;
+												weaponChoice = offHand;
+												break;
+											}
+											else
+											{
+												cout << "You are not in range of that enemy!" << endl;
+												break;
+											}
+											break;
+										}
+									}
+									else
+									{
+										cout << "ERROR: No weapons initialized!" << endl;
+										break;
+									}
+									break;
+								}
+							}
+							else
+							{
+								cout << "No enemies are in range of your retreating attack..." << endl;
+								break;
+							}
+						}
+						case 2: // STAND YOUR GROUND AND ATTACK
+						{
+							if (numEnemiesInRangeBackward > 0)
+							{
+								for (int i = 0; i < livingEnemiesPointers.size(); i++)
+								{
+									if (livingEnemiesPointers[i]->distanceFromPlayer <= mainHand->reach &&
+										livingEnemiesPointers[i]->distanceFromPlayer <= offHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
+											<< " and " << offHand->name << endl;
+									}
+									else if (livingEnemiesPointers[i]->distanceFromPlayer <= offHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name << endl;
+									}
+									else if (livingEnemiesPointers[i]->distanceFromPlayer <= mainHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name << endl;
+									}
+									else
+									{
+										cout << dye::grey(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << endl;
+									}
+								}
+								int advanceChoice = 0;
+								advanceChoice = validateInput(1, livingEnemiesPointers.size());
+
+								//check if the player is in range of the enemy they selected
+								if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer > mainHand->reach
+									&& livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer > offHand->reach)
+								{
+									//They're not in range of choice, go back
+									cout << "You are not in range of that enemy!" << endl;
+									break;
+								}
+								else // they're in range and chose a target, ask which weapon to hit them with
+								{
+									//if they have two weapons to attack with, ask which one they want to use
+									if (mainHand->hasBeenInitialized && offHand->hasBeenInitialized)
+									{
+										cout << "Which weapon would you like to attack with?" << endl;
+										cout << dye::light_yellow(" 1) " + mainHand->name) << endl;
+										cout << dye::light_yellow(" 2) " + offHand->name) << endl;
+										cout << dye::light_yellow(" 3) Go back") << endl;
+										int mainOrOffChoice = validateInput(1, 3);
+										switch (mainOrOffChoice)
+										{
+										case 1: // MAINHAND
+										{
+											//CAST SPELL
+											std::cout << "\n=--->\n" << std::endl;
+											if (mainHand->weaponType == Weapon::WeaponType::TALISMAN || mainHand->weaponType == Weapon::WeaponType::CHIME ||
+												mainHand->weaponType == Weapon::WeaponType::TOME || mainHand->weaponType == Weapon::WeaponType::ORB ||
+												mainHand->weaponType == Weapon::WeaponType::STAFF || mainHand->weaponType == Weapon::WeaponType::WAND)
+											{
+												//check if player has enough fatigue to cast any spells
+												int spellsPlayerCanCast = 0;
+												for (Spell* spell : player->attunedSpells)
+												{
+													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+												}
+
+												if (spellsPlayerCanCast == 0)
+												{
+													cout << "You don't have enough fatigue to cast any spells!" << endl;
+													break;
+												}
+
+												////print all enemies
+												//cout << " Which target do you pick?" << endl;
+												//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												//{
+												//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												//}
+												////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+												//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+												//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+												// choose to cast a spell
+												bool spellAttackCommitted = player->chooseSpell(*mainHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+												if (spellAttackCommitted)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+													weaponChoice = mainHand;
+													inputChosen = true;
+												}
+												break;
+											}
+											//PROJECTILE WEAPON
+											else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+												mainHand->weaponType == Weapon::WeaponType::GREATBOW || mainHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+												mainHand->weaponType == Weapon::WeaponType::CROSSBOW || mainHand->weaponType == Weapon::WeaponType::BALLISTA)
+											{
+												////print all enemies
+												//cout << " Which target do you pick?" << endl;
+												//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												//{
+												//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												//}
+												//cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												//int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);
+
+												bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+												weaponChoice = mainHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer <= mainHand->reach)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1];
+													weaponChoice = mainHand;
+													inputChosen = true;
+													break;
+												}
+												else
+												{
+													cout << "HERE" << endl;
+													cout << "You are not in range of that enemy!" << endl;
+													break;
+												}
+											}
+
+										}
+										case 2: // OFFHAND
+										{
+											//CAST SPELL
+											std::cout << "\n=--->\n" << std::endl;
+											if (offHand->weaponType == Weapon::WeaponType::TALISMAN || offHand->weaponType == Weapon::WeaponType::CHIME ||
+												offHand->weaponType == Weapon::WeaponType::TOME || offHand->weaponType == Weapon::WeaponType::ORB ||
+												offHand->weaponType == Weapon::WeaponType::STAFF || offHand->weaponType == Weapon::WeaponType::WAND)
+											{
+												//check if player has enough fatigue to cast any spells
+												int spellsPlayerCanCast = 0;
+												for (Spell* spell : player->attunedSpells)
+												{
+													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+												}
+
+												if (spellsPlayerCanCast == 0)
+												{
+													cout << "You don't have enough fatigue to cast any spells!" << endl;
+													break;
+												}
+
+												////print all enemies
+												//cout << " Which target do you pick?" << endl;
+												//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												//{
+												//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												//}
+												////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+												//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+												//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+												// choose to cast a spell
+												bool spellAttackCommitted = player->chooseSpell(*offHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+												if (spellAttackCommitted)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+													weaponChoice = offHand;
+													inputChosen = true;
+												}
+												break;
+											}
+											//PROJECTILE WEAPON
+											else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+												offHand->weaponType == Weapon::WeaponType::GREATBOW || offHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+												offHand->weaponType == Weapon::WeaponType::CROSSBOW || offHand->weaponType == Weapon::WeaponType::BALLISTA)
+											{
+												//print all enemies
+												/*cout << " Which target do you pick?" << endl;
+												for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												{
+													cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												}
+												cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);*/
+
+												bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+												weaponChoice = offHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer <= offHand->reach)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1];
+													weaponChoice = offHand;
+													inputChosen = true;
+													break;
+												}
+												else
+												{
+													cout << "You are not in range of that enemy!" << endl;
+													break;
+												}
+											}
+										}
+										case 3: // GO BACK
+										{
+											break;
+										}
+										default:
+										{
+											cout << dye::white("\n  Enter a number between 1 - 3") << endl;
+											break;
+										}
+										}
+									}
+									//if only mainhand is available
+									else if (mainHand->hasBeenInitialized && !offHand->hasBeenInitialized)
+									{
+										//CAST SPELL
+										std::cout << "\n=--->\n" << std::endl;
+										if (mainHand->weaponType == Weapon::WeaponType::TALISMAN || mainHand->weaponType == Weapon::WeaponType::CHIME ||
+											mainHand->weaponType == Weapon::WeaponType::TOME || mainHand->weaponType == Weapon::WeaponType::ORB ||
+											mainHand->weaponType == Weapon::WeaponType::STAFF || mainHand->weaponType == Weapon::WeaponType::WAND)
+										{
+											//check if player has enough fatigue to cast any spells
+											int spellsPlayerCanCast = 0;
+											for (Spell* spell : player->attunedSpells)
+											{
+												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+											}
+
+											if (spellsPlayerCanCast == 0)
+											{
+												cout << "You don't have enough fatigue to cast any spells!" << endl;
+												break;
+											}
+
+											////print all enemies
+											//cout << " Which target do you pick?" << endl;
+											//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											//{
+											//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											//}
+											////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+											//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+											//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+											// choose to cast a spell
+											bool spellAttackCommitted = player->chooseSpell(*mainHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+											if (spellAttackCommitted)
+											{
+												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+												weaponChoice = mainHand;
+												inputChosen = true;
+											}
+											break;
+										}
+										//PROJECTILE WEAPON
+										else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+											mainHand->weaponType == Weapon::WeaponType::GREATBOW || mainHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+											mainHand->weaponType == Weapon::WeaponType::CROSSBOW || mainHand->weaponType == Weapon::WeaponType::BALLISTA)
+										{
+											//print all enemies
+											/*cout << " Which target do you pick?" << endl;
+											for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											{
+												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											}
+											cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);*/
+
+											bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+											weaponChoice = mainHand;
+											inputChosen = true;
+											break;
+										}
+										else
+										{
+											if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer <= mainHand->reach)
+											{
+												targetChoice = livingEnemiesPointers[advanceChoice - 1];
+												weaponChoice = mainHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												cout << "You are not in range of that enemy!" << endl;
+												break;
+											}
+										}
+									}
+									//if only offhand is available
+									else if (offHand->hasBeenInitialized && !mainHand->hasBeenInitialized)
+									{
+										//CAST SPELL
+										std::cout << "\n=--->\n" << std::endl;
+										if (offHand->weaponType == Weapon::WeaponType::TALISMAN || offHand->weaponType == Weapon::WeaponType::CHIME ||
+											offHand->weaponType == Weapon::WeaponType::TOME || offHand->weaponType == Weapon::WeaponType::ORB ||
+											offHand->weaponType == Weapon::WeaponType::STAFF || offHand->weaponType == Weapon::WeaponType::WAND)
+										{
+											//check if player has enough fatigue to cast any spells
+											int spellsPlayerCanCast = 0;
+											for (Spell* spell : player->attunedSpells)
+											{
+												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+											}
+
+											if (spellsPlayerCanCast == 0)
+											{
+												cout << "You don't have enough fatigue to cast any spells!" << endl;
+												break;
+											}
+
+											////print all enemies
+											//cout << " Which target do you pick?" << endl;
+											//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											//{
+											//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											//}
+											////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+											//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+											//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+											// choose to cast a spell
+											bool spellAttackCommitted = player->chooseSpell(*offHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+											if (spellAttackCommitted)
+											{
+												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+												weaponChoice = offHand;
+												inputChosen = true;
+											}
+											break;
+										}
+										//PROJECTILE WEAPON
+										else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+											offHand->weaponType == Weapon::WeaponType::GREATBOW || offHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+											offHand->weaponType == Weapon::WeaponType::CROSSBOW || offHand->weaponType == Weapon::WeaponType::BALLISTA)
+										{
+											//print all enemies
+											/*cout << " Which target do you pick?" << endl;
+											for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											{
+												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											}
+											cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);*/
+
+											bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+											weaponChoice = offHand;
+											inputChosen = true;
+											break;
+										}
+										else
+										{
+											//print all enemies
+											cout << " Which target do you pick?" << endl;
+											for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											{
+												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											}
+											int meleeAttackChoice = validateInput(1, livingEnemiesPointers.size());
+											if (livingEnemiesPointers[meleeAttackChoice - 1]->distanceFromPlayer <= offHand->reach)
+											{
+												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
+												weaponChoice = mainHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												cout << "You are not in range of that enemy!" << endl;
+												break;
+											}
+											break;
+										}
+									}
+									else
+									{
+										cout << "ERROR: No weapons initialized!" << endl;
+										break;
+									}
+									break;
+								}
+							}
+							else
+							{
+								cout << "No enemies are in range of your retreating attack..." << endl;
+								break;
+							}
+						}
+						case 3: // RETREAT AND ATTACK
+						{
+							if (numEnemiesInRangeBackward > 0)
+							{
+								for (int i = 0; i < livingEnemiesPointers.size(); i++)
+								{
+									if (livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled <= mainHand->reach &&
+										livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled <= offHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
+											<< " and " << offHand->name << endl;
+									}
+									else if (livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled <= offHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name << endl;
+									}
+									else if (livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled <= mainHand->reach)
+									{
+										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name << endl;
+									}
+									else
+									{
+										cout << dye::grey(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << endl;
+									}
+								}
+								int advanceChoice = 0;
+								advanceChoice = validateInput(1, livingEnemiesPointers.size());
+
+								//check if the player is in range of the enemy they selected
+								if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled > mainHand->reach
+									&& livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled > offHand->reach)
+								{
+									//They're not in range of choice, go back
+									cout << "You are not in range of that enemy!" << endl;
+									break;
+								}
+								else // they're in range and chose a target, ask which weapon to hit them with
+								{
+									//if they have two weapons to attack with, ask which one they want to use
+									if (mainHand->hasBeenInitialized && offHand->hasBeenInitialized)
+									{
+										cout << "Which weapon would you like to attack with?" << endl;
+										cout << dye::light_yellow(" 1) " + mainHand->name) << endl;
+										cout << dye::light_yellow(" 2) " + offHand->name) << endl;
+										cout << dye::light_yellow(" 3) Go back") << endl;
+										int mainOrOffChoice = validateInput(1, 3);
+										switch (mainOrOffChoice)
+										{
+										case 1: // MAINHAND
+										{
+											//CAST SPELL
+											std::cout << "\n=--->\n" << std::endl;
+											if (mainHand->weaponType == Weapon::WeaponType::TALISMAN || mainHand->weaponType == Weapon::WeaponType::CHIME ||
+												mainHand->weaponType == Weapon::WeaponType::TOME || mainHand->weaponType == Weapon::WeaponType::ORB ||
+												mainHand->weaponType == Weapon::WeaponType::STAFF || mainHand->weaponType == Weapon::WeaponType::WAND)
+											{
+												//check if player has enough fatigue to cast any spells
+												int spellsPlayerCanCast = 0;
+												for (Spell* spell : player->attunedSpells)
+												{
+													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+												}
+
+												if (spellsPlayerCanCast == 0)
+												{
+													cout << "You don't have enough fatigue to cast any spells!" << endl;
+													break;
+												}
+
+												////print all enemies
+												//cout << " Which target do you pick?" << endl;
+												//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												//{
+												//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												//}
+												////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+												//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+												//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+												// choose to cast a spell
+												bool spellAttackCommitted = player->chooseSpell(*mainHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+												if (spellAttackCommitted)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+													weaponChoice = mainHand;
+													inputChosen = true;
+												}
+												break;
+											}
+											//PROJECTILE WEAPON
+											else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+												mainHand->weaponType == Weapon::WeaponType::GREATBOW || mainHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+												mainHand->weaponType == Weapon::WeaponType::CROSSBOW || mainHand->weaponType == Weapon::WeaponType::BALLISTA)
+											{
+												////print all enemies
+												//cout << " Which target do you pick?" << endl;
+												//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												//{
+												//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												//}
+												//cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												//int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);
+
+												bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+												weaponChoice = mainHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled <= mainHand->reach)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1];
+													inputChosen = true;
+													break;
+												}
+												else
+												{
+													cout << "You are not in range of that enemy!" << endl;
+													break;
+												}
+											}
+
+										}
+										case 2: // OFFHAND
+										{
+											//CAST SPELL
+											std::cout << "\n=--->\n" << std::endl;
+											if (offHand->weaponType == Weapon::WeaponType::TALISMAN || offHand->weaponType == Weapon::WeaponType::CHIME ||
+												offHand->weaponType == Weapon::WeaponType::TOME || offHand->weaponType == Weapon::WeaponType::ORB ||
+												offHand->weaponType == Weapon::WeaponType::STAFF || offHand->weaponType == Weapon::WeaponType::WAND)
+											{
+												//check if player has enough fatigue to cast any spells
+												int spellsPlayerCanCast = 0;
+												for (Spell* spell : player->attunedSpells)
+												{
+													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+												}
+
+												if (spellsPlayerCanCast == 0)
+												{
+													cout << "You don't have enough fatigue to cast any spells!" << endl;
+													break;
+												}
+
+												////print all enemies
+												//cout << " Which target do you pick?" << endl;
+												//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												//{
+												//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												//}
+												////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+												//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+												//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+												// choose to cast a spell
+												bool spellAttackCommitted = player->chooseSpell(*offHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+												if (spellAttackCommitted)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+													weaponChoice = offHand;
+													inputChosen = true;
+												}
+												break;
+											}
+											//PROJECTILE WEAPON
+											else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+												offHand->weaponType == Weapon::WeaponType::GREATBOW || offHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+												offHand->weaponType == Weapon::WeaponType::CROSSBOW || offHand->weaponType == Weapon::WeaponType::BALLISTA)
+											{
+												////print all enemies
+												//cout << " Which target do you pick?" << endl;
+												//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+												//{
+												//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+												//}
+												//cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+												//int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);
+
+												bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+												weaponChoice = offHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled <= offHand->reach)
+												{
+													targetChoice = livingEnemiesPointers[advanceChoice - 1];
+													weaponChoice = offHand;
+													inputChosen = true;
+													break;
+												}
+												else
+												{
+													cout << "You are not in range of that enemy!" << endl;
+													break;
+												}
+											}
+										}
+										case 3: // GO BACK
+										{
+											break;
+										}
+										default:
+										{
+											cout << dye::white("\n  Enter a number between 1 - 3") << endl;
+											break;
+										}
+										}
+									}
+									//if only mainhand is available
+									else if (mainHand->hasBeenInitialized && !offHand->hasBeenInitialized)
+									{
+										//CAST SPELL
+										std::cout << "\n=--->\n" << std::endl;
+										if (mainHand->weaponType == Weapon::WeaponType::TALISMAN || mainHand->weaponType == Weapon::WeaponType::CHIME ||
+											mainHand->weaponType == Weapon::WeaponType::TOME || mainHand->weaponType == Weapon::WeaponType::ORB ||
+											mainHand->weaponType == Weapon::WeaponType::STAFF || mainHand->weaponType == Weapon::WeaponType::WAND)
+										{
+											//check if player has enough fatigue to cast any spells
+											int spellsPlayerCanCast = 0;
+											for (Spell* spell : player->attunedSpells)
+											{
+												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+											}
+
+											if (spellsPlayerCanCast == 0)
+											{
+												cout << "You don't have enough fatigue to cast any spells!" << endl;
+												break;
+											}
+
+											////print all enemies
+											//cout << " Which target do you pick?" << endl;
+											//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											//{
+											//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											//}
+											////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+											//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+											//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+											// choose to cast a spell
+											bool spellAttackCommitted = player->chooseSpell(*mainHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+											if (spellAttackCommitted)
+											{
+												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+												weaponChoice = mainHand;
+												inputChosen = true;
+											}
+											break;
+										}
+										//PROJECTILE WEAPON
+										else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+											mainHand->weaponType == Weapon::WeaponType::GREATBOW || mainHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+											mainHand->weaponType == Weapon::WeaponType::CROSSBOW || mainHand->weaponType == Weapon::WeaponType::BALLISTA)
+										{
+											//print all enemies
+											/*cout << " Which target do you pick?" << endl;
+											for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											{
+												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											}
+											cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);*/
+
+											bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
+											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+											weaponChoice = mainHand;
+											inputChosen = true;
+											break;
+										}
+										else
+										{
+											if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled <= mainHand->reach)
+											{
+												targetChoice = livingEnemiesPointers[advanceChoice - 1];
+												weaponChoice = mainHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												cout << "You are not in range of that enemy!" << endl;
+												break;
+											}
+										}
+									}
+									//if only offhand is available
+									else if (offHand->hasBeenInitialized && !mainHand->hasBeenInitialized)
+									{
+										//CAST SPELL
+										std::cout << "\n=--->\n" << std::endl;
+										if (offHand->weaponType == Weapon::WeaponType::TALISMAN || offHand->weaponType == Weapon::WeaponType::CHIME ||
+											offHand->weaponType == Weapon::WeaponType::TOME || offHand->weaponType == Weapon::WeaponType::ORB ||
+											offHand->weaponType == Weapon::WeaponType::STAFF || offHand->weaponType == Weapon::WeaponType::WAND)
+										{
+											//check if player has enough fatigue to cast any spells
+											int spellsPlayerCanCast = 0;
+											for (Spell* spell : player->attunedSpells)
+											{
+												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
+											}
+
+											if (spellsPlayerCanCast == 0)
+											{
+												cout << "You don't have enough fatigue to cast any spells!" << endl;
+												break;
+											}
+
+											////print all enemies
+											//cout << " Which target do you pick?" << endl;
+											//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											//{
+											//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											//}
+											////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											//int spellAttackChoice = validateInput(1, livingEnemiesPointers.size());
+											//if (spellAttackChoice > livingEnemiesPointers.size()) break;
+
+											//returns false if they don't commit to a spell or can't cast the one they select, updates spellChoice if they 
+											// choose to cast a spell
+											bool spellAttackCommitted = player->chooseSpell(*offHand, livingEnemiesPointers[advanceChoice - 1], spellChoice);
+											if (spellAttackCommitted)
+											{
+												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+												weaponChoice = offHand;
+												inputChosen = true;
+											}
+											break;
+										}
+										//PROJECTILE WEAPON
+										else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+											offHand->weaponType == Weapon::WeaponType::GREATBOW || offHand->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+											offHand->weaponType == Weapon::WeaponType::CROSSBOW || offHand->weaponType == Weapon::WeaponType::BALLISTA)
+										{
+											////print all enemies
+											//cout << " Which target do you pick?" << endl;
+											//for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											//{
+											//	cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											//}
+											////cout << " " << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") ") << "Go back..." << endl;
+											//int projectileAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);
+
+											bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice], ammoChoice);
+											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+											weaponChoice = offHand;
+											inputChosen = true;
+											break;
+										}
+										else
+										{
+											//print all enemies
+											cout << " Which target do you pick?" << endl;
+											for (int i = 0; i < livingEnemiesPointers.size(); i++)
+											{
+												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+											}
+											int meleeAttackChoice = validateInput(1, livingEnemiesPointers.size());
+											if (livingEnemiesPointers[meleeAttackChoice - 1]->distanceFromPlayer + distanceTraveled <= offHand->reach)
+											{
+												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
+												weaponChoice = mainHand;
+												inputChosen = true;
+												break;
+											}
+											else
+											{
+												cout << "You are not in range of that enemy!" << endl;
+												break;
+											}
+											break;
+										}
+									}
+									else
+									{
+										cout << "ERROR: No weapons initialized!" << endl;
+										break;
+									}
+									break;
+								}
+							}
+							else
+							{
+								cout << "No enemies are in range of your retreating attack..." << endl;
+								break;
+							}
+						}
+						case 4: // GO BACK
+						{
+							break;
+						}
+						default:
+						{
+							cout << dye::white("\n  Enter a number between 1 - 4") << endl;
+							break;
+						}
+						}
+						break;
+					}
+				}
+				case 2: // SWAP WEAPONS
+				{
+					if (hasStowedWeapons)
+					{
+						//TODO
+						std::cout << "\n=--->\n" << std::endl;
+						cout << dye::light_yellow(" 1) Swap to Your Stowed Weapons") << endl;
+						cout << dye::light_yellow(" 2) Go back") << endl;
+
+						//input validation
+						int swapWeaponChoice = validateInput(1, 2);
+
+						if (swapWeaponChoice == 1)
+						{
+							std::cout << "\n";
+							std::cout << "=--->" << std::endl;
+							std::cout << "\n";
+							cout << "PLACEHOLDER SWAP WEAPON  TEXT" << endl;
+							break;
+						}
+						else
+						{
+							break;
+						}
+
+					}
+					else //NO STOWED WEAPONS, GO BACK
+					{
+						std::cout << "\n=--->\n" << std::endl;
+						cout << dye::white("\n You have no stowed weapons to swap to!") << endl;
+						break;
+					}
+				}
+				case 3: // VIEW SPELLS
+				{
+					if (player->attunedSpells.size() > 0)
+					{
+						std::cout << "\n=--->\n" << std::endl;
+						player->viewSpells();
+						break;
+					}
+					else //NO SPELLS, GO BACK
+					{
+						std::cout << "\n=--->\n" << std::endl;
+						cout << dye::white("\n You have no spells to view!") << endl;
+						break;
+					}
+				}
+				case 4: // USE POTION
+				{
+					if (hasPotion)
+					{
+						std::cout << "\n=--->\n" << std::endl;
+						cout << dye::light_yellow(" 1) Drink Potion") << endl;
+						if (livingAlliesPointers.size() > 0)
+						{
+							cout << dye::light_yellow(" 2) Share with a Friend") << endl;
+							cout << dye::light_yellow(" 3) Go back") << endl;
+						}
+						else
+						{
+							cout << dye::grey(" 2) Share with a Friend") << endl;
+							cout << dye::light_yellow(" 3) Go back") << endl;
+						}
+
+						//input validation
+						int potionChoice = validateInput(1, 3);
+
+						switch (potionChoice)
+						{
+						case 1: // DRINK POTION
+						{
+							//TODO
+							std::cout << "\n=--->\n" << std::endl;
+							cout << dye::light_yellow(" DRINK POTION PLACEHOLDER TEXT") << endl;
+
+							int potionSubChoice = validateInput(1, numPotionCategories);
+							break;
+						}
+						case 2: // SHARE POTION
+						{
+							if (livingAlliesPointers.size() > 0)
+							{
+								//TODO
+								std::cout << "\n=--->\n" << std::endl;
+								cout << dye::light_yellow(" SHARE POTION PLACEHOLDER TEXT") << endl;
+								int potionSubChoice = validateInput(1, numPotionCategories);
+								break;
+							}
+							else //NO ALLIES, GO BACK
+							{
+								std::cout << "\n=--->\n" << std::endl;
+								cout << dye::white("\n You have no allies to share a potion with!") << endl;
+								break;
+							}
+						}
+						case 3: // GO BACK
+						{
+							break;
+						}
+						}
+					}
+					else //NO POTIONS, GO BACK
+					{
+						std::cout << "\n=--->\n" << std::endl;
+						cout << dye::white("\n You have no potions to use!") << endl;
+						break;
+					}
+					break;
+				case 5: // USE ITEM
+				{
+					if (consumables.size() > 0 || throwingWeapons.size() > 0)
+					{
+						std::cout << "\n=--->\n" << std::endl;
+						if (consumables.size() > 0)
+						{
+							cout << dye::light_yellow(" 1) Use Consumable") << endl;
+						}
+						else
+						{
+							cout << dye::grey(" 1) Use Consumable") << endl;
+						}
+						if (throwingWeapons.size() > 0)
+						{
+							cout << dye::light_yellow(" 2) Use Throwing Weapon") << endl;
+						}
+						else
+						{
+							cout << dye::grey(" 2) Use Throwing Weapon") << endl;
+						}
+						cout << dye::light_yellow(" 3) Go back") << endl;
+
+						//input validation
+						int consumableChoice = validateInput(1, 3);
+
+						switch (consumableChoice)
+						{
+						case 1: // THROWING WEAPON
+						{
+							if (!throwingWeapons.empty())
+							{
+								cout << "THROWING WEAPON GO" << endl;
+								break;
+							}
+							else //NO THROWING WEAPONS, GO BACK
+							{
+								std::cout << "\n=--->\n" << std::endl;
+								cout << "\n You have no throwing weapons to use!" << endl;
+								break;
+							}
+							break;
+						}
+						case 2: // CONSUMABLE
+						{
+							if (!consumables.empty())
+							{
+								// TODO
+								cout << "CONSUMABLE GO" << endl;
+								break;
+							}
+							else //NO CONSUMAMBLES, GO BACK
+							{
+								std::cout << "\n=--->\n" << std::endl;
+								cout << "\n You have no consumables to use!" << endl;
+								break;
+							}
+							break;
+						}
+						case 3: // GO BACK
+						{
+							break;
+						}
+						}
+					}
+					else
+					{
+						std::cout << "\n=--->\n" << std::endl;
+						cout << "\n You have no items to use!" << endl;
+					}
+					break;
+				}
+				case 6: // TAUNT ENEMY
+				{
+					std::cout << "\n=--->\n" << std::endl;
+					cout << dye::light_yellow("1) By the Book") << endl;
+					cout << dye::light_yellow("2) Make Something Up") << endl;
+					cout << dye::light_yellow("3) Go back") << endl;
+
+					//input validation
+					int tauntChoice = validateInput(1, 3);
+					switch (tauntChoice)
+					{
+					case 1: // PRESELECTED TAUNT
+					{
+						//TODO TAUNT FUNCTION
+						cout << dye::light_yellow("PLACEHOLDER TAUNT") << endl;
+						break;
+					}
+					case 2: // USER INPUT TAUNT
+					{
+						string taunt;
+						std::cout << "\n=--->\n" << std::endl;
+						cout << dye::light_yellow(" Give them your best shot: ");
+						cin.ignore(10000, '\n');
+						getline(cin, taunt);
+
+						//TODO TAUNT FUNCTION
+						break;
+					}
+					case 3: // GO BACK
+					{
+						break;
+					}
+					}
+					break;
+				}
+				case 7: // CHECK ENEMY
+				{
+					std::cout << "\n=--->\n" << std::endl;
+					for (int i = 0; i < livingEnemiesPointers.size(); i++)
+					{
+						string confidenceDescription = getConfidenceDescription(dynamic_cast<Human*>(livingEnemiesPointers[i]));
+						cout << dye::light_yellow(i + 1) << ") " << dye::light_yellow(livingEnemiesPointers[i]->name) << dye::light_yellow("; ") << dye::white(confidenceDescription) << endl;
+					}
+					cout << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") Go back") << endl;
+
+					//input validation
+					int checkEnemyChoice = validateInput(1, livingEnemiesPointers.size() + 1);
+
+					if (checkEnemyChoice == livingEnemiesPointers.size() + 1) // GO BACK
+					{
+						break;
+					}
+					else // CHECK ENEMY
+					{
+						//TODO
+						cout << dye::light_yellow("PLACEHOLDER CHECK ENEMY") << endl;
+						break;
+					}
+					break;
+				}
+				case 8: // CHECK ALLY/SELF
+				{
+					std::cout << "\n=--->\n" << std::endl;
+					if (!livingAlliesPointers.empty())
+					{
+						cout << dye::light_yellow("1") << ") " << dye::light_yellow(player->name) << " " << dye::white(player->healthPoints) << "/" << dye::white(player->maxHealthPoints) << dye::light_yellow(" HP")
+							<< " " << dye::white(player->fatiguePoints) << "/" << dye::white(player->maxFatiguePoints) << dye::light_yellow(" MP") << endl;
+						for (int i = 0; i < livingAlliesPointers.size(); i++)
+						{
+							cout << dye::light_yellow(i + 2) << ") " << dye::white(livingAlliesPointers[i]->name) << " " << dye::white(livingAlliesPointers[i]->healthPoints) << "/" << dye::light_yellow(livingAlliesPointers[i]->maxHealthPoints) << " HP"
+								<< " " << dye::white(livingAlliesPointers[i]->fatiguePoints) << "/" << dye::white(livingAlliesPointers[i]->maxFatiguePoints) << dye::light_yellow(" MP") << endl;
+						}
+						cout << dye::light_yellow(livingAlliesPointers.size() + 1) << dye::light_yellow(") Go back") << endl;
+
+						//input validation
+						int checkAllyChoice = validateInput(1, livingAlliesPointers.size() + 1);
+						if (checkAllyChoice == livingAlliesPointers.size() + 1) // GO BACK
+						{
+							break;
+						}
+						else // CHECK ALLY
+						{
+							//TODO
+							cout << dye::light_yellow("PLACEHOLDER CHECK ALLY") << endl;
+							break;
+						}
+					}
+					else if (livingAlliesPointers.empty())
+					{
+						cout << dye::light_yellow("1") << ") " << dye::light_yellow(player->name) << " " << dye::white(player->healthPoints) << "/" << dye::white(player->maxHealthPoints) << dye::light_yellow(" HP")
+							<< " " << dye::white(player->fatiguePoints) << "/" << dye::white(player->maxFatiguePoints) << dye::light_yellow(" MP") << endl;
+						cout << dye::light_yellow("2") << dye::light_yellow(") Go back") << endl;
+						//input validation
+						int checkAllyChoice = validateInput(1, 2);
+						if (checkAllyChoice == 2) // GO BACK
+						{
+							break;
+						}
+						else // CHECK SELF
+						{
+							//TODO
+							cout << dye::light_yellow("PLACEHOLDER CHECK SELF") << endl;
+							break;
+						}
+					}
+					break;
+				}
+				case 9: // CHECK ALLY/SELF EQUIPMENT
+				{
+					//To be assigned to each character's equipment
+					Weapon* mainhand = nullptr;
+					Weapon* offhand = nullptr;
+					Weapon* mainhand2 = nullptr;
+					Weapon* offhand2 = nullptr;
+					std::cout << "\n=--->\n" << std::endl;
+					if (!livingAlliesPointers.empty())
+					{
+						player->inventory.getEquippedWeapons(mainhand, offhand, mainhand2, offhand2);
+						cout << dye::light_yellow("1") << ") " << dye::light_yellow(player->name) << " "
+							<< dye::white(mainhand->name) << dye::light_yellow("; ") << dye::white(offhand->name) << endl;
+						for (int i = 0; i < livingAlliesPointers.size(); i++)
+						{
+							livingAlliesPointers[i]->inventory.getEquippedWeapons(mainhand, offhand, mainhand2, offhand2);
+							cout << dye::light_yellow(i + 2) << ") " << dye::light_yellow(livingAlliesPointers[i]->name) << " "
+								<< dye::white(mainhand->name) << dye::light_yellow("; ") << dye::white(offhand->name) << endl;
+						}
+						cout << dye::light_yellow(livingAlliesPointers.size() + 1) << dye::light_yellow(") Go back") << endl;
+
+						//input validation
+						int checkAllyChoice = validateInput(1, livingAlliesPointers.size() + 1);
+						if (checkAllyChoice == livingAlliesPointers.size() + 1) // GO BACK
+						{
+							break;
+						}
+						else // CHECK ALLY EQUIPMENT DETAILS
+						{
+							//TODO
+							cout << dye::light_yellow("PLACEHOLDER CHECK ALLY EQUIPMENT") << endl;
+							break;
+						}
+					}
+					else if (livingAlliesPointers.empty())
+					{
+						player->inventory.getEquippedWeapons(mainhand, offhand, mainhand2, offhand2);
+						cout << dye::light_yellow("1") << ") " << dye::light_yellow(player->name) << " "
+							<< dye::white(mainhand->name) << dye::light_yellow("; ") << dye::white(offhand->name) << endl;
+						cout << dye::light_yellow("2") << dye::light_yellow(") Go back") << endl;
+
+						//input validation
+						int checkAllyChoice = validateInput(1, 2);
+						if (checkAllyChoice == 2) // GO BACK
+						{
+							break;
+						}
+						else // CHECK SELF EQUIPMENT DETAILS
+						{
+							//TODO
+							cout << dye::light_yellow("PLACEHOLDER CHECK SELF EQUIPMENT") << endl;
+							break;
+						}
+					}
+					break;
+				}
+				case 10: // FLEE
+				{
+					//TODO
+					break;
+				}
+				}
+				}
+				//Only progress to taking turns once the player locks in a choice, denoted by the boolean inputChosen
+				if (inputChosen)
+				{
+
+					/*static_assert(std::is_base_of<Character, Creature>::value, "Creature should inherit from Character!");
+					static_assert(std::is_base_of<Character, Human>::value, "Human should inherit from Character!");
+					std::cout << "Type of summoned creature: " << typeid(*player->allies.back()).name() << std::endl;*/
+					vector<Character*> combatants;
+					combatants.push_back(player);
+					combatants.insert(combatants.end(), livingAlliesPointers.begin(), livingAlliesPointers.end());
+					combatants.insert(combatants.end(), livingEnemiesPointers.begin(), livingEnemiesPointers.end());
+
+					//sorts combatants by speed
+					sort(combatants.begin(), combatants.end(), [](Character* a, Character* b) {return a->speed > b->speed; });
+
+					//dummy effect to call refresh effects
+					Effect* effect = nullptr;
+					
+					if (spellChoice)
+					{
+						if (spellChoice->summon)
+						{
+							if (Creature* newAlly = dynamic_cast<Creature*>(player->allies.back()))
+							{
+								std::cout << "Successfully cast: " << typeid(*newAlly).name() << " at " << newAlly << std::endl;
+								livingAlliesPointers.push_back(newAlly);
+								cout << "CREATURE ALLY TURN" << endl;
+							}
+							else
+							{
+								std::cout << "Failed to cast: Object is " << typeid(*player->allies.back()).name() << std::endl;
+							}
+						}
+					}
+
+
+					// Process turns
+					for (int i = 0; i < combatants.size(); i++)
+					{
+						if (combatants[i]->isAlive)
+						{
+							
+							if (Character* creature = dynamic_cast<Creature*>(combatants[i]))
+							{
+								{
+									if (creature->isAlly)
+									{
+										// Ally Turn
+										effect->refreshEffects(creature);
+										if (creature->healthPoints <= 0)
+										{
+											creature->killCharacter();
+											break;
+										}
+										// Ally Turn
+										cout << "CREATURE ALLY TURN" << endl;
+									}
+									else
+									{
+										// Enemy Turn
+										cout << "CREATURE ENEMY TURN" << endl;
+									}
+								}
+							}
+
+							else if (auto* human = dynamic_cast<Human*>(combatants[i]); human && human->isPlayer)
+							{
+								if (spellChoice)
+								{
+									
+								}
+								effect->refreshEffects(player);
+								if (player->healthPoints <= 0)
+								{
+									player->killCharacter();
+									break;
+								}
+								// Player Turn
+								playerTurn(human, weaponChoice, ammoChoice, spellChoice, targetChoice, thrownConsumableChoice, consumableChoice);
+							}
+
+							else if (auto* human = dynamic_cast<Human*>(combatants[i]); human && human->isAlly)
+							{
+								effect->refreshEffects(human);
+								if (human->healthPoints <= 0)
+								{
+									human->killCharacter();
+									break;
+								}
+								// Ally Turn
+								cout << "HUMAN ALLY TURN" << endl;
+							}
+							else
+							{
+								effect->refreshEffects(combatants[i]);
+								if (combatants[i]->healthPoints <= 0)
+								{
+									combatants[i]->killCharacter();
+									break;
+								}
+								// Enemy Turn
+								cout << "ENEMY TURN" << endl;
+							}
+						}
+					}
+
+					// Remove dead combatants 
+					auto removeDead = [](vector<Character*>& vec) {
+						vec.erase(remove_if(vec.begin(), vec.end(), [](Character* c) { return !c->isAlive; }), vec.end());
+						};
+
+					removeDead(livingEnemiesPointers);
+					removeDead(livingAlliesPointers);
+				}
+				if (livingEnemiesPointers.size() == 0)
+				{
+					exitCombat = true;
+				}
+
+			} while (exitCombat == false);
+		}
+
+
+		//input 1: attack target
+		// -> present option to attack forward, attack in place, attack in retreat, or go back
+		// -> 1) Advance and Attack!
+		// -> 2) Stand your ground and Attack!
+		// -> -> (sub menu) 1) normal attack
+		// -> -> (sub menu) 2) grapple enemy (strength check; if success, enemy is grappled and loses their turn + damage; if fail, player wastes turn & chance to take damage)
+		// -> 3) Retreat and Attack!
+		// -> 4) Go back
+		// -> -> display all targets, greying out targets not in range of selected attack option with longest weapon or go back
+		// -> -> 1) _____; ten stage health descriptor: _____; ten stage fatigue descriptor: _____; ten stage confidence descriptor: _____; (always highest level enemy)
+		// -> -> 2) _____; ten stage health descriptor: _____; ten stage fatigue descriptor: _____; ten stage confidence descriptor: _____; (lowest level enemy)
+		// -> -> 3) Go back
+		// -> -> -> display all attack options (mainhand, offhand, spells if either main or offhands are casting tools) 
+		// -> -> -> -> 1) Mainhand: _____; Damage: _____; Reach: _____; Speed: _____; Damgage Type: _____; Magic Damage Type: _____ (only if applicable)
+		// -> -> -> -> 2) Offhand: _____; Damage: _____; Reach: _____; Speed: _____; Damgage Type: _____; Magic Damage Type: _____ (only if applicable)
+		// -> -> -> -> (sub menu) 1) Spell: _____; Damage: _____; Reach: _____; Speed: _____; Damgage Type: _____; (only if applicable) Magic Damage Type: _____ 
+		// -> -> -> -> (sub menu) 2) Bash them with your catalyst (always second to last option)
+		// -> -> -> -> (sub menu) 3) Go back
+		// -> -> -> -> 3) Go back
+		// -> -> -> -> -------------------------
+		// -> -> -> -> (sub menu) 1) Arrow: _____; Damage: _____; Reach: _____; Damgage Type: _____; Magic Damage Type: _____ (only if applicable)
+		// -> -> -> -> (sub menu) 2) Bolt: _____; Damage: _____; Reach: _____; Damgage Type: _____; Magic Damage Type: _____ (only if applicable)
+		// -> -> -> -> (sub menu) 3) Go back
+		// -> -> -> -> grey out attack options not in range of specified target (ex: mainhand is spear offhand is dagger, offhand out of range but mainhand in range) or go back
+		// -> -> -> -> -> 1) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage fatigue descriptor; 10 stage confidence descriptor
+		// -> -> -> -> -> 2) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage fatigue descriptor; 10 stage confidence descriptor
+		// -> -> -> -> -> 3) Go back
+		// -> -> -> -> set values for player option choice, weapon choice, spell choice, and target choice
+
+		//input 2: swap from mainhand and offhand to back items and vice versa
+		// -> present option to swap mainhand and offhand with back items or go back
+		// -> 1) Swap to your stowed weapons
+		// -> -> - MAINHAND1 -> MAINHAND2
+		// -> -> - OFFHAND1 -> OFFHAND2
+		// -> 2) Go back
+		// -> -> set values for player option choice (function will handle getting the quipped items and transferring them between slots)
+
+		//input 3: view spells
+		// -> present short list of all attuned spells (max of 10)
+		// -> =---> Name: _____; Damage: _____; fatigue Cost: _____; Reach: _____; Speed: _____; Damage Type: _____; (if applicable) Magic Damage Type: _____
+		// -> =---> Name: _____; Damage: _____; fatigue Cost: _____; Reach: _____; Speed: _____; Damage Type: _____; (if applicable) Magic Damage Type: _____
+
+		//input 4: use potion
+		// -> present short list of all potions
+		// -> 1) _____ Potion; Magnitude: __; Quantity: __
+		// -> 2) _____ Potion; Magnitude: __; Quantity: __
+		// -> 3) Go back
+		// -> -> present option to use on self, ally, or go back
+		// -> -> -> self: set values for player option choice, potion choice, and target choice
+		// -> -> -> ally: display all allies, greying out allies at full health
+		// -> -> -> -> set values for player option choice, potion choice, and target choice
+
+		//input 5: use item
+		// -> present short list of all usable items in backpack (food, tools, etc)
+		// -> 1) _____; Damage/Healing/Effect: __; Quantity: __
+		// -> 2) _____; Damage/Healing/Effect: __; Quantity: __
+		// -> 3) Go back
+		// -> -> present option to use on self, ally, enemy, or go back
+		// -> -> -> self: set values for player option choice, item choice, and target choice
+		// -> -> -> ally: display all allies, greying out allies at full health
+		// -> -> -> -> set values for player option choice, item choice, and target choice
+
+		//input 6: check allies or self
+		// -> display all allies and self
+		// -> 1) _____; Health: __; fatigue: __; Confidence: __ (always player)
+		// -> 2) _____; Health: __; fatigue: __; Confidence: __
+		// -> 3) Go back
+		// -> -> (self) display flavor text about your condition and equipped items
+		// -> -> (ally) display flavor text about ally condition and equipped items
+
+		//input 7: check enemies
+		// -> display all enemies (sort by level)
+		// -> 1) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage fatigue descriptor; 10 stage confidence descriptor
+		// -> 2) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage fatigue descriptor; 10 stage confidence descriptor
+		// -> 3) Go back
+
+		//input 8: taunt enemies (confidence boost allies, makes enemy focus on you)
+		// -> present all enemies
+		// -> 1) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage fatigue descriptor; 10 stage confidence descriptor
+		// -> 2) _____; 10 stage level descriptor; 10 stage health descriptor; 10 stage fatigue descriptor; 10 stage confidence descriptor
+		// -> 3) Go back
+		// -> -> 1) Taunt _____;
+		// -> -> 2) Make something up
+
+		//input 9: check allies or self equipment
+		// -> Display all allies or self brief equipment overview
+		// -> 1) _____; HP: _____; Mainhand: __; Offhand: __; Backslot1: __; Backslot2: __;
+		// -> 2) _____; HP: _____; Mainhand: __; Offhand: __; Backslot1: __; Backslot2: __;
+		// -> 3) Go back
+		// -> -> (self) display all equipped items and their stats
+		// -> -> (ally) display all equipped items and their stats
+
+		//input 10: attempt to flee
+		// -> Display 10 stage descriptor at odds of getting away
+		// -> 1) Attempt to flee
+		// -> 2) Go back
+
+
+	} while (exitFight == false);
+}
+void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spell* spellChoice, Character* targetChoice, ThrownConsumable* thrownConsumableChoice,
+	Consumable* consumableChoice)
+{
+	//Check if player object is null
+	if (!player)
+	{
+		cout << "ERROR: player is null!" << endl;
+		return;
+	}
+	//Target is a human
+	if (dynamic_cast<Human*>(targetChoice))
+	{
+		Human* humanTarget = dynamic_cast<Human*>(targetChoice);
+
+		//Player attacks an enemy with a melee weapon
+		if (weaponChoice && !spellChoice)
+		{
+			player->attackWithMelee(weaponChoice, humanTarget);
+		}
+		//Player targets an ally with a spell
+		else if (spellChoice && humanTarget->isAlly)
+		{
+			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
+				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
+				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
+			{
+				cout << "ERROR: weapon is not a casting tool!" << endl;
+				return;
+			}
+			else
+			{
+				if (weaponChoice)
+				{
+					player->castSpell(*spellChoice, humanTarget);
+				}
+				else
+				{
+					cout << "ERROR: no weapon initialized!" << endl;
+					return;
+				}
+			}
+		}
+		//Player attacks an enemy with a spell
+		else if (spellChoice)
+		{
+			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
+				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
+				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
+			{
+				cout << "ERROR: weapon is not a casting tool!" << endl;
+				return;
+			}
+			else
+			{
+				if (weaponChoice)
+				{
+					player->castSpell(*spellChoice, humanTarget);
+				}
+				else
+				{
+					cout << "ERROR: no weapon initialized!" << endl;
+					return;
+				}
+			}
+		}
+		//Player attacks an enemy with a ranged weapon
+		else if (weaponChoice && ammoChoice)
+		{
+			player->fireRangedWeapon(humanTarget, weaponChoice, ammoChoice);
+
+		}
+		//Player targets an ally with a thrown weapon
+		else if (thrownConsumableChoice && !humanTarget->isAlly)
+		{
+			player->throwThrownConsumable(thrownConsumableChoice, humanTarget);
+		}
+		//Player attacks an enemy with a thrown weapon
+		else if (thrownConsumableChoice && humanTarget->isAlly)
+		{
+			player->throwThrownConsumable(thrownConsumableChoice, humanTarget);
+		}
+		//Player shares a consumable with a friend
+		else if (consumableChoice && humanTarget->isAlly)
+		{
+			cout << "TODO : share consumable with ally" << endl;
+		}
+		//Player consumes a consumable
+		else if (consumableChoice)
+		{
+			cout << "TODO: consume consumable" << endl;
+		}
+		else
+		{
+			cout << "ERROR: no valid player turn choice!" << endl;
+			return;
+		}
+	}
+	//Target is a creature
+	else
+	{
+		cout << "ATTACKING CREATURES UNDER CONSTRUCTION!" << endl;
+	}
+
+}
 //void attackEnemy(int& attackChoice, int weaponChoice, bool& progressRound, int inRange, Character& player, vector<Character>& enemies, vector<Character>& deadEnemies, Item mainhand1, Item mainhand2,
 //	Item offhand1, Item offhand2, Item headArmor, Item chestArmor, Item armArmor, Item legArmor, Item amulet,
 //	Item ring1, Item ring2, Item misc)
@@ -1842,7 +2658,7 @@ string getConfidenceDescription(Human* character)
 //		// Luck has a small impact on attack speed, making the "threshold" before they're done attacking
 //		// for a turn longer.
 //		float attackSpeedValue = abs(mainhand1.attackSpeed - 101);
-//		for (int i = 0; i < 101 + player.luck;)
+//		for (int i = 0; i < 101 + player->luck;)
 //		{
 //
 //			enemies[attackChoice - 1].takeDamage(mainhand1, player);
@@ -1997,11 +2813,11 @@ string getConfidenceDescription(Human* character)
 //	enemy->confidenceLevel -= healthLost;
 //
 //	//check player health
-//	float playerHealthLost = (player.maxHealthPoints - player.healthPoints) / 10.0f;
+//	float playerHealthLost = (player->maxHealthPoints - player->healthPoints) / 10.0f;
 //	enemy->confidenceLevel += playerHealthLost;
 //
 //	//check player level
-//	float levelDifference = player.level - enemy->level;
+//	float levelDifference = player->level - enemy->level;
 //	enemy->confidenceLevel -= levelDifference * 5;
 //
 //	//last minute sanity checks
@@ -2024,13 +2840,13 @@ string getConfidenceDescription(Human* character)
 //	if (enemy->confidenceLevel >= 90)
 //	{
 //		//insult the player
-//		if (randomNum >= 60 - player.luck)
+//		if (randomNum >= 60 - player->luck)
 //		{
 //			std::cout << "=--->" << std::endl;
 //			getCombatBanter(*enemy, player);
 //		}
 //		//meander about
-//		else if (randomNum >= 60 - player.luck)
+//		else if (randomNum >= 60 - player->luck)
 //		{
 //			std::cout << "=--->" << std::endl;
 //			cout << "The " << enemy->name << " meanders about. Are they looking for an opening, or just taunting you?" << endl;
@@ -2058,8 +2874,8 @@ string getConfidenceDescription(Human* character)
 //			{
 //				for (int i = 0; i < 101;)
 //				{
-//					player.takeDamage(enemyMainhand, *enemy);
-//					if (player.isAlive == false)
+//					player->takeDamage(enemyMainhand, *enemy);
+//					if (player->isAlive == false)
 //					{
 //						cout << "The " << enemy->name << " strikes you down!" << endl;
 //						break;
@@ -2073,13 +2889,13 @@ string getConfidenceDescription(Human* character)
 //	else if (enemy->confidenceLevel < 90 && enemy->confidenceLevel >= 80)
 //	{
 //		//insult the player
-//		if (randomNum >= 80 - player.luck)
+//		if (randomNum >= 80 - player->luck)
 //		{
 //			std::cout << "=--->" << std::endl;
 //			getCombatBanter(*enemy, player);
 //		}
 //		//meander about
-//		else if (randomNum >= 80 - player.luck)
+//		else if (randomNum >= 80 - player->luck)
 //		{
 //			std::cout << "=--->" << std::endl;
 //			cout << "The " << enemy->name << " meanders about. Are they looking for an opening, or just taunting you?" << endl;
@@ -2107,8 +2923,8 @@ string getConfidenceDescription(Human* character)
 //			{
 //				for (int i = 0; i < 101;)
 //				{
-//					player.takeDamage(enemyMainhand, *enemy);
-//					if (player.isAlive == false)
+//					player->takeDamage(enemyMainhand, *enemy);
+//					if (player->isAlive == false)
 //					{
 //						cout << "The " << enemy->name << " strikes you down!" << endl;
 //						break;
@@ -2122,13 +2938,13 @@ string getConfidenceDescription(Human* character)
 //	else if (enemy->confidenceLevel < 80 && enemy->confidenceLevel >= 70)
 //	{
 //		//insult the player
-//		if (randomNum >= 90 - player.luck)
+//		if (randomNum >= 90 - player->luck)
 //		{
 //			std::cout << "=--->" << std::endl;
 //			getCombatBanter(*enemy, player);
 //		}
 //		//meander about
-//		else if (randomNum >= 90 - player.luck)
+//		else if (randomNum >= 90 - player->luck)
 //		{
 //			std::cout << "=--->" << std::endl;
 //			cout << "The " << enemy->name << " meanders about. Are they looking for an opening, or just taunting you?" << endl;
@@ -2156,8 +2972,8 @@ string getConfidenceDescription(Human* character)
 //			{
 //				for (int i = 0; i < 101;)
 //				{
-//					player.takeDamage(enemyMainhand, *enemy);
-//					if (player.isAlive == false)
+//					player->takeDamage(enemyMainhand, *enemy);
+//					if (player->isAlive == false)
 //					{
 //						cout << "The " << enemy->name << " strikes you down!" << endl;
 //						break;
@@ -2204,8 +3020,8 @@ string getConfidenceDescription(Human* character)
 //			std::cout << "=--->" << std::endl;
 //			for (int i = 0; i < 101;)
 //			{
-//				player.takeDamage(enemyMainhand, *enemy);
-//				if (player.isAlive == false)
+//				player->takeDamage(enemyMainhand, *enemy);
+//				if (player->isAlive == false)
 //				{
 //					cout << "The " << enemy->name << " strikes you down!" << endl;
 //					break;
@@ -2234,10 +3050,10 @@ string getConfidenceDescription(Human* character)
 //	//add more here as more types get implemented
 //
 //	int healingTally = 0;
-//	int manaTally = 0;
+//	int fatigueTally = 0;
 //	int cureDiseaseTally = 0;
 //
-//	std::string types[] = { "Restores Health", "Restores Mana", "Cures Diseases" };
+//	std::string types[] = { "Restores Health", "Restores fatigue", "Cures Diseases" };
 //
 //	for (int i = 0; i < character.inventory.potions.size(); i++)
 //	{
@@ -2245,9 +3061,9 @@ string getConfidenceDescription(Human* character)
 //		{
 //			healingTally += character.inventory.potions[i].quantity;
 //		}
-//		else if (character.inventory.potions[i].effects == Potion::MANA)
+//		else if (character.inventory.potions[i].effects == Potion::fatigue)
 //		{
-//			manaTally += character.inventory.potions[i].quantity;
+//			fatigueTally += character.inventory.potions[i].quantity;
 //		}
 //		else if (character.inventory.potions[i].effects == Potion::CUREDISEASE)
 //		{
@@ -2261,7 +3077,7 @@ string getConfidenceDescription(Human* character)
 //	std::cout << dye::light_yellow(categoryTally) << dye::light_yellow(") Healing Potions: x") << dye::light_yellow(healingTally) << std::endl;
 //
 //	categoryTally += 1;
-//	std::cout << dye::light_yellow(categoryTally) << dye::light_yellow(") Mana Potions: x") << dye::light_yellow(manaTally) << std::endl;
+//	std::cout << dye::light_yellow(categoryTally) << dye::light_yellow(") fatigue Potions: x") << dye::light_yellow(fatigueTally) << std::endl;
 //
 //	categoryTally += 1;
 //	std::cout << dye::light_yellow(categoryTally) << dye::light_yellow(") Cure Disease Potions: x") << dye::light_yellow(cureDiseaseTally) << std::endl;
@@ -2333,45 +3149,45 @@ string getConfidenceDescription(Human* character)
 //			std::cout << "You don't have any healing potions!" << std::endl;
 //			progressRound = false;
 //		}
-//		//mana potions
-//		else if (potionChoice == 2 && manaTally > 0)
+//		//fatigue potions
+//		else if (potionChoice == 2 && fatigueTally > 0)
 //		{
-//			std::vector<Potion> manaPotions;
-//			std::cout << "Select which mana potion you would like to drink.." << std::endl;
+//			std::vector<Potion> fatiguePotions;
+//			std::cout << "Select which fatigue potion you would like to drink.." << std::endl;
 //			for (int i = 1; i < character.inventory.potions.size() + 1; i++)
 //			{
-//				if (character.inventory.potions[i - 1].effects == Potion::MANA)
+//				if (character.inventory.potions[i - 1].effects == Potion::fatigue)
 //				{
 //					std::cout << i << ") " << character.inventory.potions[i - 1].name << ", magnitude of "
 //						<< character.inventory.potions[i - 1].magnitude << ", quantity of " << character.inventory.potions[i - 1].quantity << std::endl;
-//					manaPotions.push_back(character.inventory.potions[i - 1]);
+//					fatiguePotions.push_back(character.inventory.potions[i - 1]);
 //				}
 //			}
-//			std::cout << manaPotions.size() + 1 << ") Go back" << std::endl;
+//			std::cout << fatiguePotions.size() + 1 << ") Go back" << std::endl;
 //			do
 //			{
 //				std::cout << ">> ";
 //				std::cin >> potionChoice;
-//				if (std::cin.fail() || potionChoice > manaPotions.size() + 1 || potionChoice == 0)
+//				if (std::cin.fail() || potionChoice > fatiguePotions.size() + 1 || potionChoice == 0)
 //				{
-//					std::cout << "Enter a number from 1 - " << manaPotions.size() + 1 << std::endl;
+//					std::cout << "Enter a number from 1 - " << fatiguePotions.size() + 1 << std::endl;
 //				}
 //				std::cin.clear();
 //				std::cin.ignore(10000, '\n');
-//			} while (std::cin.fail() || potionChoice > manaPotions.size() + 1 || potionChoice == 0);
-//			if (potionChoice == manaPotions.size() + 1)
+//			} while (std::cin.fail() || potionChoice > fatiguePotions.size() + 1 || potionChoice == 0);
+//			if (potionChoice == fatiguePotions.size() + 1)
 //			{
 //				progressRound = false;
 //			}
 //			else
 //			{
-//				character.drinkPotion(manaPotions[potionChoice - 1]);
+//				character.drinkPotion(fatiguePotions[potionChoice - 1]);
 //				progressRound = true;
 //			}
 //		}
-//		else if (potionChoice == 2 && manaTally <= 0)
+//		else if (potionChoice == 2 && fatigueTally <= 0)
 //		{
-//			std::cout << "You don't have any mana potions!" << std::endl;
+//			std::cout << "You don't have any fatigue potions!" << std::endl;
 //			progressRound = false;
 //		}
 //		//cure disease potions
@@ -2810,7 +3626,7 @@ string getConfidenceDescription(Human* character)
 //		//if the player is wearing light armor
 //		else if (lightArmorCount > mediumArmorCount && lightArmorCount > heavyArmorCount)
 //		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Light armor? Couldn't manage even a hint of weight on your body, could you?") << endl;
+//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Light armor? Couldn't fatiguege even a hint of weight on your body, could you?") << endl;
 //		}
 //		//if the player is wearing medium armor
 //		else if (mediumArmorCount > lightArmorCount && mediumArmorCount > heavyArmorCount)
@@ -2836,7 +3652,7 @@ string getConfidenceDescription(Human* character)
 //	{
 //		//POTIONS
 //		int healingTally = 0;
-//		int manaTally = 0;
+//		int fatigueTally = 0;
 //		int cureDiseaseTally = 0;
 //		for (int i = 0; i < recieverPotions.size(); i++)
 //		{
@@ -2844,9 +3660,9 @@ string getConfidenceDescription(Human* character)
 //			{
 //				healingTally += recieverPotions[i].quantity;
 //			}
-//			else if (recieverPotions[i].effects == Potion::MANA)
+//			else if (recieverPotions[i].effects == Potion::fatigue)
 //			{
-//				manaTally += recieverPotions[i].quantity;
+//				fatigueTally += recieverPotions[i].quantity;
 //			}
 //			else if (recieverPotions[i].effects == Potion::CUREDISEASE)
 //			{
@@ -2854,27 +3670,27 @@ string getConfidenceDescription(Human* character)
 //			}
 //		}
 //		//if the player has no potions
-//		if (healingTally == 0 && manaTally == 0 && cureDiseaseTally == 0)
+//		if (healingTally == 0 && fatigueTally == 0 && cureDiseaseTally == 0)
 //		{
 //			cout << dye::light_yellow(sender.name) << ": " << dye::white("No potions? Shame, I was running low.") << endl;
 //		}
 //		//if the player has mainly healing potions
-//		else if (healingTally > manaTally && healingTally > cureDiseaseTally)
+//		else if (healingTally > fatigueTally && healingTally > cureDiseaseTally)
 //		{
 //			cout << dye::light_yellow(sender.name) << ": " << dye::white("You're gonna need all those healing potions you're hoarding!") << endl;
 //		}
-//		//if the player has mainly mana potions
-//		else if (manaTally > healingTally && manaTally > cureDiseaseTally)
+//		//if the player has mainly fatigue potions
+//		else if (fatigueTally > healingTally && fatigueTally > cureDiseaseTally)
 //		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Mana potions? Another bloody wizard. Fantastic!") << endl;
+//			cout << dye::light_yellow(sender.name) << ": " << dye::white("fatigue potions? Another bloody wizard. Fantastic!") << endl;
 //		}
 //		//if the player has mainly cure disease potions
-//		else if (cureDiseaseTally > healingTally && cureDiseaseTally > manaTally)
+//		else if (cureDiseaseTally > healingTally && cureDiseaseTally > fatigueTally)
 //		{
 //			cout << dye::light_yellow(sender.name) << ": " << dye::white("Cure disease potions? Make a habit of covorting with wild animals or something?") << endl;
 //		}
 //		//if the player has a mix of potions
-//		else if (healingTally > 0 && manaTally > 0 && cureDiseaseTally > 0)
+//		else if (healingTally > 0 && fatigueTally > 0 && cureDiseaseTally > 0)
 //		{
 //			cout << dye::light_yellow(sender.name) << ": " << dye::white("What are you, a walking apothecary?") << endl;
 //		}
@@ -3012,12 +3828,12 @@ string getConfidenceDescription(Human* character)
 //			healingPotions.push_back(character.inventory.potions[i]);
 //		}
 //	}
-//	std::vector<Potion> manaPotions;
+//	std::vector<Potion> fatiguePotions;
 //	for (int i = 0; i < character.inventory.potions.size(); i++)
 //	{
-//		if (character.inventory.potions[i].effects == Potion::MANA)
+//		if (character.inventory.potions[i].effects == Potion::fatigue)
 //		{
-//			manaPotions.push_back(character.inventory.potions[i]);
+//			fatiguePotions.push_back(character.inventory.potions[i]);
 //		}
 //	}
 //	std::vector<Potion> cureDiseasePotions;
@@ -3049,20 +3865,20 @@ string getConfidenceDescription(Human* character)
 //			}
 //		}
 //	}
-//	//check ally mana
-//	else if (!allies.empty() && !manaPotions.empty())
+//	//check ally fatigue
+//	else if (!allies.empty() && !fatiguePotions.empty())
 //	{
 //		for (int i = 0; i < allies.size(); i++)
 //		{
-//			if (allies[i].manaPoints <= allies[i].maxManaPoints * .5)
+//			if (allies[i].fatiguePoints <= allies[i].maxfatiguePoints * .5)
 //			{
 //				cout << "=--->" << endl;
-//				cout << dye::light_yellow(character.name) << " tosses a mana potion to " << dye::light_yellow(allies[i].name) << endl;
-//				allies[i].inventory.addPotion(manaPotions[0]);
+//				cout << dye::light_yellow(character.name) << " tosses a fatigue potion to " << dye::light_yellow(allies[i].name) << endl;
+//				allies[i].inventory.addPotion(fatiguePotions[0]);
 //				character.inventory.potions.erase(character.inventory.potions.begin() + 0);
 //				for (int i = 0; i < character.inventory.potions.size(); i++)
 //				{
-//					if (character.inventory.potions[i].effects == Potion::MANA)
+//					if (character.inventory.potions[i].effects == Potion::fatigue)
 //					{
 //						character.inventory.potions.erase(character.inventory.potions.begin() + i);
 //					}

@@ -176,6 +176,8 @@
     <ClInclude Include="Human.h" />
     <ClInclude Include="Inventory.h" />
     <ClInclude Include="Item.h" />
+    <ClInclude Include="MagicDamageType.h" />
+    <ClInclude Include="PhysicalDamageType.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="ThrownConsumable.h" />
     <ClInclude Include="Trinket.h" />

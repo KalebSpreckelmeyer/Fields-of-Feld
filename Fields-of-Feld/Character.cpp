@@ -1,4 +1,6 @@
 #include "Character.h"
+#include "Creature.h"
+#include "Spell.h"
 #include "Potion.h"
 #include "Human.h"
 #include <vector>
@@ -7,32 +9,29 @@
 #include <random>
 #include <iomanip>
 #include "Weapon.h"
+#include "optional"
 Character::Character()
 {
-	
+
 }
-Character::Character(bool namedCharacter, bool isAlive, bool active, bool alert,
+Character::Character(bool isAlly, bool namedCharacter, bool isAlive, bool active, bool alert,
 	std::string name, std::string description, float confidenceLevel,
-	float healthPoints, float maxHealthPoints, float manaPoints,
-	float maxManaPoints, float speed, float critChance, float dodgeChance,
+	float healthPoints, float maxHealthPoints, float fatiguePoints,
+	float maxFatiguePoints, float speed, float critChance, float dodgeChance,
 	float blockChance, float damageThreshold, float damageResistance, float bleedPoints, float maxBleedPoints,
 	float burnPoints, float maxBurnPoints, float poisonPoints,
 	float maxPoisonPoints, float frostPoints, float maxFrostPoints,
 	float shockPoints, float maxShockPoints, float sleepPoints,
 	float maxSleepPoints, const Inventory& inventory, float distanceFromPlayer,
 	float level, CombatFlags combatFlag) :
-	namedCharacter(namedCharacter), isAlive(isAlive), active(active), alert(alert), name(name), description(description), 
-	confidenceLevel(confidenceLevel), healthPoints(healthPoints), maxHealthPoints(maxHealthPoints),manaPoints(manaPoints), 
-	maxManaPoints(maxManaPoints), speed(speed), critChance(critChance), dodgeChance(dodgeChance), blockChance(blockChance), 
+	isAlly(isAlly), namedCharacter(namedCharacter), isAlive(isAlive), active(active), alert(alert), name(name), description(description),
+	confidenceLevel(confidenceLevel), healthPoints(healthPoints), maxHealthPoints(maxHealthPoints), fatiguePoints(fatiguePoints),
+	maxFatiguePoints(maxFatiguePoints), speed(speed), critChance(critChance), dodgeChance(dodgeChance), blockChance(blockChance),
 	damageThreshold(damageThreshold), damageResistance(damageResistance), bleedPoints(bleedPoints), maxBleedPoints(maxBleedPoints),
-	burnPoints(burnPoints), maxBurnPoints(maxBurnPoints), poisonPoints(poisonPoints), maxPoisonPoints(maxPoisonPoints), frostPoints(frostPoints), 
+	burnPoints(burnPoints), maxBurnPoints(maxBurnPoints), poisonPoints(poisonPoints), maxPoisonPoints(maxPoisonPoints), frostPoints(frostPoints),
 	maxFrostPoints(maxFrostPoints), shockPoints(shockPoints), maxShockPoints(maxShockPoints),
 	sleepPoints(sleepPoints), maxSleepPoints(maxSleepPoints), inventory(inventory), distanceFromPlayer(distanceFromPlayer), level(level)
 {
-
-}
-
-Character::~Character() {
 
 }
 
@@ -42,7 +41,7 @@ void Character::addTag(std::string& tag)
 }
 
 //this doesnt need to have ammo passed to it 
-void Character::chooseAmmunition(Weapon* weapon, Ammunition* ammunition, Character* target)
+bool Character::chooseAmmunition(Weapon* weapon, Character* target, Ammunition* ammo)
 {
 	//get the ammo the player has stored in each quiver slot
 
@@ -50,7 +49,7 @@ void Character::chooseAmmunition(Weapon* weapon, Ammunition* ammunition, Charact
 	std::vector<Ammunition*> quiver;
 	for (Item* item : inventory.equippedItems)
 	{
-		if (Ammunition * ammo = dynamic_cast<Ammunition*>(item))
+		if (Ammunition* ammo = dynamic_cast<Ammunition*>(item))
 		{
 			if (ammo->slot == Item::EquipSlots::QUIVER1) quiver.push_back(ammo);
 			if (ammo->slot == Item::EquipSlots::QUIVER2) quiver.push_back(ammo);
@@ -64,35 +63,36 @@ void Character::chooseAmmunition(Weapon* weapon, Ammunition* ammunition, Charact
 	int occupiedSlots = 0;
 	for (int i = 0; i < quiver.size(); i++)
 	{
+		float totalDamage = quiver[0]->getAmmoDamage(target, *quiver[0]);
 		if (quiver[i]->slot == Item::EquipSlots::QUIVER1)
 		{
 			std::cout << " " << dye::light_yellow(i + 1) << dye::light_yellow(") ") << quiver[i]->name
-				<< "; damage: " << quiver[i]->damage << "; quantity: " << quiver[i]->quantity << std::endl;
+				<< "; damage: " << totalDamage << "; quantity: " << quiver[i]->quantity << std::endl;
 			occupiedSlots++;
 		}
 		if (quiver[i]->slot == Item::EquipSlots::QUIVER2)
 		{
 			std::cout << " " << dye::light_yellow(i + 1) << dye::light_yellow(") ") << quiver[i]->name
-				<< "; damage: " << quiver[i]->damage << "; quantity: " << quiver[i]->quantity << std::endl;
+				<< "; damage: " << totalDamage << "; quantity: " << quiver[i]->quantity << std::endl;
 			occupiedSlots++;
 		}
 		if (quiver[i]->slot == Item::EquipSlots::QUIVER3)
 		{
 			std::cout << " " << dye::light_yellow(i + 1) << dye::light_yellow(") ") << quiver[i]->name
-				<< "; damage: " << quiver[i]->damage << "; quantity: " << quiver[i]->quantity << std::endl;
+				<< "; damage: " << totalDamage << "; quantity: " << quiver[i]->quantity << std::endl;
 			occupiedSlots++;
 		}
 		if (quiver[i]->slot == Item::EquipSlots::QUIVER4)
 		{
 			std::cout << " " << dye::light_yellow(i + 1) << dye::light_yellow(") ") << quiver[i]->name
-				<< "; damage: " << quiver[i]->damage << "; quantity: " << quiver[i]->quantity << std::endl;
+				<< "; damage: " << totalDamage << "; quantity: " << quiver[i]->quantity << std::endl;
 			occupiedSlots++;
 		}
 	}
 	if (occupiedSlots == 0)
 	{
 		std::cout << " You are out of ammunition!" << std::endl;
-		return;
+		return false;
 	}
 	else
 	{
@@ -105,12 +105,12 @@ void Character::chooseAmmunition(Weapon* weapon, Ammunition* ammunition, Charact
 		//input validation
 		int choice = 0;
 		do
-		{	
+		{
 			std::cout << dye::light_yellow(" Choose your ammunition: ");
 			std::cin >> choice;
 			if (choice == 5)
 			{
-				return;
+				return false;
 			}
 			if (std::cin.fail() || choice < 1 || choice > quiver.size())
 			{
@@ -120,25 +120,351 @@ void Character::chooseAmmunition(Weapon* weapon, Ammunition* ammunition, Charact
 			}
 		} while (choice < 1 || choice > quiver.size());
 
-		
-		//selects the ammo to be used
-		Ammunition* ammo = quiver[choice - 1];
 
-		takeDamage(this, target, weapon, ammo, nullptr, nullptr);
+		//selects the ammo to be used
+		ammo = quiver[choice - 1];
+
+		//fireRangedWeapon(target, weapon, ammo);
+	}
+}
+
+void Character::fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* ammo)
+{
+	//target is a human
+	if (dynamic_cast<Human*>(target))
+	{
+		Human* humanAttacker = dynamic_cast<Human*>(this);
+		Human* humanTarget = dynamic_cast<Human*>(target);
+		if (weapon->weaponType == Weapon::WeaponType::LONGBOW || weapon->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+			weapon->weaponType == Weapon::WeaponType::GREATBOW || weapon->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+			weapon->weaponType == Weapon::WeaponType::CROSSBOW || weapon->weaponType == Weapon::WeaponType::BALLISTA)
+		{
+			//archery specific sanity check
+			if (ammo == nullptr)
+			{
+				std::cout << dye::light_red("ERROR: No ammunition provided for dealDamage method") << std::endl;
+				return;
+			}
+
+			//get random number for crit chance influenced by luck slightly
+			int randomNum = (rand() % 100 - this->getLuck()) + 1;
+			//This is just Overwatch's damage falloff formula lmao
+
+			//damage falloff variables
+			float minDamage = ammo->getAmmoDamage(target, *ammo) * .3;
+			float maxDamage = ammo->getAmmoDamage(target, *ammo) * 1.3;
+			float nearRange = ammo->range * 0.1;
+
+			float farRange = weapon->reach + ammo->range;
+
+			//normalized distance of the attacker from their target
+			float normalizedDistance = std::clamp((target->distanceFromPlayer - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
+
+			//raw damage of the arrow
+			float arrowDamage = max(maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage), 1.0f);
+			//crit damage modifier
+			float critDamage = arrowDamage * 1.5;
+
+			//damage reduction modfiiers
+			float critDamageReduction = max(critDamage * this->damageResistance + this->damageThreshold / 2, 0.0f);
+			float normalDamageReduction = max(arrowDamage * this->damageResistance + this->damageThreshold, 0.0f);
+
+			//final damage taken, either crit or non crit
+			float critDamageTaken = critDamage - critDamageReduction;
+			float damageTaken = arrowDamage - normalDamageReduction;
+
+			//ensures that the damage will never be negative 
+			if (critDamageTaken < 0) critDamageTaken = 0;
+			if (damageTaken < 0) damageTaken = 0;
+
+			//Critical Hit
+			if (randomNum <= this->critChance)
+			{
+				//Player landed critical hit
+				if (humanAttacker->isPlayer)
+				{
+					for (Enchantment* enchantment : ammo->enchantments)
+					{
+						for (Effect* effect : enchantment->effects)
+						{
+							effect->applyEffect(effect, humanAttacker, humanTarget);
+						}
+					}
+					target->healthPoints -= critDamageTaken;
+					humanAttacker->consumeAmmo(ammo);
+					std::cout << dye::light_red(" Critical Hit!") << std::endl;
+					if (critDamageReduction > 0) std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << "'s armor absorbs " << critDamageReduction << " points of damage from the projectile!" << std::endl;
+					std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << critDamageTaken << " points of damage from "
+						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
+					if (target->healthPoints <= 0) target->killCharacter();
+					return;
+				}
+				//NPC landed critical hit
+				else
+				{
+					for (Enchantment* enchantment : ammo->enchantments)
+					{
+						for (Effect* effect : enchantment->effects)
+						{
+							effect->applyEffect(effect, humanAttacker, humanTarget);
+						}
+					}
+					target->healthPoints -= critDamageTaken;
+					humanAttacker->consumeAmmo(ammo);
+					std::cout << dye::light_red(" Critical Hit!") << std::endl;
+					if (critDamageReduction > 0) std::cout << std::setprecision(2) << " Your armor absorbs " << critDamageReduction << " points of damage from the projectile!" << std::endl;
+					std::cout << std::setprecision(2) << " You take " << critDamageTaken << " points of damage from the "
+						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
+					if (target->healthPoints <= 0) target->killCharacter();
+					return;
+				}
+			}
+			//Normal Hit
+			else
+			{
+				//Player landed normal hit
+				if (humanAttacker->isPlayer)
+				{
+					for (Enchantment* enchantment : ammo->enchantments)
+					{
+						for (Effect* effect : enchantment->effects)
+						{
+							effect->applyEffect(effect, humanAttacker, humanTarget);
+						}
+					}
+					target->healthPoints -= damageTaken;
+					humanAttacker->consumeAmmo(ammo);
+					if (normalDamageReduction > 0) std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << "'s armor absorbs " << normalDamageReduction << " points of damage from the projectile!" << std::endl;
+					std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << damageTaken << " points of damage from "
+						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
+					if (target->healthPoints <= 0) target->killCharacter();
+					return;
+				}
+				//NPC landed normal hit
+				else
+				{
+					for (Enchantment* enchantment : ammo->enchantments)
+					{
+						for (Effect* effect : enchantment->effects)
+						{
+							effect->applyEffect(effect, humanAttacker, humanTarget);
+						}
+					}
+					target->healthPoints -= damageTaken;
+					humanAttacker->consumeAmmo(ammo);
+					if (normalDamageReduction > 0) std::cout << std::setprecision(2) << " Your armor absorbs " << normalDamageReduction << " points of damage from the projectile!" << std::endl;
+					std::cout << std::setprecision(2) << " You take " << damageTaken << " points of damage from the "
+						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
+					if (target->healthPoints <= 0) target->killCharacter();
+					return;
+				}
+			}
+		}
+		else
+		{
+			std::cout << dye::light_red("ERROR: Weapon is not a ranged weapon") << std::endl;
+		}
+	}
+	//target is a creature
+	else
+	{
+		//TODO
 	}
 }
 
 void Character::consumeAmmo(Item* ammo)
 {
-	if (ammo->quantity == 1) inventory.equippedItems.erase(std::remove(inventory.equippedItems.begin(), inventory.equippedItems.end(), ammo), inventory.equippedItems.end());
-	else ammo->quantity--;
+	if (ammo == nullptr) {
+		std::cout << "ERROR: Attempted to consume a nullptr ammo." << std::endl;
+		return;
+	}
+
+	if (ammo->quantity == 1) {
+		// Find and remove the item from the inventory
+		auto it = std::remove(inventory.equippedItems.begin(), inventory.equippedItems.end(), ammo);
+
+		if (it != inventory.equippedItems.end()) {
+			inventory.equippedItems.erase(it, inventory.equippedItems.end());
+			std::cout << " Removed " << ammo->name << " from inventory." << std::endl;
+			delete ammo;
+		}
+		else {
+			std::cout << "WARNING: Item not found in inventory during removal!" << std::endl;
+		}
+	}
+	else {
+		ammo->quantity--;
+		std::cout << " Used one " << ammo->name << ", " << ammo->quantity << " remaining." << std::endl;
+	}
+}
+
+void Character::throwThrownConsumable(ThrownConsumable* consumable, Character* target)
+{
+	//target is a human
+	if (dynamic_cast<Human*>(target))
+	{
+		Human* humanAttacker = dynamic_cast<Human*>(this);
+		Human* humanTarget = dynamic_cast<Human*>(target);
+		//archery specific sanity check
+		if (consumable == nullptr)
+		{
+			std::cout << dye::light_red("ERROR: No ammunition provided for dealDamage method") << std::endl;
+			return;
+		}
+		if (target == nullptr)
+		{
+			std::cout << dye::light_red("ERROR: No target provided for dealDamage method") << std::endl;
+			return;
+		}
+		//get random number for crit chance influenced by luck slightly
+		int randomNum = (rand() % 100 - this->getLuck()) + 1;
+		//This is just Overwatch's damage falloff formula lmao
+
+		//damage falloff variables
+		float minDamage = consumable->getThrownConsumableDamage(target, *consumable) * .3;
+		float maxDamage = consumable->getThrownConsumableDamage(target, *consumable) * 1.3;
+		float nearRange = consumable->reach * 0.1;
+
+		float farRange = consumable->reach;
+
+		//normalized distance of the attacker from their target
+		float normalizedDistance = std::clamp((target->distanceFromPlayer - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
+
+		//raw damage of the arrow
+		float consumableDamage = max(maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage), 1.0f);
+
+		//crit damage modifier
+		float critDamage = consumableDamage * 1.5;
+
+		//damage reduction modfiiers
+		float critDamageReduction = max(critDamage * this->damageResistance + this->damageThreshold / 2, 0.0f);
+		float normalDamageReduction = max(consumableDamage * this->damageResistance + this->damageThreshold, 0.0f);
+
+		//final damage taken, either crit or non crit
+		float critDamageTaken = critDamage - critDamageReduction;
+		float damageTaken = consumableDamage - normalDamageReduction;
+
+		//ensures that the damage will never be negative 
+		if (critDamageTaken < 0) critDamageTaken = 0;
+		if (damageTaken < 0) damageTaken = 0;
+
+		//Critical Hit
+		if (randomNum <= this->critChance)
+		{
+			//Player landed critical hit
+			if (humanAttacker->isPlayer)
+			{
+				for (Enchantment* enchantment : consumable->enchantments)
+				{
+					for (Effect* effect : enchantment->effects)
+					{
+						effect->applyEffect(effect, humanAttacker, humanTarget);
+					}
+				}
+				target->healthPoints -= critDamageTaken;
+				humanAttacker->consumeThrownConsumable(consumable);
+				std::cout << dye::light_red(" Critical Hit!") << std::endl;
+				if (critDamageReduction > 0) std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << "'s armor absorbs " << critDamageReduction << " points of damage from the projectile!" << std::endl;
+				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << critDamageTaken << " points of damage from "
+					<< humanAttacker->name << "'s " << consumable->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				return;
+			}
+			//NPC landed critical hit
+			else
+			{
+				for (Enchantment* enchantment : consumable->enchantments)
+				{
+					for (Effect* effect : enchantment->effects)
+					{
+						effect->applyEffect(effect, humanAttacker, humanTarget);
+					}
+				}
+				target->healthPoints -= critDamageTaken;
+				humanAttacker->consumeThrownConsumable(consumable);
+				std::cout << dye::light_red(" Critical Hit!") << std::endl;
+				if (critDamageReduction > 0) std::cout << std::setprecision(2) << " Your armor absorbs " << critDamageReduction << " points of damage from the projectile!" << std::endl;
+				std::cout << std::setprecision(2) << " You take " << critDamageTaken << " points of damage from the "
+					<< humanAttacker->name << "'s " << consumable->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				return;
+			}
+		}
+		//Normal Hit
+		else
+		{
+			//Player landed normal hit
+			if (humanAttacker->isPlayer)
+			{
+				for (Enchantment* enchantment : consumable->enchantments)
+				{
+					for (Effect* effect : enchantment->effects)
+					{
+						effect->applyEffect(effect, humanAttacker, humanTarget);
+					}
+				}
+				target->healthPoints -= damageTaken;
+				humanAttacker->consumeThrownConsumable(consumable);
+				if (normalDamageReduction > 0) std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << "'s armor absorbs " << normalDamageReduction << " points of damage from the projectile!" << std::endl;
+				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << damageTaken << " points of damage from "
+					<< humanAttacker->name << "'s " << consumable->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				return;
+			}
+			//NPC landed normal hit
+			else
+			{
+				for (Enchantment* enchantment : consumable->enchantments)
+				{
+					for (Effect* effect : enchantment->effects)
+					{
+						effect->applyEffect(effect, humanAttacker, humanTarget);
+					}
+				}
+				target->healthPoints -= damageTaken;
+				humanAttacker->consumeThrownConsumable(consumable);
+				if (normalDamageReduction > 0) std::cout << std::setprecision(2) << " Your armor absorbs " << normalDamageReduction << " points of damage from the projectile!" << std::endl;
+				std::cout << std::setprecision(2) << " You take " << damageTaken << " points of damage from the "
+					<< humanAttacker->name << "'s " << consumable->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				return;
+			}
+		}
+	}
+	//target is a creature
+	else
+	{
+		//TODO
+	}
 }
 
 void Character::consumeThrownConsumable(ThrownConsumable* consumable)
 {
-	if (consumable->quantity == 1) inventory.equippedItems.erase(std::remove(inventory.equippedItems.begin(), inventory.equippedItems.end(), consumable), inventory.equippedItems.end());
-	else consumable->quantity--;
+	if (consumable == nullptr) {
+		std::cout << "ERROR: Attempted to consume a nullptr consumable." << std::endl;
+		return;
+	}
+
+	if (consumable->quantity == 1) {
+		// Find and remove the item from the inventory
+		auto it = std::remove(inventory.backpackItems.begin(), inventory.backpackItems.end(), consumable);
+
+		if (it != inventory.backpackItems.end()) {
+			inventory.backpackItems.erase(it, inventory.backpackItems.end());
+			std::cout << " Removed " << consumable->name << " from inventory." << std::endl;
+			delete consumable;
+		}
+		else {
+			std::cout << "WARNING: Item not found in inventory during removal!" << std::endl;
+		}
+	}
+	else {
+		consumable->quantity--;
+		std::cout << " Used one " << consumable->name << ", " << consumable->quantity << " remaining." << std::endl;
+	}
 }
+
+
 
 void Character::killCharacter()
 {
@@ -147,554 +473,477 @@ void Character::killCharacter()
 	if (healthPoints < 0) healthPoints = 0;
 	return;
 }
-//void Character::setArmorValues(std::vector<Item*> items)
-//{
-//	//iterates through all items in the player's equipped inventory and adds their equipment weights together for calculations
-//	float equipmentWeight = 0;
-//	for (int i = 0; i < items.size(); i++)
-//	{
-//		equipmentWeight += items[i]->weight;
-//	}
-//	speed = (agility * 10) + (strength * 5) - equipmentWeight;
-//
-//	dodgeChance = (agility * 0.5) + (speed / 100);
-//	(dodgeChance >= 50) ? dodgeChance = 50 : dodgeChance = dodgeChance - (equipmentWeight / 100);
-//
-//	float armorValue = 0;
-//	for (int i = 0; i < items.size(); i++)
-//	{
-//		armorValue += items[i]->defense;
-//	}
-//	damageReduction = armorValue / (armorValue + 500);
-//}
-//void Character::takeDamage(Item weapon, Character attacker, Item ammunition)
-//{
-//	//retrieves the optional ammo object, if it exists, assigns it to the ammo variable. If it doesn't, creates a default ammo object
-//	Item& ammo = attacker.inventory.findAmmunition(ammunition.name);
-//	
-//	//random number generator for crit chance, rolls a number between 1 - (100 - luck ). If the number is less than the crit chance, it's a crit
-//	int randomNum = (rand() % 100 - attacker.luck) + 1;
-//
-//	//WEAPON SPECIFIC DAMAGE CALCULATIONS
-//	
-//	//archery
-//	if (weapon.weaponType == Item::LONGBOW || weapon.weaponType == Item::COMPOUNDBOW || weapon.weaponType == Item::BALLISTA || weapon.weaponType == Item::CROSSBOW ||
-//		weapon.weaponType == Item::GREATBOW || weapon.weaponType == Item::MINICROSSBOW)
-//	{
-//		//This is just Overwatch's damage falloff formula lmao
-//		
-//		//damage falloff variables
-//		float minDamage = ammo.damage * .3;
-//		float maxDamage = ammo.damage * 1.3;
-//		float nearRange = 10;
-//
-//		float farRange = weapon.damage * 10;
-//
-//		//normalized distance of the attacker from their target
-//		float normalizedDistance = (attacker.distanceFromPlayer - nearRange) / (farRange - nearRange);
-//
-//		//raw damage of the arrow
-//		float arrowDamage = normalizedDistance * minDamage + (1.00 - normalizedDistance) * maxDamage;
-//
-//		//crit damage modifier
-//		float critDamage = arrowDamage * 1.5;
-//
-//		//damage reduction modfiiers
-//		float critDamageReduction = critDamage * damageReduction;
-//		float normalDamageReduction = arrowDamage * damageReduction;
-//
-//		//final damage taken, either crit or non crit
-//		float critDamageTaken = critDamage - critDamageReduction;
-//		float damageTaken = arrowDamage - normalDamageReduction;
-//
-//		//critical hit
-//		if (attacker.critChance >= randomNum)
-//		{
-//			//Is player
-//			if (isPlayer)
-//			{
-//				//arrow is fired from min or below range (extra damage)
-//				if (critDamageTaken == minDamage)
-//				{
-//					//Character has armor/shield to absorb some damage
-//					if (damageReduction > 0.01)
-//					{
-//						std::cout << dye::light_red("Critical Hit!") << std::endl;
-//						std::cout << std::setprecision(2) << "Your armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
-//						std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= critDamageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character has no armor/shield
-//					else {
-//						std::cout << dye::light_red("Critical Hit!") << std::endl;
-//						std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
-//						std::cout << std::setprecision(2) << std::setprecision(2) << "You take " << critDamageTaken << " points of from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= critDamageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character dies if health is less than 0
-//
-//					if (healthPoints <= 0) {
-//						healthPoints = 0;
-//						killCharacter();
-//					}
-//				}
-//				//arrow is fired from maximum range (lowered damage)
-//				else if (critDamageTaken == maxDamage)
-//				{
-//					//Character has armor/shield to absorb some damage
-//					if (damageReduction > 0.01)
-//					{
-//						std::cout << dye::light_red("Critical Hit!") << std::endl;
-//						std::cout << std::setprecision(2) << "Your armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
-//						std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= critDamageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character has no armor/shield
-//					else {
-//						std::cout << dye::light_red("Critical Hit!") << std::endl;
-//						std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= critDamageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character dies if health is less than 0
-//
-//					if (healthPoints <= 0) {
-//						healthPoints = 0;
-//						killCharacter();
-//					}
-//				}
-//				else
-//				{
-//					//Character has armor/shield to absorb some damage
-//					if (damageReduction > 0.01)
-//					{
-//						std::cout << dye::light_red("Critical Hit!") << std::endl;
-//						std::cout << std::setprecision(2) << "Your armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= critDamageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character has no armor/shield
-//					else {
-//						std::cout << dye::light_red("Critical Hit!") << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= critDamageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character dies if health is less than 0
-//
-//					if (healthPoints <= 0) {
-//						healthPoints = 0;
-//						killCharacter();
-//					}
-//				}
-//			}
-//			//Is NPC
-//			else
-//			{
-//				if (!isPlayer)
-//				{
-//					//arrow is fired from min or below range (extra damage)
-//					if (critDamageTaken == minDamage)
-//					{
-//						//Character has armor/shield to absorb some damage
-//						if (damageReduction > 0.01)
-//						{
-//							std::cout << dye::light_red("Critical Hit!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
-//							std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= critDamageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character has no armor/shield
-//						else {
-//							std::cout << dye::light_red("Critical Hit!") << std::endl;
-//							std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= critDamageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character dies if health is less than 0
-//
-//						if (healthPoints <= 0) {
-//							healthPoints = 0;
-//							killCharacter();
-//						}
-//					}
-//					//arrow is fired from maximum range (lowered damage)
-//					else if (critDamageTaken == maxDamage)
-//					{
-//						//Character has armor/shield to absorb some damage
-//						if (damageReduction > 0.01)
-//						{
-//							std::cout << dye::light_red("Critical Hit!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
-//							std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= critDamageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character has no armor/shield
-//						else {
-//							std::cout << dye::light_red("Critical Hit!") << std::endl;
-//							std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= critDamageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character dies if health is less than 0
-//
-//						if (healthPoints <= 0) {
-//							healthPoints = 0;
-//							killCharacter();
-//						}
-//					}
-//					else
-//					{
-//						//Character has armor/shield to absorb some damage
-//						if (damageReduction > 0.01)
-//						{
-//							std::cout << dye::light_red("Critical Hit!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << critDamageReduction << " points of damage!" << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= critDamageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character has no armor/shield
-//						else {
-//							std::cout << dye::light_red("Critical Hit!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= critDamageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character dies if health is less than 0
-//
-//						if (healthPoints <= 0) {
-//							healthPoints = 0;
-//							killCharacter();
-//						}
-//					}
-//				}
-//			}
-//		}
-//		//normal hit
-//		else
-//		{
-//			//Is player
-//			if (isPlayer)
-//			{
-//				//arrow is fired from min or below range (extra damage)
-//				if (damageTaken == minDamage)
-//				{
-//					//Character has armor/shield to absorb some damage
-//					if (damageReduction > 0.01)
-//					{
-//						std::cout << std::setprecision(2) << "Your armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
-//						std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= damageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character has no armor/shield
-//					else {
-//						std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= damageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character dies if health is less than 0
-//
-//					if (healthPoints <= 0) {
-//						healthPoints = 0;
-//						killCharacter();
-//					}
-//				}
-//				//arrow is fired from maximum range (lowered damage)
-//				else if (damageTaken == maxDamage)
-//				{
-//					//Character has armor/shield to absorb some damage
-//					if (damageReduction > 0.01)
-//					{
-//						std::cout << std::setprecision(2) << "Your armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
-//						std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= damageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character has no armor/shield
-//					else {
-//						std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= damageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character dies if health is less than 0
-//
-//					if (healthPoints <= 0) {
-//						healthPoints = 0;
-//						killCharacter();
-//					}
-//				}
-//				else
-//				{
-//					//Character has armor/shield to absorb some damage
-//					if (damageReduction > 0.01)
-//					{
-//						std::cout << std::setprecision(2) << "Your armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
-//						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= damageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character has no armor/shield
-//					else {
-//						std::cout << std::setprecision(2) << "You take " << damageTaken << " points of from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//						std::cout << std::setprecision(6);
-//						this->healthPoints -= damageTaken;
-//						attacker.inventory.consumeAmmunition(ammo);
-//					}
-//					//Character dies if health is less than 0
-//
-//					if (healthPoints <= 0) {
-//						healthPoints = 0;
-//						killCharacter();
-//					}
-//				}
-//			}
-//			//Is NPC
-//			else
-//			{
-//				if (!isPlayer)
-//				{
-//					//arrow is fired from min or below range (extra damage)
-//					if (damageTaken == minDamage)
-//					{
-//						//Character has armor/shield to absorb some damage
-//						if (damageReduction > 0.01)
-//						{
-//								std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
-//							std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= damageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character has no armor/shield
-//						else {
-//								std::cout << dye::light_yellow("The arrow's bite is dulled by the extreme distance it was fired from!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= damageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character dies if health is less than 0
-//
-//						if (healthPoints <= 0) {
-//							healthPoints = 0;
-//							killCharacter();
-//						}
-//					}
-//					//arrow is fired from maximum range (lowered damage)
-//					else if (damageTaken == maxDamage)
-//					{
-//						//Character has armor/shield to absorb some damage
-//						if (damageReduction > 0.01)
-//						{
-//								std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
-//							std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= damageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character has no armor/shield
-//						else {
-//								std::cout << dye::light_yellow("The arrow's bite is amplified by the short time it spent in the air!") << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= damageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character dies if health is less than 0
-//
-//						if (healthPoints <= 0) {
-//							healthPoints = 0;
-//							killCharacter();
-//						}
-//					}
-//					else
-//					{
-//						//Character has armor/shield to absorb some damage
-//						if (damageReduction > 0.01)
-//						{
-//								std::cout << std::setprecision(2) << this->name << "'s armor absorbs " << normalDamageReduction << " points of damage!" << std::endl;
-//							std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= damageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character has no armor/shield
-//						else {
-//								std::cout << std::setprecision(2) << this->name << " takes " << damageTaken << " points of damage from the " << attacker.name << "'s " << ammo.name << "!" << std::endl;
-//							std::cout << std::setprecision(6);
-//							this->healthPoints -= damageTaken;
-//							attacker.inventory.consumeAmmunition(ammo);
-//						}
-//						//Character dies if health is less than 0
-//
-//						if (healthPoints <= 0) {
-//							healthPoints = 0;
-//							killCharacter();
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
-//	//magic
-//	else if (weapon.weaponType == Item::weapon_types::TALISMAN || weapon.weaponType == Item::weapon_types::CHIME || weapon.weaponType == Item::weapon_types::TOME ||
-//		weapon.weaponType == Item::weapon_types::WAND || weapon.weaponType == Item::weapon_types::STAFF || weapon.weaponType == Item::weapon_types::ORB)
-//	{
-//
-//	}
-//	//melee
-//	else
-//	{
-//		float critDamage = 1.5 * weapon.damage;
-//		float critDamageTaken = critDamage - (critDamage * damageReduction);;
-//		float damageTaken = weapon.damage - (weapon.damage * damageReduction);
-//
-//		//critical hit
-//		if (attacker.critChance >= randomNum)
-//		{
-//			//Is player
-//			if (isPlayer)
-//			{
-//				//Character has armor/shield to absorb some damage
-//				if (damageReduction > 0.01)
-//				{
-//					std::cout << dye::light_red("Critical Hit!") << std::endl;
-//					std::cout << std::setprecision(2) << "Your armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
-//					std::cout << "You take " << critDamageTaken << " points of damage from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
-//					std::cout << std::setprecision(6);
-//					this->healthPoints -= critDamageTaken;
-//				}
-//				//Character has no armor/shield
-//				else {
-//					std::cout << dye::light_red("Critical Hit!") << std::endl;
-//					std::cout << std::setprecision(2) << "You take " << critDamageTaken << " points of from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
-//					std::cout << std::setprecision(6);
-//					this->healthPoints -= critDamageTaken;
-//				}
-//				//Character dies if health is less than 0
-//
-//				if (healthPoints <= 0) {
-//					healthPoints = 0;
-//					killCharacter();
-//				}
-//			}
-//			//Is NPC
-//			else
-//			{
-//				//Character has armor/shield to absorb some damage
-//				if (damageReduction > 0.01)
-//				{
-//					std::cout << dye::light_red("Critical Hit!") << std::endl;
-//					std::cout << std::setprecision(2) << "The " << this->name << "'s armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
-//					std::cout << "The " << this->name << " takes " << critDamageTaken << " points of damage from " << attacker.name << "'s " << weapon.name << "!" << std::endl;
-//					std::cout << std::setprecision(6);
-//					this->healthPoints -= critDamageTaken;
-//				}
-//				//Character has no armor/shield
-//				else {
-//					std::cout << dye::light_red("Critical Hit!") << std::endl;
-//					std::cout << std::setprecision(2) << "The " << this->name << " takes " << critDamageTaken << " points of damage from " << attacker.name << "'s " << weapon.name << "!" << std::endl;
-//					std::cout << std::setprecision(6);
-//					this->healthPoints -= critDamageTaken;
-//				}
-//				//Character dies if health is less than 0
-//				if (healthPoints <= 0) {
-//					healthPoints = 0;
-//					killCharacter();
-//				}
-//			}
-//		}
-//		//normal hit
-//		else
-//		{
-//			//Is player
-//			if (isPlayer)
-//			{
-//				//Character has armor/shield to absorb some damage
-//				if (damageReduction > 0.01)
-//				{
-//					std::cout << std::setprecision(2) << "Your armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
-//					std::cout << "You take " << damageTaken << " points of damage from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
-//					std::cout << std::setprecision(6);
-//					this->healthPoints -= damageTaken;
-//				}
-//				//Character has no armor/shield
-//				else {
-//					std::cout << std::setprecision(2) << "You take " << damageTaken << " points of from the " << attacker.name << "'s " << weapon.name << "!" << std::endl;
-//					std::cout << std::setprecision(6);
-//					this->healthPoints -= damageTaken;
-//				}
-//				//Character dies if health is less than 0
-//				if (healthPoints <= 0) {
-//					healthPoints = 0;
-//					killCharacter();
-//				}
-//			}
-//			//Is NPC
-//			else
-//			{
-//				//Character has armor/shield to absorb some damage
-//				if (damageReduction > 0.01)
-//				{
-//					std::cout << std::setprecision(2) << "The " << this->name << "'s armor absorbs " << weapon.damage * damageReduction << " points of damage!" << std::endl;
-//					std::cout << "The " << this->name << " takes " << damageTaken << " points of damage from " << attacker.name << "'s " << weapon.name << "!" << std::endl;
-//					std::cout << std::setprecision(6);
-//					this->healthPoints -= damageTaken;
-//				}
-//				//Character has no armor/shield
-//				else {
-//					std::cout << std::setprecision(2) << "The " << this->name << " takes " << damageTaken << " points of damage from " << attacker.name << "'s " << weapon.name << "!" << std::endl;
-//					std::cout << std::setprecision(6);
-//					this->healthPoints -= damageTaken;
-//				}
-//				//Character dies if health is less than 0
-//				if (healthPoints <= 0) {
-//					healthPoints = 0;
-//					killCharacter();
-//				}
-//			}
-//		}
-//	}
-//}
-//
+
+//SPELLS
+bool Character::chooseSpell(Weapon& weapon, Character* target, Spell*& spell)
+{
+	//checks if they're using an appropriate casting tool
+	if (weapon.weaponType == Weapon::WeaponType::WAND || weapon.weaponType == Weapon::WeaponType::STAFF ||
+		weapon.weaponType == Weapon::WeaponType::ORB || weapon.weaponType == Weapon::WeaponType::CHIME ||
+		weapon.weaponType == Weapon::WeaponType::TALISMAN || weapon.weaponType == Weapon::WeaponType::TOME)
+	{
+		int choice = 0;
+		//keep looping until the player chooses a spell or chooses to go back
+		do
+		{
+			//used to keep track of the amount of used spell slots and to print empty slots for any spell not attuned
+			int numCategories = 0;
+			for (int i = 0; i < this->attunedSpells.size(); i++)
+			{
+				//print the spell out as grey if the player doesn't have enough fatigue to cast it or if it is out of range of all targets
+				// also checks if the spell in question is used on an ally or self, in which case let it go through because those ones have a range of 0
+				if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints 
+					&& this->attunedSpells[i]->range >= target->distanceFromPlayer
+					&& !this->attunedSpells[i]->useOnSelf 
+					&& !this->attunedSpells[i]->useOnAlly)
+				{
+					std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << std::endl;
+					numCategories++;
+				}
+				else if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints && this->attunedSpells[i]->useOnSelf 
+					|| this->attunedSpells[i]->useOnAlly) 
+				{
+					std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << std::endl;
+					numCategories++;
+				}
+				else if (this->attunedSpells[i]->fatigueCost > this->fatiguePoints && this->attunedSpells[i]->range < target->distanceFromPlayer
+					&& !this->attunedSpells[i]->useOnSelf && !this->attunedSpells[i]->useOnAlly)
+				{
+					std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << std::endl;
+					numCategories++;
+				}
+				else {
+					std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << std::endl;
+					numCategories++;
+				}
+			}
+			for (int i = numCategories; i < 7; i++)
+			{
+				std::cout << " " << dye::grey(i + 1) << dye::grey(") Empty Slot") << std::endl;
+			}
+			std::cout << dye::light_yellow(" ") << dye::light_yellow("8) Go Back...") << std::endl;
+			do
+			{
+				std::cout << dye::light_yellow(" Choose your spell: ");
+				std::cin >> choice;
+				if (choice == 8)
+				{
+					//user chose to go back without casting a spell6
+					return false;
+					break;
+				}
+				if (std::cin.fail() || choice < 1 || choice > this->attunedSpells.size())
+				{
+					std::cout << dye::white(" Invalid choice. Please enter 1 - ")
+						<< this->attunedSpells.size() << " or 8 to go back..." << std::endl;
+					std::cin.clear();
+					std::cin.ignore(1000, '\n');
+				}
+			} while (choice < 1 || choice > this->attunedSpells.size());
+			//player tried to cast a summon spell that was already applied
+			for (const Effect* effect : this->effects)
+			{
+				//global variable for now: add more if summons should last more or less than 10 turns
+				if (effect->name == "Summon Cooldown" && this->attunedSpells[choice - 1]->summon)
+				{
+					std::cout << " You can't summon another ally until your current ally dies or for "
+						<< effect->duration << " turns!" << std::endl;
+				}
+			}
+			//get fatigue cost of the spell, dont allow them to cast it if they can't
+			// return without progressing a turn if they can't cast the spell
+			if (fatiguePoints < this->attunedSpells[choice - 1]->fatigueCost)
+			{
+				//user does not have enough fatigue to cast the spell
+				std::cout << dye::light_red(" Not enough fatigue to cast spell!") << std::endl;
+				return false;
+			}
+			//spell is not a summon, self cast, or ally cast spell and they are out of range
+			else
+			if (this->attunedSpells[choice - 1]->range < target->distanceFromPlayer &&
+				!this->attunedSpells[choice - 1]->summon &&
+				!this->attunedSpells[choice - 1]->useOnSelf &&
+				!this->attunedSpells[choice - 1]->useOnAlly)
+			{
+				std::cout << " You are not in range of that target with " << this->attunedSpells[choice - 1]->name << std::endl;
+			}
+			//spell is a summon, self cast, or ally cast spell
+			else if (this->attunedSpells[choice - 1]->summon ||
+				this->attunedSpells[choice - 1]->useOnSelf ||
+				this->attunedSpells[choice - 1]->useOnAlly)
+			{
+				spell = this->attunedSpells[choice - 1];
+				return true;
+				break;
+			}
+			else
+			{
+				spell = this->attunedSpells[choice - 1];
+				return true;
+				break;
+			}
+		} while (!spell || choice == 8);
+	}
+	else
+	{
+		std::cout << dye::light_red(" ERROR: INCORRECT WEAPON TYPE PASSED TO CHOOSESPELL!") << std::endl;
+		return false;
+	}
+}
+
+void Character::viewSpells()
+{
+	int choice = 0;
+	do
+	{
+		int numCategories = 0;
+		std::cout << dye::light_yellow(" Select a Spell to View Details...") << std::endl;
+		for (int i = 0; i < this->attunedSpells.size(); i++)
+		{
+			//print the spell out as grey if the player doesn't have enough fatigue to cast it
+			if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints) std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << std::endl;
+			if (this->attunedSpells[i]->fatigueCost > this->fatiguePoints)std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << std::endl;
+			numCategories++;
+		}
+		for (int i = numCategories; i < 7; i++)
+		{
+			std::cout << " " << dye::grey(i + 1) << dye::grey(") Empty Slot") << std::endl;
+		}
+		std::cout << dye::light_yellow(" ") << dye::light_yellow("8) Go Back...") << std::endl;
+		do
+		{
+			std::cout << dye::light_yellow(" Choose your spell: ");
+			std::cin >> choice;
+			if (choice == 8)
+			{
+				//user chose to go back without viewing a spell in detail
+				return;
+			}
+			if (std::cin.fail() || choice < 1 || choice > this->attunedSpells.size())
+			{
+				std::cout << dye::white(" Invalid choice. Please enter 1 - ")
+					<< this->attunedSpells.size() << " or 8 to go back..." << std::endl;
+				std::cin.clear();
+				std::cin.ignore(1000, '\n');
+			}
+		} while (choice < 1 || choice > this->attunedSpells.size());
+
+		std::cout << " " + this->attunedSpells[choice - 1]->name + "; fatigue cost: " << this->attunedSpells[choice - 1]->fatigueCost << "; " << this->attunedSpells[choice - 1]->description << std::endl;
+	} while (choice != 8);
+}
+
+void Character::viewSpellsBrief()
+{
+	int numCategories = 0;
+	std::cout << dye::light_yellow(" Your Attuned Spells...") << std::endl;
+	for (int i = 0; i < this->attunedSpells.size(); i++)
+	{
+		//print the spell out as grey if the player doesn't have enough fatigue to cast it
+		if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints) std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << std::endl;
+		if (this->attunedSpells[i]->fatigueCost > this->fatiguePoints)std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << std::endl;
+		numCategories++;
+	}
+	for (int i = numCategories; i < 7; i++)
+	{
+		std::cout << " " << dye::grey(i + 1) << dye::grey(") Empty Slot") << std::endl;
+	}
+}
+void Character::castSpell(Spell& spell, Character* target)
+{
+	Character* character = this;
+
+	//GET EQUIPMENT OF TARGET FOR CALCULATIONS
+	Weapon* mainHand = nullptr, * offHand = nullptr, * reserve1 = nullptr, * reserve2 = nullptr;
+	Armor* head = nullptr, * chest = nullptr, * legs = nullptr, * arms = nullptr;
+	Trinket* amulet = nullptr, * ring1 = nullptr, * ring2 = nullptr, * misc = nullptr;
+	target->inventory.getEquippedItems(mainHand, offHand, reserve1, reserve2, head, chest, legs, arms, amulet, ring1, ring2, misc);
+
+
+	if (dynamic_cast<Human*>(target))
+	{
+		//CHECK THE TYPE OF SPELL
+
+		//SUMMON ALLY
+		if (spell.summon)
+		{
+			//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
+
+			//adds summoning cooldown to caster
+			this->effects.push_back(new Effect(false, true, "Summon Cooldown", "Cooldown for summoning another creature", PhysicalDamageType::NONE, MagicDamageType::NONE, 10, 1, false, 1, 1, false));
+			for (Effect* effect : spell.effects)
+			{
+				spell.applied = true;
+				effect->applyEffect(effect, character, character);
+			}
+		}
+		//spells with a minimum range, don't do damage if not in range.
+		else if (spell.range < target->distanceFromPlayer)
+		{
+
+			if (target->distanceFromPlayer <= 10)
+			{
+				//SUBTRACT FATIGUE
+				this->fatiguePoints -= spell.fatigueCost;
+
+				for (int i = 0; i < 99;)
+				{
+					target->healthPoints -= spell.calculateSpellDamage(target, spell);
+					if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+					if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+					i += abs(spell.attackSpeed - 100);
+					//apply effects to target
+					for (Effect* effect : spell.effects)
+					{
+						effect->applyEffect(effect, character, target);
+					}
+					//apply effects to all allies
+					for (Character* ally : target->allies)
+					{
+						if (ally->distanceFromPlayer <= 10)
+						{
+							ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
+							for (Effect* effect : spell.effects)
+							{
+								effect->applyEffect(effect, character, ally);
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " is out of range of the spell!" << std::endl;
+				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " is out of range of the spell!" << std::endl;
+			}
+		}
+		//HEALING SELF
+		else if (spell.useOnSelf && spell.healing)
+		{
+			//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
+
+			for (int i = 0; i < 99;)
+			{
+				if (this->namedCharacter) std::cout << dye::light_yellow(" " + this->name) << " has a healing buff applied to them!" << std::endl;
+				if (!this->namedCharacter) std::cout << " The " << dye::light_yellow(this->name) << " has a healing buff applied to them!" << std::endl;
+				i += abs(spell.attackSpeed - 100);
+				for (Effect* effect : spell.effects)
+				{
+					effect->applyEffect(effect, character, character);
+				}
+			}
+		}
+		//BUFF SELF
+		else if (spell.useOnSelf && spell.buff)
+		{
+			//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
+
+			for (int i = 0; i < 99;)
+			{
+				if (this->namedCharacter) std::cout << dye::light_yellow(" " + this->name) << " has a buff applied to them!" << std::endl;
+				if (!this->namedCharacter) std::cout << " The " << dye::light_yellow(this->name) << " has a buff applied to them!" << std::endl;
+				i += abs(spell.attackSpeed - 100);
+				for (Effect* effect : spell.effects)
+				{
+					effect->applyEffect(effect, character, character);
+				}
+			}
+		}
+		//HEALING OR BUFF ALLY
+		//SINGLE TARGET DAMAGING SPELL
+		else if (spell.doesDamage && !spell.areaOfEffect)
+		{
+			//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
+
+			for (int i = 0; i < 99;)
+			{
+				target->healthPoints -= spell.calculateSpellDamage(target, spell);
+				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				i += abs(spell.attackSpeed - 100);
+				for (Effect* effect : spell.effects)
+				{
+					effect->applyEffect(effect, character, target);
+				}
+			}
+		}
+		//SINGLE TARGET NON DAMAGING SPELL
+		else if (!spell.doesDamage && !spell.areaOfEffect && !spell.summon)
+		{
+			//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
+
+			for (int i = 0; i < 99;)
+			{
+				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " is affected by " << spell.name << "!" << std::endl;
+				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " is affected by " << spell.name << "!" << std::endl;
+				i += abs(spell.attackSpeed - 100);
+				for (Effect* effect : spell.effects)
+				{
+					effect->applyEffect(effect, character, target);
+				}
+			}
+		}
+		//AOE DAMAGING SPELL THAT DOESN"T APPLY EFFECT TO TARGET
+		else if (spell.name == "Fiery Explosion")
+		{
+			//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
+
+			for (int i = 0; i < 99;)
+			{
+				target->healthPoints -= spell.calculateSpellDamage(target, spell);
+				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				i += abs(spell.attackSpeed - 100);
+				//apply effects to target
+				for (Effect* effect : spell.effects)
+				{
+					if (effect->areaOfEffect) effect->applyEffect(effect, character, target);
+				}
+				//apply effects to all allies
+				for (Character* ally : target->allies)
+				{
+					for (Effect* effect : spell.effects)
+					{
+						if (ally->name != target->name)
+						{
+							effect->applyEffect(effect, character, ally);
+						}
+					}
+				}
+			}
+		}
+		//AOE DAMAGING SPELL THAT DOESN"T APPLY EFFECT TO TARGET
+		else if (spell.areaOfEffect)
+		{//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
+
+			for (int i = 0; i < 99;)
+			{
+				target->healthPoints -= spell.calculateSpellDamage(target, spell);
+				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				i += abs(spell.attackSpeed - 100);
+				//apply effects to target
+				for (Effect* effect : spell.effects)
+				{
+					effect->applyEffect(effect, character, target);
+				}
+				//apply effects to all allies
+				for (Character* ally : target->allies)
+				{
+					ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
+					for (Effect* effect : spell.effects)
+					{
+						effect->applyEffect(effect, character, ally);
+					}
+				}
+			}
+		}
+	}
+}
+
+void Character::attackWithMelee(Weapon* weapon, Character* target)
+{
+	if (dynamic_cast<Human*>(target))
+	{
+		Human* humanAttacker = dynamic_cast<Human*>(this);
+		Human* humanTarget = dynamic_cast<Human*>(target);
+		//Calculate crit damage and damage reduction
+		int randomNum = (rand() % 100 - this->getLuck()) + 1;
+
+		float normalDamage = weapon->getWeaponDamage(target, *weapon);
+		float critDamage = weapon->getWeaponDamage(target, *weapon) * 1.5f;
+
+		//ensures that the damage will never be negative
+		if (critDamage < 0) critDamage = 0;
+		if (normalDamage < 0) normalDamage = 0;
+
+		//Critical Hit
+
+		if (randomNum <= humanAttacker->critChance)
+		{
+			//Player landed critical hit
+			if (humanAttacker->isPlayer)
+			{
+				target->healthPoints -= critDamage;
+				for (Enchantment* enchantment : weapon->enchantments)
+				{
+					for (Effect* effect : enchantment->effects)
+					{
+						effect->applyEffect(effect, humanAttacker, humanTarget);
+					}
+				}
+				std::cout << dye::light_red(" Critical Hit!") << std::endl;
+				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << critDamage << " points of damage from the "
+					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				return;
+			}
+			//NPC landed a critical hit
+			else
+			{
+				for (Enchantment* enchantment : weapon->enchantments)
+				{
+					for (Effect* effect : enchantment->effects)
+					{
+						effect->applyEffect(effect, humanAttacker, humanTarget);
+					}
+				}
+				target->healthPoints -= critDamage;
+				std::cout << std::setprecision(2) << " You take " << critDamage << " points of damage from the "
+					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				return;
+			}
+		}
+		else
+		{
+			//NORMAL HIT
+			//Player landed normal hit
+			if (humanAttacker->isPlayer)
+			{
+				for (Enchantment* enchantment : weapon->enchantments)
+				{
+					for (Effect* effect : enchantment->effects)
+					{
+						effect->applyEffect(effect, humanAttacker, humanTarget);
+					}
+				}
+				target->healthPoints -= normalDamage;
+				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << normalDamage << " points of damage from the "
+					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				return;
+			}
+			//NPC landed a normal hit
+			else
+			{
+				for (Enchantment* enchantment : weapon->enchantments)
+				{
+					for (Effect* effect : enchantment->effects)
+					{
+						effect->applyEffect(effect, humanAttacker, humanTarget);
+					}
+				}
+				target->healthPoints -= normalDamage;
+				std::cout << std::setprecision(2) << " You take " << normalDamage << " points of damage from the "
+					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				return;
+			}
+		}
+	}
+	else
+	{
+		//TODO
+	}
+
+}
 //void Character::receiveHealing(float healing) {
 //	this->healthPoints += healing;
 //	if (healthPoints > maxHealthPoints) {
@@ -735,7 +984,7 @@ void Character::killCharacter()
 //				{
 //					std::cout << dye::yellow("Select ") << dye::yellow(i) << dye::yellow(" stats to increase by 3!") << std::endl;
 //					std::cout << dye::light_yellow("1) Health: ") << this->health << std::endl;
-//					std::cout << dye::light_yellow("2) Mana: ") << this->mana << std::endl;
+//					std::cout << dye::light_yellow("2) fatigue: ") << this->fatigue << std::endl;
 //					std::cout << dye::light_yellow("3) Strength: ") << this->strength << std::endl;
 //					std::cout << dye::light_yellow("4) Agility: ") << this->agility << std::endl;
 //					std::cout << dye::light_yellow("5) Arcane: ") << this->arcane << std::endl;
@@ -787,7 +1036,7 @@ void Character::killCharacter()
 //					}
 //					case 2:
 //					{
-//						std::cout << "Mana: " << this->mana << " -> " << this->mana + 3 << std::endl;
+//						std::cout << "fatigue: " << this->fatigue << " -> " << this->fatigue + 3 << std::endl;
 //						std::cout << "Are you sure? 1 = Yes, 2 = No" << std::endl;
 //						//input validation
 //						do
@@ -804,7 +1053,7 @@ void Character::killCharacter()
 //
 //						if (areYouSure == 1)
 //						{
-//							this->mana += 3;
+//							this->fatigue += 3;
 //						}
 //						else
 //						{
@@ -960,7 +1209,7 @@ void Character::killCharacter()
 //
 //		//this prints out the stats a final time after they are done leveling up so they can see their final results
 //		std::cout << dye::light_yellow("1) Health: ") << this->health << std::endl;
-//		std::cout << dye::light_yellow("2) Mana: ") << this->mana << std::endl;
+//		std::cout << dye::light_yellow("2) fatigue: ") << this->fatigue << std::endl;
 //		std::cout << dye::light_yellow("4) Strength: ") << this->strength << std::endl;
 //		std::cout << dye::light_yellow("5) Agility: ") << this->agility << std::endl;
 //		std::cout << dye::light_yellow("6) Arcane: ") << this->arcane << std::endl;
@@ -1132,7 +1381,7 @@ void Character::killCharacter()
 //			}
 //			//potions
 //
-//			std::string effects[] = { "Restores Health", "Restores Mana", "Cures Diseases" };
+//			std::string effects[] = { "Restores Health", "Restores fatigue", "Cures Diseases" };
 //			if (!initialLootPotions.empty())
 //			{
 //				for (int i = 0; i < initialLootPotions.size(); i++)
@@ -1260,7 +1509,7 @@ void Character::killCharacter()
 //			}
 //			//potions
 //
-//			std::string effects[] = { "Restores Health", "Restores Mana", "Cures Diseases" };
+//			std::string effects[] = { "Restores Health", "Restores fatigue", "Cures Diseases" };
 //			if (!finalLootPotions.empty())
 //			{
 //				for (int i = 0; i < finalLootPotions.size(); i++)
@@ -1388,10 +1637,10 @@ void Character::killCharacter()
 //{
 //	std::cout << dye::light_yellow("  Class: ") << character.characterClass << std::endl;
 //	std::cout << dye::light_yellow("  Health Points: ") << character.healthPoints << "/" << character.maxHealthPoints << std::endl;
-//	std::cout << dye::light_yellow("  Mana Points: ") << character.manaPoints << "/" << character.maxManaPoints << std::endl;
+//	std::cout << dye::light_yellow("  fatigue Points: ") << character.fatiguePoints << "/" << character.maxfatiguePoints << std::endl;
 //	std::cout << "\n";
 //	std::cout << dye::light_yellow("  Health: ") << character.health << std::endl;
-//	std::cout << dye::light_yellow("  Mana: ") << character.mana << std::endl;
+//	std::cout << dye::light_yellow("  fatigue: ") << character.fatigue << std::endl;
 //	std::cout << dye::light_yellow("  Strength: ") << character.strength << std::endl;
 //	std::cout << dye::light_yellow("  Agility: ") << character.agility << std::endl;
 //	std::cout << dye::light_yellow("  Arcane: ") << character.arcane << std::endl;
@@ -1424,7 +1673,7 @@ void Character::killCharacter()
 //	std::cout << "Level: " << this->level << std::endl;
 //	std::cout << std::endl;
 //	std::cout << "Health: " << this->health << std::endl;
-//	std::cout << "Mana: " << this->mana << std::endl;
+//	std::cout << "fatigue: " << this->fatigue << std::endl;
 //	std::cout << "Strength: " << this->strength << std::endl;
 //	std::cout << "Agility: " << this->agility << std::endl;
 //	std::cout << "Arcane: " << this->arcane << std::endl;
@@ -1432,7 +1681,7 @@ void Character::killCharacter()
 //	std::cout << "Luck: " << this->luck << std::endl;
 //	std::cout << std::endl;
 //	std::cout << "Health Points: " << this->healthPoints << "/" << this->maxHealthPoints << std::endl;
-//	std::cout << "Mana Points: " << this->manaPoints << "/" << this->maxManaPoints << std::endl;
+//	std::cout << "fatigue Points: " << this->fatiguePoints << "/" << this->maxfatiguePoints << std::endl;
 //	std::cout << std::endl;
 //	std::cout << "Speed: " << this->speed << std::endl;
 //	std::cout << "Damage Reduction: " << this->damageReduction << "%" << std::endl;
@@ -1775,34 +2024,34 @@ void Character::killCharacter()
 //		std::cout << "It's a marvel that the " << this->name << " is still standing after the punishment they've endured." << std::endl;
 //	}
 //
-//	//Mana based text
+//	//fatigue based text
 //
 //	//100%
-//	if (this->manaPoints == this->maxManaPoints)
+//	if (this->fatiguePoints == this->maxfatiguePoints)
 //	{
-//		std::cout << "They are alert and attentive. Their mana must be close to full." << std::endl;
+//		std::cout << "They are alert and attentive. Their fatigue must be close to full." << std::endl;
 //	}
 //
 //	//75%
-//	else if (this->manaPoints >= maxManaPoints * .75 && this->manaPoints < maxManaPoints)
+//	else if (this->fatiguePoints >= maxfatiguePoints * .75 && this->fatiguePoints < maxfatiguePoints)
 //	{
 //		std::cout << "They look like they can keep the magic up for a while longer." << std::endl;
 //	}
 //
 //	//50%
-//	else if (this->manaPoints >= maxManaPoints * .5 && this->manaPoints <= maxManaPoints * .75)
+//	else if (this->fatiguePoints >= maxfatiguePoints * .5 && this->fatiguePoints <= maxfatiguePoints * .75)
 //	{
-//		std::cout << "They look somewhat disoriented. Are they running out of mana?" << std::endl;
+//		std::cout << "They look somewhat disoriented. Are they running out of fatigue?" << std::endl;
 //	}
 //
 //	//25%
-//	else if (this->manaPoints >= maxManaPoints * .25&& this->manaPoints <= maxManaPoints * .5)
+//	else if (this->fatiguePoints >= maxfatiguePoints * .25&& this->fatiguePoints <= maxfatiguePoints * .5)
 //	{
-//		std::cout << "They look very disoriented. They must be running dry on mana." << std::endl;
+//		std::cout << "They look very disoriented. They must be running dry on fatigue." << std::endl;
 //	}
 //
 //	//10%
-//	else if (this->manaPoints <= maxManaPoints* .25)
+//	else if (this->fatiguePoints <= maxfatiguePoints* .25)
 //	{
 //		std::cout << "They look like they don't have the magical energy to muster a spark." << std::endl;
 //	}
@@ -1849,9 +2098,9 @@ void Character::killCharacter()
 //
 //	//what potions do they have on them?
 //
-//	std::string effects[] = { "Restores Health", "Restores Mana", "Cures Diseases" };
+//	std::string effects[] = { "Restores Health", "Restores fatigue", "Cures Diseases" };
 //	int healingPotionCount = 0;
-//	int manaPotionCount = 0;
+//	int fatiguePotionCount = 0;
 //	int cureDiseaseCount = 0;
 //
 //	for (int i = 0; i < potions.size(); i++)
@@ -1860,9 +2109,9 @@ void Character::killCharacter()
 //		{
 //			healingPotionCount += 1;
 //		}
-//		else if (potions[i].effects == Potion::MANA)
+//		else if (potions[i].effects == Potion::fatigue)
 //		{
-//			manaPotionCount += 1;
+//			fatiguePotionCount += 1;
 //		}
 //		else if (potions[i].effects == Potion::CUREDISEASE)
 //		{
@@ -1871,35 +2120,35 @@ void Character::killCharacter()
 //	}
 //
 //	//if they have all of one potion type
-//	if (healingPotionCount > 0 && manaPotionCount == 0 && cureDiseaseCount == 0)
+//	if (healingPotionCount > 0 && fatiguePotionCount == 0 && cureDiseaseCount == 0)
 //	{
 //		std::cout << "Healing potions clink about on the " << this->name << "'s belt" << std::endl;
 //	}
-//	else if (healingPotionCount == 0 && manaPotionCount > 0 && cureDiseaseCount == 0)
+//	else if (healingPotionCount == 0 && fatiguePotionCount > 0 && cureDiseaseCount == 0)
 //	{
-//		std::cout << "Mana potions clink about on the " << this->name << "'s belt" << std::endl;
+//		std::cout << "fatigue potions clink about on the " << this->name << "'s belt" << std::endl;
 //	}
-//	else if (healingPotionCount == 0 && manaPotionCount == 0 && cureDiseaseCount > 0)
+//	else if (healingPotionCount == 0 && fatiguePotionCount == 0 && cureDiseaseCount > 0)
 //	{
 //		std::cout << "Cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
 //	}
 //
 //	//if they have a mixture of types
-//	else if (healingPotionCount > 0 && manaPotionCount > 0 && cureDiseaseCount == 0)
+//	else if (healingPotionCount > 0 && fatiguePotionCount > 0 && cureDiseaseCount == 0)
 //	{
-//		std::cout << "Healing and mana potions clink about on the " << this->name << "'s belt" << std::endl;
+//		std::cout << "Healing and fatigue potions clink about on the " << this->name << "'s belt" << std::endl;
 //	}
-//	else if (healingPotionCount > 0 && manaPotionCount == 0 && cureDiseaseCount > 0)
+//	else if (healingPotionCount > 0 && fatiguePotionCount == 0 && cureDiseaseCount > 0)
 //	{
 //		std::cout << "Healing and cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
 //	}
-//	else if (healingPotionCount == 0 && manaPotionCount > 0 && cureDiseaseCount > 0)
+//	else if (healingPotionCount == 0 && fatiguePotionCount > 0 && cureDiseaseCount > 0)
 //	{
-//		std::cout << "Mana and cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
+//		std::cout << "fatigue and cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
 //	}
-//	else if (healingPotionCount > 0 && manaPotionCount > 0 && cureDiseaseCount > 0)
+//	else if (healingPotionCount > 0 && fatiguePotionCount > 0 && cureDiseaseCount > 0)
 //	{
-//		std::cout << "Healing, mana, and cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
+//		std::cout << "Healing, fatigue, and cure disease potions clink about on the " << this->name << "'s belt" << std::endl;
 //	}
 //
 //	//do they have enough gold to be visible outside their pockets?

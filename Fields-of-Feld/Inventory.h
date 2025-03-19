@@ -4,6 +4,9 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include "Weapon.h"
+#include "Armor.h"
+#include "Trinket.h"
 
 class Item;
 class Inventory {
@@ -14,10 +17,10 @@ public:
 
 	std::vector<Item*> backpackItems;
 
-	void getEquippedItems(Item* mainHand, Item* offHand, Item* reserve1, Item* reserve2, Item* head, Item* body,
-		Item* legs, Item* arms, Item* amulet, Item* ring1, Item* ring2, Item* misc);
+	void getEquippedItems(Weapon*& mainHand, Weapon*& offHand, Weapon*& reserve1, Weapon*& reserve2, Armor*& head, Armor*& chest,
+		Armor*& legs, Armor*& arms, Trinket*& amulet, Trinket*& ring1, Trinket*& ring2, Trinket*& misc);
 
-	void getEquippedWeapons(Item* mainHand, Item* offHand, Item* reserve1, Item* reserve2);
+	void getEquippedWeapons(Weapon* mainHand, Weapon* offHand, Weapon* reserve1, Weapon* reserve2);
 
 	Item* findEquippedItem(std::string name);
 

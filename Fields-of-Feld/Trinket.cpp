@@ -5,8 +5,8 @@
 Trinket::Trinket()
 {
 }
-Trinket::Trinket(Effect effect, TrinketType trinketType)
-	: Item(true, name, description, value, weight, 1.0f, EquipSlots::BACKPACK),
+Trinket::Trinket(Effect effect, TrinketType trinketType, PhysicalDamageType physType, MagicDamageType magType)
+	: Item(true, name, description, physType, magType, value, weight, 1.0f, EquipSlots::BACKPACK),
 	effect(effect), trinketType(trinketType)
 {
 

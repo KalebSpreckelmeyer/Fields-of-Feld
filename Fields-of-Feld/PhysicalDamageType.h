@@ -1,0 +1,11 @@
+#ifndef PHYSICALDAMAGETYPE_H
+#define PHYSICALDAMAGETYPE_H
+
+enum class PhysicalDamageType {
+	NONE,
+	BLUNT,
+	SLASH,
+	PIERCE, 
+	CHOP
+};
+#endif // !PHYSICALDAMAGETYPE_H

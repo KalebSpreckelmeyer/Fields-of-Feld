@@ -122,5 +122,11 @@
     <ClInclude Include="Ammunition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MagicDamageType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicalDamageType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

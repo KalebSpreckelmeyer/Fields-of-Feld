@@ -8,6 +8,7 @@
 #include <functional>
 #include "Ammunition.h"
 #include "ThrownConsumable.h"
+#include "optional"
 
 //forward declaration to avoid circular dependency
 class Human;
@@ -20,6 +21,7 @@ class ThrownConsumable;
 class Character
 {
 public:
+	bool isAlly = false;
 	bool namedCharacter = false;
 	bool isAlive = true;
 	bool active = true;
@@ -29,8 +31,8 @@ public:
 	float confidenceLevel = 0.0f;
 	float healthPoints = 100.0f;
 	float maxHealthPoints = 100.0f;
-	float manaPoints = 50.0f;
-	float maxManaPoints = 50.0f;
+	float fatiguePoints = 50.0f;
+	float maxFatiguePoints = 50.0f;
 	float speed = 1.0f;
 	float critChance = 5.0f;
 	float dodgeChance = 5.0f;
@@ -54,7 +56,7 @@ public:
 	float level = 1.0f;
 
 	//Flags for combat scenarios
-	enum class CombatFlags { NEUTRAL, BLEEDING, BURNING, FROSTBITTEN, POISONED, SHOCKED, SLEEPY, FEAR, FRENZY };
+	enum class CombatFlags { NEUTRAL, BLEEDING, BURNING, FROSTBITTEN, POISONED, SHOCKED, SLEEPY, FEAR, FRENZY, FROZEN, HEALING, ENHANCEDARMOR};
 	CombatFlags combatFlag = CombatFlags::NEUTRAL;
 	std::vector<CombatFlags> combatFlags;
 
@@ -63,6 +65,21 @@ public:
 	//must be a pointer because of *polymorphism*
 	std::vector<Effect*> effects; //Enchantments that are currently affecting the character
 	
+	//vector of spells they can cast
+	std::vector<Spell*> attunedSpells;
+
+	//vector of spells they know but can't cast
+	std::vector<Spell*> knownSpells;
+
+
+	//For some unkown, arcane reason, the creatures held within a shared vector of creatures and humans are always 
+	// cast as humans no matter what. I put debugging statements until they were spilling out of the screen and they are correctly 
+	// stored as the separate types up until the second you cast them from character, then they default to humans. Split the vector 
+	// to avoid this problem, though it isn't ideal.
+	
+	//Vector of human allies 
+	std::vector<Character*> allies;
+
 	//Tages for dialogue responses/conditions
 	std::vector<std::string> tags;
 
@@ -76,7 +93,7 @@ public:
 	virtual float getCharisma() const { return 0.0f; } 
 	virtual float getAgility() const { return 0.0f; } 
 	virtual float getStrength() const { return 0.0f; } 
-	virtual float getMana() const { return 0.0f; } 
+	virtual float getFatigue() const { return 0.0f; } 
 	virtual float getHealth() const { return 0.0f; } 
 	virtual float getSpeed() const { return 0.0f; }
 	virtual float getLevel() const { return 0.0f; }
@@ -85,10 +102,10 @@ public:
 	Character();
 
 	//Main Constructor
-	Character(bool namedCharacter, bool isAlive, bool active, bool alert,
+	Character(bool isAlly, bool namedCharacter, bool isAlive, bool active, bool alert,
 		std::string name, std::string description, float confidenceLevel,
-		float healthPoints, float maxHealthPoints, float manaPoints,
-		float maxManaPoints, float speed, float critChance, float dodgeChance,
+		float healthPoints, float maxHealthPoints, float fatiguePoints,
+		float maxFatiguePoints, float speed, float critChance, float dodgeChance,
 		float blockChance, float damageThreshold, float damageResistance, float bleedPoints, float maxBleedPoints,
 		float burnPoints, float maxBurnPoints, float poisonPoints,
 		float maxPoisonPoints, float frostPoints, float maxFrostPoints,
@@ -98,25 +115,37 @@ public:
 
 
 	//Deconstructor
-	virtual ~Character();
+	virtual ~Character() = default;
 
-	//DESC: Chooses the ammunition to be used with a ranged weapon
+
+	//DESC: Chooses the ammunition to be used with a ranged weapon, sets it to ammo. Taraget is used to calculate damage
 	//PRE: The character must have a ranged weapon equipped	
-	//POST: The ammunition will be selected and used in the takeDamage function
-	void chooseAmmunition(Weapon* weapon, Ammunition* ammunition, Character* target);
+	//POST: The ammunition will be selected and used in the fireRangedWeapon function
+	bool chooseAmmunition(Weapon* weapon, Character* target, Ammunition* ammo);
+
+	//DESC: Fires a ranged weapon at a provided target with the provided ammunition
+	//PRE: chooseAmmunition shoud be properly called and used to select the ammunition to be used and call this function
+	//POST: target will take damage, ammo choice will be passed to consume ammo method and decremeneted or removed
+	void fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* ammo);
 
 	//DESC: Virtual function whose implementation is handled in the creature and human classes
 	//PRE: All parameters for the situation must be provided ex: attacking with a bow will need the weapon, ammunition, and target
 	//POST: Target will take damage, any effects will be applied, and ammunition will be decremented if necessary
-	virtual void takeDamage(Character* attacker, Character* target, Weapon* weapon, Ammunition* ammunition, 
-		ThrownConsumable* consumable, Spell* spell) = 0;
+	virtual void takeDamage(Character* attacker, Character* target, Weapon* weapon, Ammunition* ammunition,
+		ThrownConsumable* consumable, Spell* spell, std::optional<std::vector<Character*>>& allies,
+		std::optional<std::vector<Character*>>& enemyAllies) = 0;
 
 	//DESC: Fires a ranged weapon at a provided target, decrementing or removing ammunition as necessary
 	//PRE: chooseAmmunition shoud be properly called and used to select the ammunition to be used and call this function
 	//POST: Ammunition will be decremented or removed from the inventory, damage values will be sent to the takeDamage function to apply to target
 	void consumeAmmo(Item* ammo);
-	
-	//DESC: Used in the take damage function, this function will decrement the consumable's quantity and remove if necessary
+
+	//DESC: throws a ranged consumable at a provided target, then passing the consumable to the consumeThrownConsumable function
+	//PRE: chooseAmmunition shoud be properly called and used to select the ammunition to be used and call this function
+	//POST: Target will take all damage and effects associated with the thrown weapon
+	void throwThrownConsumable(ThrownConsumable* consumable, Character* target);
+
+	//DESC: this function will decrement the consumable's quantity and remove if necessary
 	//PRE: The consumable must have a quantity greater than 0
 	//POST: The consumable's quantity will be decremented, or the consumable will be removed from the inventory if the quantity is 0
 	void consumeThrownConsumable(ThrownConsumable* consumable);
@@ -125,6 +154,23 @@ public:
 	//PRE: The character must be alive
 	//POST: The character will be dead
 	void killCharacter();
+
+	//DESC: Prints a menu allowing user to choose a spell from their attuned spells
+	// If they dont have enough fatigue or choose to cancel it will return without casting
+	// the spell
+	//PRE: The character must have attuned spells, a valid catalyst,
+	// and a valid target should be passed 
+	//POST: TakeDamage will be called with all relevant parameters to cast a spell and
+	// apply its effects
+	bool chooseSpell(Weapon& weapon, Character* target, Spell*& spell);
+
+	void viewSpells();
+
+	void viewSpellsBrief();
+
+	void castSpell(Spell& spell, Character* target);
+
+	void attackWithMelee(Weapon* weapon, Character* target);
 
 	/*void setArmorValues(std::vector<Item> items);
 

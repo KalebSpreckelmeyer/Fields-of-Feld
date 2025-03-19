@@ -3,26 +3,42 @@
 #include "Item.h"
 #include <vector>
 #include "Enchantment.h"
+#include "PhysicalDamageType.h"
+#include "MagicDamageType.h"
+#include <unordered_map>
+
 class Enchantment;
 
 class Ammunition :
     public Item
 {
 public:
+
+	std::unordered_map<PhysicalDamageType, float> physicalDamage;
+	std::unordered_map<MagicDamageType, float> magicDamage;
+
 	bool specialDamage = false; //bonus damage to ghosts, skeletons, etc... used for silver arrows, holy water arrows, etc...
-	float damage = 0.0f;
 	float range = 0.0f;
 	enum class AmmoType { ARROW, GREATARROW, MINIBOLT, BOLT, BALLISTABOLT, CANNONSHELL };
 	AmmoType ammoType = AmmoType::ARROW;
-	enum class AmmoDamageType { PIERCE, BLUNT };
-	AmmoDamageType ammoDamageType = AmmoDamageType::BLUNT;
 
 	std::vector<Enchantment*> enchantments;
 
+	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
+
+	void setMagicDamage(MagicDamageType magType, float magDamage);
+
+	float getPhysicalDamage(PhysicalDamageType physType);
+
+	float getMagicDamage(MagicDamageType magType);
+
+	float getAmmoDamage(Character* target, Ammunition ammo);
+
 	Ammunition();
 
-	Ammunition(bool specialDamage, bool hasBeenInitialized, std::string name, std::string description, float value, float weight, float quantity, 
-		EquipSlots slot, float damage, float range, AmmoType ammoType, AmmoDamageType ammoDamageType);
+	Ammunition(bool specialDamage, bool hasBeenInitialized, std::string name, std::string description, PhysicalDamageType physType,
+		MagicDamageType magType, float value, float weight, float quantity, 
+		EquipSlots slot, float range, AmmoType ammoType);
 
 	~Ammunition();
 };

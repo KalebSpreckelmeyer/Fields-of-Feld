@@ -7,10 +7,10 @@ class Trinket :
 public:
 	Effect effect;
 	enum class TrinketType { AMULET, RING, MISC};
-	TrinketType trinketType;
+	TrinketType trinketType = TrinketType::MISC;
 
 	Trinket();
-	Trinket(Effect effect, TrinketType trinketType);
+	Trinket(Effect effect, TrinketType trinketType, PhysicalDamageType physType, MagicDamageType magType);
 	~Trinket();
 };
 
