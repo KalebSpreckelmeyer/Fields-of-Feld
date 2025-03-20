@@ -11,8 +11,8 @@ public:
 	std::unordered_map<PhysicalDamageType, float>physicalDamages;
 	std::unordered_map<MagicDamageType, float> magicDamages;
 
-	//PhysicalDamageType physDmgType = PhysicalDamageType::BLUNT;
-	//MagicDamageType magDmgType = MagicDamageType::NONE;
+	PhysicalDamageType physType = PhysicalDamageType::BLUNT;
+	MagicDamageType magType = MagicDamageType::NONE;
 
 	std::vector<Effect*> effects;
 	float intelligenceScaling = 0.0f;

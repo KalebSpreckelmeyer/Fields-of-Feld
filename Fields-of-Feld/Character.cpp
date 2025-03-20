@@ -123,7 +123,7 @@ bool Character::chooseAmmunition(Weapon* weapon, Character* target, Ammunition* 
 
 		//selects the ammo to be used
 		ammo = quiver[choice - 1];
-
+		return true;
 		//fireRangedWeapon(target, weapon, ammo);
 	}
 }
@@ -486,34 +486,37 @@ bool Character::chooseSpell(Weapon& weapon, Character* target, Spell*& spell)
 		//keep looping until the player chooses a spell or chooses to go back
 		do
 		{
+			std::cout << "\n=--->\n" << std::endl;
+			std::cout << dye::light_green(" Fatigue ") << this->fatiguePoints << "/" << this->maxFatiguePoints << std::endl;
+			std::cout << "\n=--->\n" << std::endl;
 			//used to keep track of the amount of used spell slots and to print empty slots for any spell not attuned
 			int numCategories = 0;
 			for (int i = 0; i < this->attunedSpells.size(); i++)
 			{
 				//print the spell out as grey if the player doesn't have enough fatigue to cast it or if it is out of range of all targets
 				// also checks if the spell in question is used on an ally or self, in which case let it go through because those ones have a range of 0
-				if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints 
+				if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints
 					&& this->attunedSpells[i]->range >= target->distanceFromPlayer
-					&& !this->attunedSpells[i]->useOnSelf 
+					&& !this->attunedSpells[i]->useOnSelf
 					&& !this->attunedSpells[i]->useOnAlly)
 				{
-					std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << std::endl;
+					std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
 					numCategories++;
 				}
-				else if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints && this->attunedSpells[i]->useOnSelf 
-					|| this->attunedSpells[i]->useOnAlly) 
+				else if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints && this->attunedSpells[i]->useOnSelf
+					|| this->attunedSpells[i]->useOnAlly)
 				{
-					std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << std::endl;
+					std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
 					numCategories++;
 				}
 				else if (this->attunedSpells[i]->fatigueCost > this->fatiguePoints && this->attunedSpells[i]->range < target->distanceFromPlayer
 					&& !this->attunedSpells[i]->useOnSelf && !this->attunedSpells[i]->useOnAlly)
 				{
-					std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << std::endl;
+					std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
 					numCategories++;
 				}
 				else {
-					std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << std::endl;
+					std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
 					numCategories++;
 				}
 			}
@@ -558,23 +561,31 @@ bool Character::chooseSpell(Weapon& weapon, Character* target, Spell*& spell)
 				std::cout << dye::light_red(" Not enough fatigue to cast spell!") << std::endl;
 				return false;
 			}
-			//spell is not a summon, self cast, or ally cast spell and they are out of range
-			else
-			if (this->attunedSpells[choice - 1]->range < target->distanceFromPlayer &&
-				!this->attunedSpells[choice - 1]->summon &&
-				!this->attunedSpells[choice - 1]->useOnSelf &&
-				!this->attunedSpells[choice - 1]->useOnAlly)
-			{
-				std::cout << " You are not in range of that target with " << this->attunedSpells[choice - 1]->name << std::endl;
-			}
-			//spell is a summon, self cast, or ally cast spell
-			else if (this->attunedSpells[choice - 1]->summon ||
-				this->attunedSpells[choice - 1]->useOnSelf ||
-				this->attunedSpells[choice - 1]->useOnAlly)
+			//spell is a self cast, ignore range check
+			if (this->attunedSpells[choice - 1]->useOnSelf)
 			{
 				spell = this->attunedSpells[choice - 1];
 				return true;
 				break;
+			}
+			//spell is an ally cast, ignore range check
+			if (this->attunedSpells[choice - 1]->useOnAlly)
+			{
+				spell = this->attunedSpells[choice - 1];
+				return true;
+				break;
+			}
+			//spell is a summon, ignore range check
+			if (this->attunedSpells[choice - 1]->summon)
+			{
+				spell = this->attunedSpells[choice - 1];
+				return true;
+				break;
+			}
+			//Spell is out of ransge
+			if (this->attunedSpells[choice - 1]->range < target->distanceFromPlayer)
+			{
+				std::cout << " You are not in range of that target with " << this->attunedSpells[choice - 1]->name << std::endl;
 			}
 			else
 			{
@@ -596,13 +607,16 @@ void Character::viewSpells()
 	int choice = 0;
 	do
 	{
+		std::cout << "\n=--->\n" << std::endl;
 		int numCategories = 0;
 		std::cout << dye::light_yellow(" Select a Spell to View Details...") << std::endl;
+		std::cout << dye::light_green(" Fatigue ") << this->fatiguePoints << "/" << this->maxFatiguePoints << std::endl;
+		std::cout << "\n=--->\n" << std::endl;
 		for (int i = 0; i < this->attunedSpells.size(); i++)
 		{
 			//print the spell out as grey if the player doesn't have enough fatigue to cast it
-			if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints) std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << std::endl;
-			if (this->attunedSpells[i]->fatigueCost > this->fatiguePoints)std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << std::endl;
+			if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints) std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
+			if (this->attunedSpells[i]->fatigueCost > this->fatiguePoints)std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
 			numCategories++;
 		}
 		for (int i = numCategories; i < 7; i++)
@@ -648,19 +662,14 @@ void Character::viewSpellsBrief()
 		std::cout << " " << dye::grey(i + 1) << dye::grey(") Empty Slot") << std::endl;
 	}
 }
-void Character::castSpell(Spell& spell, Character* target)
+void Character::castSpell(Spell& spell, Character* target, float playerMovement)
 {
 	Character* character = this;
-
-	//GET EQUIPMENT OF TARGET FOR CALCULATIONS
-	Weapon* mainHand = nullptr, * offHand = nullptr, * reserve1 = nullptr, * reserve2 = nullptr;
-	Armor* head = nullptr, * chest = nullptr, * legs = nullptr, * arms = nullptr;
-	Trinket* amulet = nullptr, * ring1 = nullptr, * ring2 = nullptr, * misc = nullptr;
-	target->inventory.getEquippedItems(mainHand, offHand, reserve1, reserve2, head, chest, legs, arms, amulet, ring1, ring2, misc);
-
+	
 
 	if (dynamic_cast<Human*>(target))
 	{
+		Human* humanAttacker = dynamic_cast<Human*>(this);
 		//CHECK THE TYPE OF SPELL
 
 		//SUMMON ALLY
@@ -670,130 +679,62 @@ void Character::castSpell(Spell& spell, Character* target)
 			this->fatiguePoints -= spell.fatigueCost;
 
 			//adds summoning cooldown to caster
-			this->effects.push_back(new Effect(false, true, "Summon Cooldown", "Cooldown for summoning another creature", PhysicalDamageType::NONE, MagicDamageType::NONE, 10, 1, false, 1, 1, false));
+			this->effects.push_back(new Effect(false, false, "Summon Cooldown", "Cooldown for summoning another creature", PhysicalDamageType::NONE, MagicDamageType::NONE, 0.0f, 10, 1, false, 1, 1, false));
 			for (Effect* effect : spell.effects)
 			{
 				spell.applied = true;
 				effect->applyEffect(effect, character, character);
 			}
 		}
-		//spells with a minimum range, don't do damage if not in range.
-		else if (spell.range < target->distanceFromPlayer)
+		//CAPTIVE SUN SPECIFIC LOGIC
+		else if (spell.name == "Captive Sun")
 		{
+			//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
 
-			if (target->distanceFromPlayer <= 10)
+			for (int i = 90; i < humanAttacker->castSpeed;)
 			{
-				//SUBTRACT FATIGUE
-				this->fatiguePoints -= spell.fatigueCost;
-
-				for (int i = 0; i < 99;)
+				target->healthPoints -= spell.calculateSpellDamage(target, spell);
+				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				i += abs(spell.attackSpeed - 100);
+				//apply effects to target
+				for (Effect* effect : spell.effects)
 				{
-					target->healthPoints -= spell.calculateSpellDamage(target, spell);
-					if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
-					if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
-					i += abs(spell.attackSpeed - 100);
-					//apply effects to target
-					for (Effect* effect : spell.effects)
+					if (target->isAlive)
 					{
-						effect->applyEffect(effect, character, target);
-					}
-					//apply effects to all allies
-					for (Character* ally : target->allies)
-					{
-						if (ally->distanceFromPlayer <= 10)
+						if (!effect->areaOfEffect)
 						{
-							ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
-							for (Effect* effect : spell.effects)
+							effect->applyEffect(effect, character, target);
+						}
+					}
+				}
+				//apply effects to all allies
+				for (Character* ally : target->allies)
+				{
+					if (ally->isAlive)
+					{
+						for (Effect* effect : spell.effects)
+						{
+							if (ally->distanceFromPlayer <= effect->range)
 							{
+
+								ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
 								effect->applyEffect(effect, character, ally);
+
 							}
 						}
 					}
 				}
 			}
-			else
-			{
-				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " is out of range of the spell!" << std::endl;
-				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " is out of range of the spell!" << std::endl;
-			}
 		}
-		//HEALING SELF
-		else if (spell.useOnSelf && spell.healing)
+		//AOE DAMAGING SPELL THAT DOES APPLY AOE EFFECT TO MAIN TARGET
+		else if (spell.areaOfEffect)
 		{
 			//SUBTRACT FATIGUE
 			this->fatiguePoints -= spell.fatigueCost;
 
-			for (int i = 0; i < 99;)
-			{
-				if (this->namedCharacter) std::cout << dye::light_yellow(" " + this->name) << " has a healing buff applied to them!" << std::endl;
-				if (!this->namedCharacter) std::cout << " The " << dye::light_yellow(this->name) << " has a healing buff applied to them!" << std::endl;
-				i += abs(spell.attackSpeed - 100);
-				for (Effect* effect : spell.effects)
-				{
-					effect->applyEffect(effect, character, character);
-				}
-			}
-		}
-		//BUFF SELF
-		else if (spell.useOnSelf && spell.buff)
-		{
-			//SUBTRACT FATIGUE
-			this->fatiguePoints -= spell.fatigueCost;
-
-			for (int i = 0; i < 99;)
-			{
-				if (this->namedCharacter) std::cout << dye::light_yellow(" " + this->name) << " has a buff applied to them!" << std::endl;
-				if (!this->namedCharacter) std::cout << " The " << dye::light_yellow(this->name) << " has a buff applied to them!" << std::endl;
-				i += abs(spell.attackSpeed - 100);
-				for (Effect* effect : spell.effects)
-				{
-					effect->applyEffect(effect, character, character);
-				}
-			}
-		}
-		//HEALING OR BUFF ALLY
-		//SINGLE TARGET DAMAGING SPELL
-		else if (spell.doesDamage && !spell.areaOfEffect)
-		{
-			//SUBTRACT FATIGUE
-			this->fatiguePoints -= spell.fatigueCost;
-
-			for (int i = 0; i < 99;)
-			{
-				target->healthPoints -= spell.calculateSpellDamage(target, spell);
-				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
-				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
-				i += abs(spell.attackSpeed - 100);
-				for (Effect* effect : spell.effects)
-				{
-					effect->applyEffect(effect, character, target);
-				}
-			}
-		}
-		//SINGLE TARGET NON DAMAGING SPELL
-		else if (!spell.doesDamage && !spell.areaOfEffect && !spell.summon)
-		{
-			//SUBTRACT FATIGUE
-			this->fatiguePoints -= spell.fatigueCost;
-
-			for (int i = 0; i < 99;)
-			{
-				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " is affected by " << spell.name << "!" << std::endl;
-				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " is affected by " << spell.name << "!" << std::endl;
-				i += abs(spell.attackSpeed - 100);
-				for (Effect* effect : spell.effects)
-				{
-					effect->applyEffect(effect, character, target);
-				}
-			}
-		}
-		//AOE DAMAGING SPELL THAT DOESN"T APPLY EFFECT TO TARGET
-		else if (spell.name == "Fiery Explosion")
-		{
-			//SUBTRACT FATIGUE
-			this->fatiguePoints -= spell.fatigueCost;
-
-			for (int i = 0; i < 99;)
+			for (int i = 0; i < humanAttacker->castSpeed;)
 			{
 				target->healthPoints -= spell.calculateSpellDamage(target, spell);
 				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
@@ -802,32 +743,54 @@ void Character::castSpell(Spell& spell, Character* target)
 				//apply effects to target
 				for (Effect* effect : spell.effects)
 				{
-					if (effect->areaOfEffect) effect->applyEffect(effect, character, target);
+					effect->applyEffect(effect, character, target);
 				}
 				//apply effects to all allies
 				for (Character* ally : target->allies)
 				{
-					for (Effect* effect : spell.effects)
+					if (ally->isAlive)
 					{
-						if (ally->name != target->name)
+						for (Effect* effect : spell.effects)
 						{
-							effect->applyEffect(effect, character, ally);
+							if (ally->distanceFromPlayer <= effect->range)
+							{
+
+								ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
+								if (ally->healthPoints <= 0)
+								{
+									ally->killCharacter();
+									break;
+								}
+								effect->applyEffect(effect, character, ally);
+
+							}
 						}
 					}
 				}
 			}
 		}
-		//AOE DAMAGING SPELL THAT DOESN"T APPLY EFFECT TO TARGET
-		else if (spell.areaOfEffect)
-		{//SUBTRACT FATIGUE
+		//SELF CAST
+		else if (spell.useOnSelf)
+		{
+			//SUBTRACT FATIGUE
 			this->fatiguePoints -= spell.fatigueCost;
 
-			for (int i = 0; i < 99;)
-			{
-				target->healthPoints -= spell.calculateSpellDamage(target, spell);
-				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
-				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
-				i += abs(spell.attackSpeed - 100);
+			
+				if (this->namedCharacter) std::cout << dye::light_yellow(" " + this->name) << " has a buff applied to them!" << std::endl;
+				if (!this->namedCharacter) std::cout << " The " << dye::light_yellow(this->name) << " has a buff applied to them!" << std::endl;
+				for (Effect* effect : spell.effects)
+				{
+					effect->applyEffect(effect, character, character);
+				}
+			
+		}
+		//ALLY CAST
+		else if (spell.useOnAlly)
+		{
+			//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
+
+			
 				//apply effects to target
 				for (Effect* effect : spell.effects)
 				{
@@ -836,13 +799,44 @@ void Character::castSpell(Spell& spell, Character* target)
 				//apply effects to all allies
 				for (Character* ally : target->allies)
 				{
-					ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
-					for (Effect* effect : spell.effects)
+					if (ally->distanceFromPlayer <= 10)
 					{
-						effect->applyEffect(effect, character, ally);
+						ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
+						for (Effect* effect : spell.effects)
+						{
+							effect->applyEffect(effect, character, ally);
+						}
 					}
 				}
+			
+		}
+		//SINGLE TARGET DAMAGE
+		else if (spell.range >= target->distanceFromPlayer - playerMovement)
+		{
+			//SUBTRACT FATIGUE
+			this->fatiguePoints -= spell.fatigueCost;
+
+			for (int i = 0; i < humanAttacker->castSpeed;)
+			{
+				target->healthPoints -= spell.calculateSpellDamage(target, spell);
+				if (target->healthPoints <= 0)
+				{
+					target->killCharacter();
+					break;
+				}
+				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				i += abs(spell.attackSpeed - 100);
+				//apply effects to target
+				for (Effect* effect : spell.effects)
+				{
+					effect->applyEffect(effect, character, target);
+				}
 			}
+		}
+		else
+		{
+			std::cout << "ERROR: SPELL COULD NOT BE CAST BECAUSE IT DOES NOT MEET THE CONDITIONS SET IN CAST SPELL" << std::endl;
 		}
 	}
 }
@@ -853,6 +847,16 @@ void Character::attackWithMelee(Weapon* weapon, Character* target)
 	{
 		Human* humanAttacker = dynamic_cast<Human*>(this);
 		Human* humanTarget = dynamic_cast<Human*>(target);
+
+		//Apply enchantment effects first:
+		for (Enchantment* enchantment : weapon->enchantments)
+		{
+			for (Effect* effect : enchantment->effects)
+			{
+				effect->applyEffect(effect, humanAttacker, humanTarget);
+			}
+		}
+
 		//Calculate crit damage and damage reduction
 		int randomNum = (rand() % 100 - this->getLuck()) + 1;
 
@@ -871,13 +875,6 @@ void Character::attackWithMelee(Weapon* weapon, Character* target)
 			if (humanAttacker->isPlayer)
 			{
 				target->healthPoints -= critDamage;
-				for (Enchantment* enchantment : weapon->enchantments)
-				{
-					for (Effect* effect : enchantment->effects)
-					{
-						effect->applyEffect(effect, humanAttacker, humanTarget);
-					}
-				}
 				std::cout << dye::light_red(" Critical Hit!") << std::endl;
 				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << critDamage << " points of damage from the "
 					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
@@ -887,13 +884,6 @@ void Character::attackWithMelee(Weapon* weapon, Character* target)
 			//NPC landed a critical hit
 			else
 			{
-				for (Enchantment* enchantment : weapon->enchantments)
-				{
-					for (Effect* effect : enchantment->effects)
-					{
-						effect->applyEffect(effect, humanAttacker, humanTarget);
-					}
-				}
 				target->healthPoints -= critDamage;
 				std::cout << std::setprecision(2) << " You take " << critDamage << " points of damage from the "
 					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
@@ -907,13 +897,6 @@ void Character::attackWithMelee(Weapon* weapon, Character* target)
 			//Player landed normal hit
 			if (humanAttacker->isPlayer)
 			{
-				for (Enchantment* enchantment : weapon->enchantments)
-				{
-					for (Effect* effect : enchantment->effects)
-					{
-						effect->applyEffect(effect, humanAttacker, humanTarget);
-					}
-				}
 				target->healthPoints -= normalDamage;
 				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << normalDamage << " points of damage from the "
 					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
@@ -923,13 +906,6 @@ void Character::attackWithMelee(Weapon* weapon, Character* target)
 			//NPC landed a normal hit
 			else
 			{
-				for (Enchantment* enchantment : weapon->enchantments)
-				{
-					for (Effect* effect : enchantment->effects)
-					{
-						effect->applyEffect(effect, humanAttacker, humanTarget);
-					}
-				}
 				target->healthPoints -= normalDamage;
 				std::cout << std::setprecision(2) << " You take " << normalDamage << " points of damage from the "
 					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;

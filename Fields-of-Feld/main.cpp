@@ -46,7 +46,7 @@ void openCombat(Human* player, Character* enemy);
 //PRE:
 //POST:
 void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spell* spellChoice, Character* targetChoice, ThrownConsumable* thrownConsumableChoice,
-	Consumable* consumableChoice);
+	Consumable* consumableChoice, float playerMovement);
 #pragma endregion Function Declarations
 extern void setupDialogue(std::vector<Dialogue>& dialogues, Character* player, Character* npc);
 
@@ -100,11 +100,6 @@ int main()
 	player->allies.push_back(ally1);
 	bandit1->allies.push_back(bandit2);
 	bandit2->allies.push_back(bandit1);
-	Creature* creature = new Creature();
-	creature->name = "TESTING";
-	creature->isAlive = true;
-	creature->isAlly = true;
-	player->allies.push_back(creature);
 	Weapon* staff = new Weapon(false, "Staff", "A simple wooden staff", 1, 200, 20, 1, 10, false, false, Weapon::WeaponType::STAFF, PhysicalDamageType::BLUNT, MagicDamageType::MAGIC, PhysicalDamageType::NONE, MagicDamageType::NONE, Item::EquipSlots::OFFHAND);
 	Spell* force = new Spell;
 	player->faith = 100;
@@ -129,17 +124,30 @@ int main()
 	ally1->isAlly = true;
 	player->fatiguePoints = 500;
 	player->maxFatiguePoints = 500;
-	bandit1->healthPoints = 500;
-	bandit1->maxHealthPoints = 500;
-	bandit2->healthPoints = 500;
-	bandit2->maxHealthPoints = 500;
-	player->arcane = 100;
-
+	bandit1->healthPoints = 5000;
+	bandit1->maxHealthPoints = 5000;
+	bandit2->healthPoints = 5000;
+	bandit2->maxHealthPoints = 5000;
+	player->arcane = 20;
+	player->intelligence = 100;
+	Enchantment* enchant = new Enchantment();
+	enchant = enchant->getMagicWeaponEffect(*player);
+	sword->enchantments.push_back(enchant);
+	Armor* armor = new Armor("Steel Chestplate", "TESTING", 40, 50, false, false, true, Armor::ArmorDescriptor::FULLPLATE, PhysicalDamageType::NONE, MagicDamageType::NONE);
+	armor->setPhysicalResistance(PhysicalDamageType::SLASH, 100);
+	armor->setPhysicalResistance(PhysicalDamageType::PIERCE, 100);
+	armor->setPhysicalResistance(PhysicalDamageType::BLUNT, 100);
+	armor->setPhysicalResistance(PhysicalDamageType::CHOP, 100);
+	Enchantment* enchant2 = new Enchantment();
+	enchant2 = enchant2->getMagicArmorEffect(*player);
+	armor->enchantments.push_back(enchant2);
+	player->inventory.equippedItems.push_back(armor);
+	bandit1->inventory.equippedItems.push_back(armor);
 	Spell* fireball = new Spell();
 	fireball = fireball->getFireBallEffect(*player);
 
-	Spell* armor = new Spell();
-	armor = armor->getOakenArmorEffect(*player);
+	Spell* oak = new Spell();
+	oak = oak->getOakenArmorEffect(*player);
 
 	Spell* summon = new Spell();
 	summon = summon->getSummonAnimalAllyEffect(*player);
@@ -156,10 +164,10 @@ int main()
 	player->attunedSpells.push_back(grasp);
 	player->attunedSpells.push_back(bonetrousle);
 	player->attunedSpells.push_back(summon);
-	player->attunedSpells.push_back(armor);
+	player->attunedSpells.push_back(oak);
 	player->attunedSpells.push_back(fireball);
-
 	
+
 	openCombat(player, bandit1);
 	return 0;
 }
@@ -330,6 +338,8 @@ void openCombat(Human* player, Character* enemy)
 		{
 			for (int i = 0; i < deadEnemies.size(); i++)
 			{
+				int choiec;
+				cin >> choiec;
 				/*player->gainExperience(deadEnemies[i]);
 				player->openLootInterface(deadEnemies[i]); ---------------------------------------------------------- < TODO */
 			}
@@ -475,6 +485,7 @@ void openCombat(Human* player, Character* enemy)
 				bool inputChosen = false;
 
 				//Option 1 variables
+				float playerMovement = 0.0f;
 				Weapon* weaponChoice = nullptr;;
 				Ammunition* ammoChoice = nullptr; //this will be a pointer to the ammo choice so that the quantity can be updated
 				Spell* spellChoice = nullptr;;
@@ -713,6 +724,8 @@ void openCombat(Human* player, Character* enemy)
 						{
 						case 1: // ADVANCE AND ATTACK
 						{
+							float advanceMovement = 0 - player->speed / 20;
+
 							if (numEnemiesInRangeBackward > 0)
 							{
 								//get enemies in range of a spell if they move forward and attack and check if player has fatiuge to cast spell
@@ -841,7 +854,9 @@ void openCombat(Human* player, Character* enemy)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
 													weaponChoice = mainHand;
+													playerMovement = advanceMovement;
 													inputChosen = true;
+													break;
 												}
 												break;
 											}
@@ -864,6 +879,7 @@ void openCombat(Human* player, Character* enemy)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = mainHand;
+													playerMovement = advanceMovement;
 													inputChosen = true;
 													break;
 												}
@@ -878,6 +894,7 @@ void openCombat(Human* player, Character* enemy)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = mainHand;
+													playerMovement = advanceMovement;
 													inputChosen = true;
 													break;
 												}
@@ -926,10 +943,12 @@ void openCombat(Human* player, Character* enemy)
 												if (spellAttackCommitted)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 													weaponChoice = offHand;
+													playerMovement = advanceMovement;
 													inputChosen = true;
+													break;
 												}
-												break;
 											}
 											//PROJECTILE WEAPON
 											else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -948,6 +967,7 @@ void openCombat(Human* player, Character* enemy)
 												bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = offHand;
+												playerMovement = advanceMovement;
 												inputChosen = true;
 												break;
 											}
@@ -957,6 +977,7 @@ void openCombat(Human* player, Character* enemy)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = offHand;
+													playerMovement = advanceMovement;
 													inputChosen = true;
 													break;
 												}
@@ -1016,10 +1037,12 @@ void openCombat(Human* player, Character* enemy)
 											if (spellAttackCommitted)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 												weaponChoice = mainHand;
+												playerMovement = advanceMovement;
 												inputChosen = true;
+												break;
 											}
-											break;
 										}
 										//PROJECTILE WEAPON
 										else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1038,6 +1061,7 @@ void openCombat(Human* player, Character* enemy)
 											bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 											weaponChoice = mainHand;
+											playerMovement = advanceMovement;
 											inputChosen = true;
 											break;
 										}
@@ -1047,6 +1071,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
+												playerMovement = advanceMovement;
 												inputChosen = true;
 												break;
 											}
@@ -1095,10 +1120,12 @@ void openCombat(Human* player, Character* enemy)
 											if (spellAttackCommitted)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 												weaponChoice = offHand;
+												playerMovement = advanceMovement;
 												inputChosen = true;
+												break;
 											}
-											break;
 										}
 										//PROJECTILE WEAPON
 										else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1117,6 +1144,7 @@ void openCombat(Human* player, Character* enemy)
 											bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 											weaponChoice = offHand;
+											playerMovement = advanceMovement;
 											inputChosen = true;
 											break;
 										}
@@ -1133,6 +1161,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
 												inputChosen = true;
+												playerMovement = advanceMovement;
 												weaponChoice = offHand;
 												break;
 											}
@@ -1160,6 +1189,7 @@ void openCombat(Human* player, Character* enemy)
 						}
 						case 2: // STAND YOUR GROUND AND ATTACK
 						{
+							float standMovement = 0;
 							if (numEnemiesInRangeBackward > 0)
 							{
 								for (int i = 0; i < livingEnemiesPointers.size(); i++)
@@ -1243,10 +1273,12 @@ void openCombat(Human* player, Character* enemy)
 												if (spellAttackCommitted)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 													weaponChoice = mainHand;
+													playerMovement = standMovement;
 													inputChosen = true;
+													break;
 												}
-												break;
 											}
 											//PROJECTILE WEAPON
 											else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1264,6 +1296,7 @@ void openCombat(Human* player, Character* enemy)
 
 												bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
+												playerMovement = standMovement;
 												weaponChoice = mainHand;
 												inputChosen = true;
 												break;
@@ -1274,6 +1307,7 @@ void openCombat(Human* player, Character* enemy)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = mainHand;
+													playerMovement = standMovement;
 													inputChosen = true;
 													break;
 												}
@@ -1323,10 +1357,12 @@ void openCombat(Human* player, Character* enemy)
 												if (spellAttackCommitted)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 													weaponChoice = offHand;
+													playerMovement = standMovement;
 													inputChosen = true;
+													break;
 												}
-												break;
 											}
 											//PROJECTILE WEAPON
 											else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1345,6 +1381,7 @@ void openCombat(Human* player, Character* enemy)
 												bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = offHand;
+												playerMovement = standMovement;
 												inputChosen = true;
 												break;
 											}
@@ -1354,6 +1391,7 @@ void openCombat(Human* player, Character* enemy)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = offHand;
+													playerMovement = standMovement;
 													inputChosen = true;
 													break;
 												}
@@ -1413,10 +1451,12 @@ void openCombat(Human* player, Character* enemy)
 											if (spellAttackCommitted)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 												weaponChoice = mainHand;
+												playerMovement = standMovement;
 												inputChosen = true;
+												break;
 											}
-											break;
 										}
 										//PROJECTILE WEAPON
 										else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1435,6 +1475,7 @@ void openCombat(Human* player, Character* enemy)
 											bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 											weaponChoice = mainHand;
+											playerMovement = standMovement;
 											inputChosen = true;
 											break;
 										}
@@ -1444,6 +1485,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
+												playerMovement = standMovement;
 												inputChosen = true;
 												break;
 											}
@@ -1492,10 +1534,12 @@ void openCombat(Human* player, Character* enemy)
 											if (spellAttackCommitted)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 												weaponChoice = offHand;
+												playerMovement = standMovement;
 												inputChosen = true;
+												break;
 											}
-											break;
 										}
 										//PROJECTILE WEAPON
 										else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1514,6 +1558,7 @@ void openCombat(Human* player, Character* enemy)
 											bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 											weaponChoice = offHand;
+											playerMovement = standMovement;
 											inputChosen = true;
 											break;
 										}
@@ -1530,6 +1575,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
 												weaponChoice = mainHand;
+												playerMovement = standMovement;
 												inputChosen = true;
 												break;
 											}
@@ -1557,6 +1603,7 @@ void openCombat(Human* player, Character* enemy)
 						}
 						case 3: // RETREAT AND ATTACK
 						{
+							float retreatMovement = player->speed / 20;
 							if (numEnemiesInRangeBackward > 0)
 							{
 								for (int i = 0; i < livingEnemiesPointers.size(); i++)
@@ -1640,10 +1687,12 @@ void openCombat(Human* player, Character* enemy)
 												if (spellAttackCommitted)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 													weaponChoice = mainHand;
+													playerMovement = retreatMovement;
 													inputChosen = true;
+													break;
 												}
-												break;
 											}
 											//PROJECTILE WEAPON
 											else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1662,6 +1711,7 @@ void openCombat(Human* player, Character* enemy)
 												bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
+												playerMovement = retreatMovement;
 												inputChosen = true;
 												break;
 											}
@@ -1671,6 +1721,7 @@ void openCombat(Human* player, Character* enemy)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													inputChosen = true;
+													playerMovement = retreatMovement;
 													break;
 												}
 												else
@@ -1718,10 +1769,12 @@ void openCombat(Human* player, Character* enemy)
 												if (spellAttackCommitted)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 													weaponChoice = offHand;
+													playerMovement = retreatMovement;
 													inputChosen = true;
+													break;
 												}
-												break;
 											}
 											//PROJECTILE WEAPON
 											else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1740,6 +1793,7 @@ void openCombat(Human* player, Character* enemy)
 												bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 												if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = offHand;
+												playerMovement = retreatMovement;
 												inputChosen = true;
 												break;
 											}
@@ -1749,6 +1803,7 @@ void openCombat(Human* player, Character* enemy)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = offHand;
+													playerMovement = retreatMovement;
 													inputChosen = true;
 													break;
 												}
@@ -1808,10 +1863,11 @@ void openCombat(Human* player, Character* enemy)
 											if (spellAttackCommitted)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 												weaponChoice = mainHand;
+												playerMovement = retreatMovement;
 												inputChosen = true;
 											}
-											break;
 										}
 										//PROJECTILE WEAPON
 										else if (mainHand->weaponType == Weapon::WeaponType::LONGBOW || mainHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1830,6 +1886,7 @@ void openCombat(Human* player, Character* enemy)
 											bool projectileAttackCommitted = player->chooseAmmunition(mainHand, livingEnemiesPointers[advanceChoice - 1], ammoChoice);
 											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 											weaponChoice = mainHand;
+											playerMovement = retreatMovement;
 											inputChosen = true;
 											break;
 										}
@@ -1839,6 +1896,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
+												playerMovement = retreatMovement;
 												inputChosen = true;
 												break;
 											}
@@ -1887,10 +1945,11 @@ void openCombat(Human* player, Character* enemy)
 											if (spellAttackCommitted)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1.0f];
+
 												weaponChoice = offHand;
+												playerMovement = retreatMovement;
 												inputChosen = true;
 											}
-											break;
 										}
 										//PROJECTILE WEAPON
 										else if (offHand->weaponType == Weapon::WeaponType::LONGBOW || offHand->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
@@ -1909,6 +1968,7 @@ void openCombat(Human* player, Character* enemy)
 											bool projectileAttackCommitted = player->chooseAmmunition(offHand, livingEnemiesPointers[advanceChoice], ammoChoice);
 											if (projectileAttackCommitted) targetChoice = livingEnemiesPointers[advanceChoice - 1];
 											weaponChoice = offHand;
+											playerMovement = retreatMovement;
 											inputChosen = true;
 											break;
 										}
@@ -1925,6 +1985,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
 												weaponChoice = mainHand;
+												playerMovement = retreatMovement;
 												inputChosen = true;
 												break;
 											}
@@ -2317,7 +2378,6 @@ void openCombat(Human* player, Character* enemy)
 				//Only progress to taking turns once the player locks in a choice, denoted by the boolean inputChosen
 				if (inputChosen)
 				{
-
 					/*static_assert(std::is_base_of<Character, Creature>::value, "Creature should inherit from Character!");
 					static_assert(std::is_base_of<Character, Human>::value, "Human should inherit from Character!");
 					std::cout << "Type of summoned creature: " << typeid(*player->allies.back()).name() << std::endl;*/
@@ -2331,44 +2391,22 @@ void openCombat(Human* player, Character* enemy)
 
 					//dummy effect to call refresh effects
 					Effect* effect = nullptr;
-					
-					if (spellChoice)
-					{
-						if (spellChoice->summon)
-						{
-							if (Creature* newAlly = dynamic_cast<Creature*>(player->allies.back()))
-							{
-								std::cout << "Successfully cast: " << typeid(*newAlly).name() << " at " << newAlly << std::endl;
-								livingAlliesPointers.push_back(newAlly);
-								cout << "CREATURE ALLY TURN" << endl;
-							}
-							else
-							{
-								std::cout << "Failed to cast: Object is " << typeid(*player->allies.back()).name() << std::endl;
-							}
-						}
-					}
-
 
 					// Process turns
 					for (int i = 0; i < combatants.size(); i++)
 					{
 						if (combatants[i]->isAlive)
 						{
-							
 							if (Character* creature = dynamic_cast<Creature*>(combatants[i]))
 							{
+								effect->refreshEffects(combatants[i]);
+								if (combatants[i]->healthPoints <= 0)
 								{
+									combatants[i]->killCharacter();
+									break;
+								}
 									if (creature->isAlly)
 									{
-										// Ally Turn
-										effect->refreshEffects(creature);
-										if (creature->healthPoints <= 0)
-										{
-											creature->killCharacter();
-											break;
-										}
-										// Ally Turn
 										cout << "CREATURE ALLY TURN" << endl;
 									}
 									else
@@ -2376,31 +2414,37 @@ void openCombat(Human* player, Character* enemy)
 										// Enemy Turn
 										cout << "CREATURE ENEMY TURN" << endl;
 									}
-								}
+								
 							}
 
 							else if (auto* human = dynamic_cast<Human*>(combatants[i]); human && human->isPlayer)
 							{
-								if (spellChoice)
+								effect->refreshEffects(combatants[i]);
+								if (combatants[i]->healthPoints <= 0)
 								{
-									
-								}
-								effect->refreshEffects(player);
-								if (player->healthPoints <= 0)
-								{
-									player->killCharacter();
+									combatants[i]->killCharacter();
 									break;
 								}
 								// Player Turn
-								playerTurn(human, weaponChoice, ammoChoice, spellChoice, targetChoice, thrownConsumableChoice, consumableChoice);
+								playerTurn(human, weaponChoice, ammoChoice, spellChoice, targetChoice, thrownConsumableChoice, consumableChoice, playerMovement);
+								
+								//If player summoned an ally, add it to the living allies vector
+								if (spellChoice)
+								{
+									if (spellChoice->summon)
+									{
+										Character* summonedCreature = player->allies.back();
+										livingAlliesPointers.push_back(summonedCreature);
+									}
+								}
 							}
 
 							else if (auto* human = dynamic_cast<Human*>(combatants[i]); human && human->isAlly)
 							{
-								effect->refreshEffects(human);
-								if (human->healthPoints <= 0)
+								effect->refreshEffects(combatants[i]);
+								if (combatants[i]->healthPoints <= 0)
 								{
-									human->killCharacter();
+									combatants[i]->killCharacter();
 									break;
 								}
 								// Ally Turn
@@ -2416,6 +2460,7 @@ void openCombat(Human* player, Character* enemy)
 								}
 								// Enemy Turn
 								cout << "ENEMY TURN" << endl;
+								cout << combatants[i]->name << " DISTANCE: " << combatants[i]->distanceFromPlayer << endl;
 							}
 						}
 					}
@@ -2538,7 +2583,7 @@ void openCombat(Human* player, Character* enemy)
 	} while (exitFight == false);
 }
 void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spell* spellChoice, Character* targetChoice, ThrownConsumable* thrownConsumableChoice,
-	Consumable* consumableChoice)
+	Consumable* consumableChoice, float playerMovement)
 {
 	//Check if player object is null
 	if (!player)
@@ -2551,87 +2596,102 @@ void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spe
 	{
 		Human* humanTarget = dynamic_cast<Human*>(targetChoice);
 
-		//Player attacks an enemy with a melee weapon
+		//move player
+		
+		if (playerMovement < 0) cout << "You advance by " << abs(playerMovement) << " units!" << endl;
+		else if (playerMovement > 0) cout << "You retreat by " << abs(playerMovement) << " units!" << endl;
+		else cout << "You stand your ground!" << endl;
+
+		targetChoice->distanceFromPlayer += playerMovement;
+
+		//Printing if the player cannot move towards the enemy any closer
+		if (targetChoice->distanceFromPlayer <= 0)
+		{
+			targetChoice->distanceFromPlayer = 0;
+			cout << "You stand close enough to touch " << targetChoice->name << "!" << endl;
+		}
+		//Applying Armor and Weapon effects
+		for (Item* item : player->inventory.equippedItems)
+		{
+			if (dynamic_cast<Armor*>(item))
+			{
+				Armor* armor = dynamic_cast<Armor*>(item);
+				for (Enchantment* enchant : armor->enchantments)
+				{
+					enchant->applyEnchantment(player, targetChoice);
+				}
+			}
+		}
+		//Player chose to cast a spell
+		if (spellChoice)
+		{
+			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
+				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
+				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
+			{
+				cout << "ERROR: weapon is not a casting tool!" << endl;
+				return;
+			}
+			else
+			{
+				if (weaponChoice)
+				{
+					player->castSpell(*spellChoice, humanTarget, playerMovement);
+				}
+				else
+				{
+					cout << "ERROR: no weapon initialized!" << endl;
+					return;
+				}
+			}
+		}
+		//Player chose to cast a spell on an ally
+		if (spellChoice && humanTarget->isAlly)
+		{
+			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
+				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
+				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
+			{
+				cout << "ERROR: weapon is not a casting tool!" << endl;
+				return;
+			}
+			else
+			{
+				if (weaponChoice)
+				{
+					player->castSpell(*spellChoice, humanTarget, playerMovement);
+				}
+				else
+				{
+					cout << "ERROR: no weapon initialized!" << endl;
+					return;
+				}
+			}
+		}
+		//Player chose to attack an enemy with a melee weapon
 		if (weaponChoice && !spellChoice)
 		{
 			player->attackWithMelee(weaponChoice, humanTarget);
 		}
-		//Player targets an ally with a spell
-		else if (spellChoice && humanTarget->isAlly)
-		{
-			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
-				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
-				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
-			{
-				cout << "ERROR: weapon is not a casting tool!" << endl;
-				return;
-			}
-			else
-			{
-				if (weaponChoice)
-				{
-					player->castSpell(*spellChoice, humanTarget);
-				}
-				else
-				{
-					cout << "ERROR: no weapon initialized!" << endl;
-					return;
-				}
-			}
-		}
-		//Player attacks an enemy with a spell
-		else if (spellChoice)
-		{
-			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
-				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
-				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
-			{
-				cout << "ERROR: weapon is not a casting tool!" << endl;
-				return;
-			}
-			else
-			{
-				if (weaponChoice)
-				{
-					player->castSpell(*spellChoice, humanTarget);
-				}
-				else
-				{
-					cout << "ERROR: no weapon initialized!" << endl;
-					return;
-				}
-			}
-		}
-		//Player attacks an enemy with a ranged weapon
-		else if (weaponChoice && ammoChoice)
+		//Player chose to attack an enemy with a ranged weapon
+		if (weaponChoice && ammoChoice)
 		{
 			player->fireRangedWeapon(humanTarget, weaponChoice, ammoChoice);
+		}
+		//Player chose to attack an enemy with a thrown weapon
+		if (thrownConsumableChoice)
+		{
+			player->throwThrownConsumable(thrownConsumableChoice, humanTarget);
+		}
+		//Player chose to share a consumable with an ally
+		if (consumableChoice && humanTarget->isAlly)
+		{
 
 		}
-		//Player targets an ally with a thrown weapon
-		else if (thrownConsumableChoice && !humanTarget->isAlly)
+		//Player chose to consume a consumable
+		if (consumableChoice)
 		{
-			player->throwThrownConsumable(thrownConsumableChoice, humanTarget);
-		}
-		//Player attacks an enemy with a thrown weapon
-		else if (thrownConsumableChoice && humanTarget->isAlly)
-		{
-			player->throwThrownConsumable(thrownConsumableChoice, humanTarget);
-		}
-		//Player shares a consumable with a friend
-		else if (consumableChoice && humanTarget->isAlly)
-		{
-			cout << "TODO : share consumable with ally" << endl;
-		}
-		//Player consumes a consumable
-		else if (consumableChoice)
-		{
-			cout << "TODO: consume consumable" << endl;
-		}
-		else
-		{
-			cout << "ERROR: no valid player turn choice!" << endl;
-			return;
+
 		}
 	}
 	//Target is a creature

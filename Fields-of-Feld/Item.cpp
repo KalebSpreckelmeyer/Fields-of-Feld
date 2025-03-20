@@ -4,10 +4,9 @@
 Item::Item() {
 }
 
-Item::Item(bool hasBeenInitialized, std::string name, std::string description, PhysicalDamageType physType, 
-	MagicDamageType magType, float value, float weight, float quantity, Item::EquipSlots slot) :
+Item::Item(bool hasBeenInitialized, std::string name, std::string description , float value, float weight, float quantity, Item::EquipSlots slot) :
 	hasBeenInitialized(hasBeenInitialized), name(name), description(description)
-	,value(value), weight(weight), quantity(quantity), slot(slot), physDmgType(physType), magDmgType(magType) {
+	,value(value), weight(weight), quantity(quantity), slot(slot) {
 }
 
 Item::~Item() {

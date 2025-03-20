@@ -15,6 +15,9 @@ public:
 	std::unordered_map<PhysicalDamageType, float>physicalDamages;
 	std::unordered_map<MagicDamageType, float> magicDamages;
 
+	PhysicalDamageType physType = PhysicalDamageType::BLUNT;
+	MagicDamageType magType = MagicDamageType::NONE;
+
 	bool specialDamage = false;
 	float reach = 0.0f;
 	float attackSpeed = 0.0f;

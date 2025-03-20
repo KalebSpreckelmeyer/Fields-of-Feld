@@ -7,14 +7,16 @@ Weapon::Weapon()
 {
 }
 
-Weapon::Weapon(bool specialDamage, std::string name, std::string description, float stability, float reach, float attackSpeed, float weight, float value,
-	bool twohanded, bool needsAmmo, WeaponType weaponType, PhysicalDamageType physAttack, MagicDamageType magAttack, PhysicalDamageType physDefense, MagicDamageType magDefense, EquipSlots slot)
-	: Item(true, name, description, physAttack, magAttack, value, weight, 1.0f, slot),
+Weapon::Weapon(bool specialDamage, std::string name, std::string description, float stability, float reach, 
+	float attackSpeed, float weight, float value, bool twohanded, bool needsAmmo, 
+	WeaponType weaponType, PhysicalDamageType physAttack, MagicDamageType magAttack, 
+	PhysicalDamageType physDefense, MagicDamageType magDefense, EquipSlots slot)
+	: Item(true, name, description, value, weight, 1.0f, slot),
 		specialDamage(specialDamage), reach(reach), 
 		attackSpeed(attackSpeed), twoHanded(twohanded), needsAmmo(needsAmmo),
-	weaponType(weaponType), stability(stability)
+	weaponType(weaponType), stability(stability), physDmgType(physAttack), magDmgType(magAttack), physDefType(physDefense), 
+	magDefType(magDefense)
 {
-	//may beed to add mag and phys damage types to the last part of the constructor IDK
 }
 
 Weapon::~Weapon()
@@ -65,7 +67,21 @@ float Weapon::getWeaponDamage(Character* target, Weapon weapon)
 			}
 		}
 
-		//TODO: Implement enchanted item resistances
+		cumulativeSlashResist = std::max(cumulativeSlashResist, 0.0f);
+		cumulativePierceResist = std::max(cumulativePierceResist, 0.0f);
+		cumulativeBluntResist = std::max(cumulativeBluntResist, 0.0f);
+		cumulativeChopResist = std::max(cumulativeChopResist, 0.0f);
+
+		cumulativeMagicResist = std::max(cumulativeMagicResist, 0.0f);
+		cumulativeFireResist = std::max(cumulativeFireResist, 0.0f);
+		cumulativeIceResist = std::max(cumulativeIceResist, 0.0f);
+		cumulativeShockResist = std::max(cumulativeShockResist, 0.0f);
+		cumulativePoisonResist = std::max(cumulativePoisonResist, 0.0f);
+		cumulativeBleedResist = std::max(cumulativeBleedResist, 0.0f);
+		cumulativeSleepResist = std::max(cumulativeSleepResist, 0.0f);
+		cumulativeDarkResist = std::max(cumulativeDarkResist, 0.0f);
+		cumulativeHolyResist = std::max(cumulativeHolyResist, 0.0f);
+		cumulativeWindResist = std::max(cumulativeWindResist, 0.0f);
 
 		//damage = damage - (damage * (resistance / 500)) - max won't let it go below 0
 		float cumulativeSlashDamage = weapon.getPhysicalDamage(PhysicalDamageType::SLASH) - (weapon.getPhysicalDamage(PhysicalDamageType::SLASH) * (cumulativeSlashResist / 500));

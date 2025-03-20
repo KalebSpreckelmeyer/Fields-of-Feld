@@ -14,7 +14,7 @@ Human::Human()
 }
 
 Human::Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality personality, float flatDefense, float health, float mana, float strength, float agility, float charisma,
-	float intelligence, float arcane, float faith, float luck, float weightBurden, float maxWeightBurden,
+	float intelligence, float arcane, float faith, float luck, float weightBurden, float castSpeed, float maxWeightBurden,
 	double experience, double experienceToNextLevel,
 	int gold)
 	: Character(isAlly, namedCharacter, true, true, false,
@@ -23,7 +23,7 @@ Human::Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality
 		1.0f, CombatFlags::NEUTRAL),
 	flatDefense(flatDefense), isPlayer(isPlayer), classChoice(classChoice), health(health), fatigue(fatigue),
 	strength(strength), agility(agility), charisma(charisma), intelligence(intelligence), 
-	arcane(arcane), faith(faith), luck(luck), weightBurden(weightBurden),
+	arcane(arcane), faith(faith), luck(luck), weightBurden(weightBurden), castSpeed(castSpeed),
 	maxWeightBurden(maxWeightBurden), experience(experience), experienceToNextLevel(experienceToNextLevel),
 	gold(gold)
 {

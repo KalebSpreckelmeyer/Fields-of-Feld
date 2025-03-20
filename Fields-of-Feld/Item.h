@@ -11,8 +11,7 @@
 class Item {
 public:
 	//Damage Types
-	PhysicalDamageType physDmgType = PhysicalDamageType::BLUNT;
-	MagicDamageType magDmgType = MagicDamageType::NONE;
+	
 
 	bool hasBeenInitialized = false;
 	std::string name = "ITEM NAME PLS CHANGE";
@@ -27,8 +26,7 @@ public:
 	float getScalingValue(float statValue, float scalingValue);
 
 	Item();
-	Item(bool hasBeenInitialized, std::string name, std::string description, 
-		PhysicalDamageType physDmg, MagicDamageType magDmg, float value, float weight, float quantity, Item::EquipSlots slot);
+	Item(bool hasBeenInitialized, std::string name, std::string description, float value, float weight, float quantity, Item::EquipSlots slot);
 	virtual ~Item();
 };
 

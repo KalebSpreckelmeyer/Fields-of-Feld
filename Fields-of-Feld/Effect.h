@@ -23,6 +23,7 @@ public:
 	bool stackable = false;
 	int stacks = 0;
 	int maxStacks = 0;
+	float range = 0.0f;
 
 	bool doesDamage = false;
 	bool applied = false;
@@ -31,7 +32,7 @@ public:
 	Effect();
 	virtual ~Effect() = default;
 	Effect(bool doesDamage, bool applied, std::string name, std::string description, PhysicalDamageType physType,
-		MagicDamageType magType, float duration, float magnitude, bool stackable,
+		MagicDamageType magType, float range, float duration, float magnitude, bool stackable,
 		int stacks, int maxStacks, bool areaOfEffect);
 
 	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
@@ -46,7 +47,10 @@ public:
 
 	void refreshEffects(Character* target);
 
-	void removeEffect(Character& target, Effect& effectToDelete);
+	void deleteEffect(Character& target, Effect& effectToDelete);
+
+	void removeEffect(Character& target, Effect& effectToRemove);
+
 
 	void applyEffect(Effect* effect, Character* attacker, Character* target);
 };

@@ -8,8 +8,8 @@ ThrownConsumable::ThrownConsumable()
 
 ThrownConsumable::ThrownConsumable(bool specialDamage, std::string name, std::string description, PhysicalDamageType physType, MagicDamageType magType,
 	 float reach, float attackSpeed, float weight, float quantity, float value)
-	: Item(hasBeenInitialized, name, description, physType, magType, value, weight, quantity, slot), 
-	specialDamage(specialDamage), reach(reach), attackSpeed(attackSpeed)
+	: Item(hasBeenInitialized, name, description, value, weight, quantity, slot), 
+	specialDamage(specialDamage), reach(reach), attackSpeed(attackSpeed), physType(physType), magType(magType)
 {
 }
 
@@ -61,7 +61,21 @@ float ThrownConsumable::getThrownConsumableDamage(Character* target, ThrownConsu
 			}
 		}
 
-		//TODO: Implement enchanted item resistances
+		cumulativeSlashResist = std::max(cumulativeSlashResist, 0.0f);
+		cumulativePierceResist = std::max(cumulativePierceResist, 0.0f);
+		cumulativeBluntResist = std::max(cumulativeBluntResist, 0.0f);
+		cumulativeChopResist = std::max(cumulativeChopResist, 0.0f);
+
+		cumulativeMagicResist = std::max(cumulativeMagicResist, 0.0f);
+		cumulativeFireResist = std::max(cumulativeFireResist, 0.0f);
+		cumulativeIceResist = std::max(cumulativeIceResist, 0.0f);
+		cumulativeShockResist = std::max(cumulativeShockResist, 0.0f);
+		cumulativePoisonResist = std::max(cumulativePoisonResist, 0.0f);
+		cumulativeBleedResist = std::max(cumulativeBleedResist, 0.0f);
+		cumulativeSleepResist = std::max(cumulativeSleepResist, 0.0f);
+		cumulativeDarkResist = std::max(cumulativeDarkResist, 0.0f);
+		cumulativeHolyResist = std::max(cumulativeHolyResist, 0.0f);
+		cumulativeWindResist = std::max(cumulativeWindResist, 0.0f);
 
 		//damage = damage - (damage * (resistance / 500)) - max won't let it go below 0
 		float cumulativeSlashDamage = consumable.getPhysicalDamage(PhysicalDamageType::SLASH) - (consumable.getPhysicalDamage(PhysicalDamageType::SLASH) * (cumulativeSlashResist / 500));

@@ -28,6 +28,7 @@ public:
 	float flatDefense = 0.0f;
 	float weightBurden = 0.0f;
 	float maxWeightBurden = 100.0f;
+	float castSpeed = 99.0f;
 	double experience = 0.0;
 	double experienceToNextLevel = 100.0;
 	int gold = 0;
@@ -49,7 +50,7 @@ public:
 	Human();
 
 	Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality personality, float flatDefense, float health, float fatigue, float strength, float agility, float charisma,
-		float intelligence, float arcane, float faith, float luck, float weightBurden, float maxWeightBurden, 
+		float intelligence, float arcane, float faith, float luck, float weightBurden, float maxWeightBurden, float castSpeed,
 		double experience, double experienceToNextLevel,
 		int gold);
 

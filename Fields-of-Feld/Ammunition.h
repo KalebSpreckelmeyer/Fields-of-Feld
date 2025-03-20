@@ -17,6 +17,9 @@ public:
 	std::unordered_map<PhysicalDamageType, float> physicalDamage;
 	std::unordered_map<MagicDamageType, float> magicDamage;
 
+	PhysicalDamageType physType = PhysicalDamageType::BLUNT;
+	MagicDamageType magType = MagicDamageType::NONE;
+
 	bool specialDamage = false; //bonus damage to ghosts, skeletons, etc... used for silver arrows, holy water arrows, etc...
 	float range = 0.0f;
 	enum class AmmoType { ARROW, GREATARROW, MINIBOLT, BOLT, BALLISTABOLT, CANNONSHELL };
@@ -36,8 +39,8 @@ public:
 
 	Ammunition();
 
-	Ammunition(bool specialDamage, bool hasBeenInitialized, std::string name, std::string description, PhysicalDamageType physType,
-		MagicDamageType magType, float value, float weight, float quantity, 
+	Ammunition(bool specialDamage, bool hasBeenInitialized, std::string name, std::string description,
+		PhysicalDamageType physType, MagicDamageType magType, float value, float weight, float quantity, 
 		EquipSlots slot, float range, AmmoType ammoType);
 
 	~Ammunition();

@@ -168,7 +168,7 @@ public:
 
 	void viewSpellsBrief();
 
-	void castSpell(Spell& spell, Character* target);
+	void castSpell(Spell& spell, Character* target, float playerMovement);
 
 	void attackWithMelee(Weapon* weapon, Character* target);
 

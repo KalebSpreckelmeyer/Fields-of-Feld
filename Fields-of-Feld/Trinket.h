@@ -1,16 +1,18 @@
 #pragma once
 #include "Item.h"
 #include "Effect.h"
+#include "Enchantment.h"
+#include <vector>
 class Trinket :
     public Item
 {
 public:
-	Effect effect;
+	std::vector<Enchantment*> enchantments;
 	enum class TrinketType { AMULET, RING, MISC};
 	TrinketType trinketType = TrinketType::MISC;
 
 	Trinket();
-	Trinket(Effect effect, TrinketType trinketType, PhysicalDamageType physType, MagicDamageType magType);
+	Trinket(TrinketType trinketType);
 	~Trinket();
 };
 

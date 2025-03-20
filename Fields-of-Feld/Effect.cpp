@@ -20,10 +20,10 @@ Effect::Effect()
 }
 
 Effect::Effect(bool doesDamage, bool applied, std::string name, std::string description, PhysicalDamageType physType,
-	MagicDamageType magType, float duration,
+	MagicDamageType magType, float range, float duration,
 	float magnitude, bool stackable, int stacks, int maxStacks, bool areaOfEffect)
 	: name(name), description(description), duration(duration), magnitude(magnitude), stackable(stackable),
-	stacks(stacks), maxStacks(maxStacks), areaOfEffect(areaOfEffect)
+	stacks(stacks), maxStacks(maxStacks), areaOfEffect(areaOfEffect), range(range)
 {
 }
 
@@ -142,8 +142,26 @@ float Effect::getEffectDamage(Character* target, Effect effect)
 
 void Effect::refreshEffects(Character* target)
 {
+	//Apply effects from equipped items if they haven't been applied yet
+	/*for (Item* item : target->inventory.equippedItems)
+	{
+		if (dynamic_cast<Armor*>(item))
+		{
+			Armor* armor = dynamic_cast<Armor*>(item);
+			for (Enchantment* enchant : armor->enchantments)
+			{
+				for (Effect* effect : enchant->effects)
+				{
+					if (!effect->applied) effect->applyEffect(effect, target, target);
+					effect->applied = true;
+				}
+			}
+		}
+	}*/
+
 	if (target->effects.empty()) return;
 	std::vector<Effect*> effectsToRemove;
+
 	for (const auto& effect : target->effects)
 	{
 		if (effect == nullptr)
@@ -164,6 +182,7 @@ void Effect::refreshEffects(Character* target)
 					{
 						target->healthPoints = 0;
 						target->killCharacter();
+						return;
 					}
 				}
 				effect->duration -= 1;
@@ -193,6 +212,7 @@ void Effect::refreshEffects(Character* target)
 				{
 					target->healthPoints = 0;
 					target->killCharacter();
+					return;
 				}
 				effect->duration -= 1;
 				if (effect->duration == 0)
@@ -248,6 +268,7 @@ void Effect::refreshEffects(Character* target)
 					{
 						target->healthPoints = 0;
 						target->killCharacter();
+						return;
 					}
 				}
 				effect->duration -= 1;
@@ -279,6 +300,7 @@ void Effect::refreshEffects(Character* target)
 					{
 						target->healthPoints = 0;
 						target->killCharacter();
+						return;
 					}
 				}
 				effect->duration -= 1;
@@ -307,6 +329,7 @@ void Effect::refreshEffects(Character* target)
 					{
 						target->healthPoints = 0;
 						target->killCharacter();
+						return;
 					}
 				}
 				effect->duration -= 1;
@@ -493,15 +516,107 @@ void Effect::refreshEffects(Character* target)
 			{
 				effectsToRemove.push_back(effect);
 			}
+			if (effect->name == "Armor Penetration")
+			{
+				effect->duration -= 1;
+				if (effect->duration == 0)
+				{
+					for (int i = 0; i < target->inventory.equippedItems.size(); i++)
+					{
+						if (dynamic_cast<Armor*>(target->inventory.equippedItems[i]))
+						{
+							Armor* armor = dynamic_cast<Armor*>(target->inventory.equippedItems[i]);
+							armor->setPhysicalResistance(PhysicalDamageType::BLUNT, armor->getPhysicalResistance(PhysicalDamageType::BLUNT) + effect->magnitude);
+							armor->setPhysicalResistance(PhysicalDamageType::PIERCE, armor->getPhysicalResistance(PhysicalDamageType::PIERCE) + effect->magnitude);
+							armor->setPhysicalResistance(PhysicalDamageType::SLASH, armor->getPhysicalResistance(PhysicalDamageType::SLASH) + effect->magnitude);
+							armor->setPhysicalResistance(PhysicalDamageType::CHOP, armor->getPhysicalResistance(PhysicalDamageType::CHOP) + effect->magnitude);
+						}
+					}
+					effect->applied = false;
+					effectsToRemove.push_back(effect);
+				}
+			}
+			if (effect->name == "Magic Weapon")
+			{
+				effect->duration -= 1;
+				if (effect->duration == 0)
+				{
+					effect->applied = false;
+					effectsToRemove.push_back(effect);
+				}
+			}
+			if (effect->name == "Fire Weapon")
+			{
+				effect->duration -= 1;
+				if (effect->duration == 0)
+				{
+					effect->applied = false;
+					effectsToRemove.push_back(effect);
+				}
+			}
+			if (effect->name == "Frost Weapon")
+			{
+				effect->duration -= 1;
+				if (effect->duration == 0)
+				{
+					effect->applied = false;
+					effectsToRemove.push_back(effect);
+				}
+			}
+			if (effect->name == "Shock Weapon")
+			{
+				effect->duration -= 1;
+				if (effect->duration == 0)
+				{
+					effect->applied = false;
+					effectsToRemove.push_back(effect);
+				}
+			}
+			if (effect->name == "Poison Weapon")
+			{
+				effect->duration -= 1;
+				if (effect->duration == 0)
+				{
+					effect->applied = false;
+					effectsToRemove.push_back(effect);
+				}
+			}
+			if (effect->name == "Bleed Weapon")
+			{
+				effect->duration -= 1;
+				if (effect->duration == 0)
+				{
+					effect->applied = false;
+					effectsToRemove.push_back(effect);
+				}
+			}
+			if (effect->name == "Sleep Weapon")
+			{
+				effect->duration -= 1;
+				if (effect->duration == 0)
+				{
+					effect->applied = false;
+					effectsToRemove.push_back(effect);
+				}
+			}
+			if (effect->name == "Wind Weapon")
+			{
+				effect->duration -= 1;
+				if (effect->duration == 0)
+				{
+					effect->applied = false;
+					effectsToRemove.push_back(effect);
+				}
+			}
 		}
 	}
 	for (Effect* effect : effectsToRemove)
 	{
-		removeEffect(*target, *effect);
+		deleteEffect(*target, *effect);
 	}
 }
 
-void Effect::removeEffect(Character& target, Effect& effectToDelete) {
+void Effect::deleteEffect(Character& target, Effect& effectToDelete) {
 	for (Effect* effect : target.effects)
 	{
 		if (effect->name == effectToDelete.name)
@@ -514,6 +629,30 @@ void Effect::removeEffect(Character& target, Effect& effectToDelete) {
 	}
 }
 
+void Effect::removeEffect(Character& target, Effect& effectToRemove)
+{
+	for (Effect* effect : target.effects)
+	{
+		if (effect == nullptr) return;
+		if (effect->name == "Fatigue Buff")
+		{
+			target.fatiguePoints -= effect->magnitude;
+			target.maxFatiguePoints -= effect->magnitude;
+		}
+		if (effect->name == "Cast Speed")
+		{
+			if (dynamic_cast<Human*>(&target))
+				dynamic_cast<Human*>(&target)->castSpeed -= effect->magnitude;
+		}
+		if (effect->name == effectToRemove.name)
+		{
+			target.effects.erase(std::remove(target.effects.begin(), target.effects.end(), effect), target.effects.end());
+			delete effect;
+			effect = nullptr;
+			return;
+		}
+	}
+}
 bool hasEffect(const Character* target, const std::string& effectName) {
 	for (const Effect* effect : target->effects) {
 		if (effect->name == effectName) {
@@ -525,11 +664,14 @@ bool hasEffect(const Character* target, const std::string& effectName) {
 
 void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 {
+	if (effect == nullptr) return;
+
+	//SPELLS
 	if (effect->name == "Burn") {
 		target->burnPoints += effect->getEffectDamage(target, *effect) + attacker->getFaith();
 		if (!hasEffect(target, "Burn")) {
 			Effect* burn = new Effect(true, true, "Burn", "The target is engulfed in flames causing damage each turn", PhysicalDamageType::NONE, MagicDamageType::FIRE,
-				3, target->maxHealthPoints * 0.05f, false, 1, 1, false);
+				0.0f, 3, target->maxHealthPoints * 0.05f, false, 1, 1, false);
 			burn->setMagicDamage(MagicDamageType::FIRE, target->maxHealthPoints * 0.05);
 			target->combatFlags.push_back(Character::CombatFlags::BURNING);
 			target->effects.push_back(burn);
@@ -538,7 +680,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 			target->burnPoints = 0;
 			if (!hasEffect(target, "Fear of Flames")) {
 				Effect* fear = new Effect(true, true, "Fear of Flames", "Weaker targets are too terrified of the inferno that engulfs them to attack", PhysicalDamageType::NONE, MagicDamageType::FIRE,
-					1.0f, 1.0f, false, 1, 1, false);
+					0.0f, 1.0f, 1.0f, false, 1, 1, false);
 				target->effects.push_back(fear);
 			}
 		}
@@ -567,7 +709,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 			target->poisonPoints = 0;
 			target->combatFlags.push_back(Character::CombatFlags::POISONED);
 
-			Effect* poison = new Effect(true, true, "Poison", "Putrid venom courses through their veins", PhysicalDamageType::NONE, MagicDamageType::POISON, 5, 0, true, 1, 5, false);
+			Effect* poison = new Effect(true, true, "Poison", "Putrid venom courses through their veins", PhysicalDamageType::NONE, MagicDamageType::POISON, 0.0f, 5, 0, true, 1, 5, false);
 			bool poisonApplied = false;
 			poison->setMagicDamage(MagicDamageType::POISON, target->maxHealthPoints * 0.05);
 			for (Effect* effect : target->effects)
@@ -594,7 +736,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 			target->frostPoints = 0;
 			target->combatFlags.push_back(Character::CombatFlags::FROSTBITTEN);
 			Effect* frostBite = new Effect(true, true, "Frost Burst", "The ice accumulating on the target explodes in a burst of frost!", PhysicalDamageType::NONE, MagicDamageType::FROST,
-				1, target->maxHealthPoints * 0.2, false, 1, 1, false);
+				0.0f, 1, target->maxHealthPoints * 0.2, false, 1, 1, false);
 			frostBite->setMagicDamage(MagicDamageType::FROST, target->maxHealthPoints * 0.2);
 			target->effects.push_back(frostBite);
 		}
@@ -608,7 +750,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 			target->shockPoints = 0;
 			target->combatFlags.push_back(Character::CombatFlags::SHOCKED);
 			Effect* shock = new Effect(true, true, "Shock", "The target is paralyzed by the electrical current, slowing their movements!", PhysicalDamageType::NONE, MagicDamageType::SHOCK,
-				1, effect->getEffectDamage(target, *effect), false, 1, 1, false);
+				0.0f, 1, effect->getEffectDamage(target, *effect), false, 1, 1, false);
 			shock->setMagicDamage(MagicDamageType::SHOCK, 0);
 			target->effects.push_back(shock);
 		}
@@ -622,7 +764,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 			target->bleedPoints = 0;
 			target->combatFlags.push_back(Character::CombatFlags::BLEEDING);
 			Effect* bleed = new Effect(true, true, "Blood Loss", "The target is bleeding profusely, losing a percentage of their maximum health!", PhysicalDamageType::NONE, MagicDamageType::BLEED,
-				1, target->maxHealthPoints * 0.1, false, 1, 1, false);
+				0.0f, 1, target->maxHealthPoints * 0.1, false, 1, 1, false);
 			bleed->setMagicDamage(MagicDamageType::BLEED, target->maxHealthPoints * 0.1);
 			target->effects.push_back(bleed);
 		}
@@ -636,7 +778,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 			target->sleepPoints = 0;
 			target->combatFlags.push_back(Character::CombatFlags::SLEEPY);
 			Effect* sleep = new Effect(true, true, "Sleep", "The target has dozen off, unable to attack for one turn!", PhysicalDamageType::NONE, MagicDamageType::SLEEP,
-				1, 1, false, 1, 1, false);
+				0.0f, 1, 1, false, 1, 1, false);
 			sleep->setMagicDamage(MagicDamageType::SLEEP, 0);
 			target->effects.push_back(sleep);
 		}
@@ -661,13 +803,11 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 	{
 		effect->applied = true;
 		Inventory inventory;
-		inventory.backpackItems.push_back(new Item(true, "Vulture Feather", "A feather from a vulture", PhysicalDamageType::NONE, MagicDamageType::NONE, 30.0f, 0.1f, 3.0f, Item::EquipSlots::BACKPACK));
+		inventory.backpackItems.push_back(new Item(true, "Vulture Feather", "A feather from a vulture", 30.0f, 0.1f, 3.0f, Item::EquipSlots::BACKPACK));
 		std::cout << " A large vulture comes to aid " << dye::light_yellow(attacker->name) << " in combat!" << std::endl;
 		Creature* vulture = new Creature(false, true, true, true, false, "Vulture", "A large vulture", 100.0f, 10.0f, 100.0f, 200.0f, 200.0f, 200.0f, 5.0f, 20.0f, 1.0f, 0.0f, 0.0f, 100.0f,
 			100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, inventory, 5, Character::CombatFlags::NEUTRAL);
-		std::cout << "Before insertion: " << typeid(*vulture).name() << " at " << vulture << std::endl;
 		attacker->allies.push_back(vulture);
-		std::cout << "After insertion: " << typeid(*attacker->allies.back()).name() << " at " << attacker->allies.back() << std::endl;
 
 		return;
 	}
@@ -675,7 +815,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 	{
 		effect->applied = true;
 		Inventory inventory;
-		inventory.backpackItems.push_back(new Item(true, "Wolf Pelt", "A pelt from a wolf", PhysicalDamageType::NONE, MagicDamageType::NONE, 150.0f, 0.5f, 1.0f, Item::EquipSlots::BACKPACK));
+		inventory.backpackItems.push_back(new Item(true, "Wolf Pelt", "A pelt from a wolf", 150.0f, 0.5f, 1.0f, Item::EquipSlots::BACKPACK));
 		std::cout << " A rugged wolf comes to aid " << dye::light_yellow(attacker->name) << " in combat!" << std::endl;
 		attacker->allies.push_back(new Creature(false, true, true, true, false, "Wolf", "A rugged wolf", 150.0f, 20.0f, 100.0f, 300.0f, 300.0f, 250.0f, 10.0f, 30.0f, 1.0f, 5.0f, 10.0f, 100.0f, 100.0f, 100.0f,
 			100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, inventory, 5.0f, Character::CombatFlags::NEUTRAL));
@@ -685,7 +825,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 	{
 		effect->applied = true;
 		Inventory inventory;
-		inventory.backpackItems.push_back(new Item(true, "Bear Pelt", "A pelt from a bear", PhysicalDamageType::NONE, MagicDamageType::NONE, 300.0f, 5.0f, 1.0f, Item::EquipSlots::BACKPACK));
+		inventory.backpackItems.push_back(new Item(true, "Bear Pelt", "A pelt from a bear", 300.0f, 5.0f, 1.0f, Item::EquipSlots::BACKPACK));
 		std::cout << " A mountain bear comes to aid " << dye::light_yellow(attacker->name) << " in combat!" << std::endl;
 		attacker->allies.push_back(new Creature(false, true, true, true, false, "Bear", "A mountain bear", 250.0f, 30.0f, 200.0f, 400.0f, 400.0f, 150.0f, 10.0f, 5.0f, 1.0f, 30.0f, 100.0f, 100.0f,
 			100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, inventory, 5.0f, Character::CombatFlags::NEUTRAL));
@@ -740,7 +880,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 		dynamic_cast<Human*>(target)->flatDefense += 75;
 		std::cout << " " << dye::light_yellow(target->name) << " is protected by " << dye::light_green("Oaken Armor I") << "!" << std::endl;
 		target->combatFlags.push_back(Character::CombatFlags::ENHANCEDARMOR);
-		target->effects.push_back(new Effect(false, true, "Oaken Armor I", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 100, false, 1, 1, false));
+		target->effects.push_back(new Effect(false, true, "Oaken Armor I", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, 0.0f, 5, 100, false, 1, 1, false));
 		return;
 	}
 	else if (effect->name == "Oaken Armor II")
@@ -749,7 +889,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 		dynamic_cast<Human*>(target)->flatDefense += 100;
 		std::cout << " " << dye::light_yellow(target->name) << " is protected by " << dye::light_green("Oaken Armor II") << "!" << std::endl;
 		target->combatFlags.push_back(Character::CombatFlags::ENHANCEDARMOR);
-		target->effects.push_back(new Effect(false, true, "Oaken Armor II", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 100, false, 1, 1, false));
+		target->effects.push_back(new Effect(false, true, "Oaken Armor II", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, 0.0f, 5, 100, false, 1, 1, false));
 		return;
 
 	}
@@ -758,7 +898,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 		effect->applied = true;
 		dynamic_cast<Human*>(target)->flatDefense += 125;
 		std::cout << " " << dye::light_yellow(target->name) << " is protected by " << dye::light_green("Oaken Armor III") << "!" << std::endl;
-		target->effects.push_back(new Effect(false, true, "Oaken Armor III", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 100, false, 1, 1, false));
+		target->effects.push_back(new Effect(false, true, "Oaken Armor III", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, 0.0f, 5, 100, false, 1, 1, false));
 		target->combatFlags.push_back(Character::CombatFlags::ENHANCEDARMOR);
 		return;
 
@@ -767,7 +907,7 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 	{
 		effect->applied = true;
 		target->combatFlags.push_back(Character::CombatFlags::HEALING);
-		target->effects.push_back(new Effect(false, true, "Nature's Bounty I", "The target is healed by the magic of the forest", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 50, false, 1, 1, false));
+		target->effects.push_back(new Effect(false, true, "Nature's Bounty I", "The target is healed by the magic of the forest", PhysicalDamageType::NONE, MagicDamageType::NONE, 0.0f, 5, 50, false, 1, 1, false));
 		return;
 
 	}
@@ -775,12 +915,12 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 	{
 		effect->applied = true;
 		target->combatFlags.push_back(Character::CombatFlags::HEALING);
-		target->effects.push_back(new Effect(false, true, "Nature's Bounty II", "The target is healed greatly by the magic of the forest", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 100, false, 1, 1, false));
+		target->effects.push_back(new Effect(false, true, "Nature's Bounty II", "The target is healed greatly by the magic of the forest", PhysicalDamageType::NONE, MagicDamageType::NONE, 0.0f, 5, 100, false, 1, 1, false));
 		return;
 
 
 	}
-	else if (effect->name == "Fruit of the Earth I")
+	else if (effect->name == "Fruit of the Earth I" || effect->name == "Fruit of the Earth II" || effect->name == "Fruit of the Earth III")
 	{
 		effect->applied = true;
 		target->healthPoints += effect->magnitude;
@@ -791,38 +931,13 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 		std::cout << " " << target->name << " has gained " << effect->magnitude << " health!" << std::endl;
 		std::cout << " " << target->name << " has gained " << effect->magnitude / 4 << " fatigue!" << std::endl;
 		return;
-	}
-	else if (effect->name == "Fruit of the Earth II")
-	{
-		effect->applied = true;
-		target->healthPoints += effect->magnitude;
-		if (target->healthPoints > target->maxHealthPoints) target->healthPoints = target->maxHealthPoints;
-		target->fatiguePoints += effect->magnitude / 4;
-		if (target->fatiguePoints > target->maxFatiguePoints) target->fatiguePoints = target->maxFatiguePoints;
-		std::cout << " " << target->name << " is healed by the magic of the forest!" << std::endl;
-		std::cout << " " << target->name << " has gained " << effect->magnitude << " health!" << std::endl;
-		std::cout << " " << target->name << " has gained " << effect->magnitude / 4 << " fatigue!" << std::endl;
-		return;
-	}
-	else if (effect->name == "Fruit of the Earth III")
-	{
-		effect->applied = true;
-		target->healthPoints += effect->magnitude;
-		if (target->healthPoints > target->maxHealthPoints) target->healthPoints = target->maxHealthPoints;
-		target->fatiguePoints += effect->magnitude / 4;
-		if (target->fatiguePoints > target->maxFatiguePoints) target->fatiguePoints = target->maxFatiguePoints;
-		std::cout << " " << target->name << " is healed by the magic of the forest!" << std::endl;
-		std::cout << " " << target->name << " has gained " << effect->magnitude << " health!" << std::endl;
-		std::cout << " " << target->name << " has gained " << effect->magnitude / 4 << " fatigue!" << std::endl;
-		return;
-
 	}
 	else if (effect->name == "Knockback I" || effect->name == "Knockback II" || effect->name == "Knockback III")
 	{
 		effect->applied = true;
-		for (int i = 0; i < target->allies.size() + 1; i++)
+		for (int i = 0; i < target->allies.size(); i++)
 		{
-			if (target->distanceFromPlayer <= 10)
+			if (target->distanceFromPlayer <= effect->range)
 			{
 				float knockback = magnitude;
 				target->distanceFromPlayer += knockback;
@@ -835,11 +950,109 @@ void Effect::applyEffect(Effect* effect, Character* attacker, Character* target)
 				{
 					target->healthPoints = 0;
 					target->killCharacter();
+					return;
 				}
 			}
 			else
 			{
 				std::cout << " " << dye::light_yellow(target->name) << " is too far away to be affected by the force burst!" << std::endl;
+			}
+		}
+	}
+	//WEAPONS
+	else if (effect->name == "Armor Penetration")
+	{
+		effect->applied = true;
+		for (int i = 0; i < target->inventory.equippedItems.size(); i++)
+		{
+			if (dynamic_cast<Armor*>(target->inventory.equippedItems[i]))
+			{
+				Armor* armor = dynamic_cast<Armor*>(target->inventory.equippedItems[i]);
+				armor->setPhysicalResistance(PhysicalDamageType::BLUNT, armor->getPhysicalResistance(PhysicalDamageType::BLUNT) - effect->magnitude);
+				armor->setPhysicalResistance(PhysicalDamageType::PIERCE, armor->getPhysicalResistance(PhysicalDamageType::PIERCE) - effect->magnitude);
+				armor->setPhysicalResistance(PhysicalDamageType::SLASH, armor->getPhysicalResistance(PhysicalDamageType::SLASH) - effect->magnitude);
+				armor->setPhysicalResistance(PhysicalDamageType::CHOP, armor->getPhysicalResistance(PhysicalDamageType::CHOP) - effect->magnitude);
+				std::cout << " " << target->name << "'s armor is weakened by " << effect->magnitude << " points!" << std::endl;
+			}
+		}
+	}
+	else if (effect->name == "Magic Damage")
+	{
+		effect->applied = true;
+		std::cout << " " << target->name << " takes " << effect->getEffectDamage(target, *effect) << " points of magic damage!" << std::endl;
+		target->healthPoints -= effect->getEffectDamage(target, *effect);
+	}
+	else if (effect->name == "Fire Damage")
+	{
+		effect->applied = true;
+		std::cout << " " << target->name << " takes " << effect->getEffectDamage(target, *effect) << " points of fire damage!" << std::endl;
+		target->healthPoints -= effect->getEffectDamage(target, *effect);
+	}
+	else if (effect->name == "Frost Damage")
+	{
+		effect->applied = true;
+		std::cout << " " << target->name << " takes " << effect->getEffectDamage(target, *effect) << " points of frost damage!" << std::endl;
+		target->healthPoints -= effect->getEffectDamage(target, *effect);
+		}
+	else if (effect->name == "Shock Damage")
+	{
+		effect->applied = true;
+		std::cout << " " << target->name << " takes " << effect->getEffectDamage(target, *effect) << " points of shock damage!" << std::endl;
+		target->healthPoints -= effect->getEffectDamage(target, *effect);
+		}
+	else if (effect->name == "Poison Damage")
+	{
+		effect->applied = true;
+		std::cout << " " << target->name << " takes " << effect->getEffectDamage(target, *effect) << " points of poison damage!" << std::endl;
+		target->healthPoints -= effect->getEffectDamage(target, *effect);
+		}
+	else if (effect->name == "Bleed Damage")
+	{
+		effect->applied = true;
+		std::cout << " " << target->name << " takes " << effect->getEffectDamage(target, *effect) << " points of bleed damage!" << std::endl;
+		target->healthPoints -= effect->getEffectDamage(target, *effect);
+		}
+	else if (effect->name == "Sleep Damage")
+	{
+		effect->applied = true;
+		std::cout << " " << target->name << " takes " << effect->getEffectDamage(target, *effect) << " points of sleep damage!" << std::endl;
+		target->healthPoints -= effect->getEffectDamage(target, *effect);
+	}
+	else if (effect->name == "Wind Damage")
+	{
+		effect->applied = true;
+		std::cout << " " << target->name << " takes " << effect->getEffectDamage(target, *effect) << " points of wind damage!" << std::endl;
+		target->healthPoints -= effect->getEffectDamage(target, *effect);
+	}
+	//ARMOR
+	else if (effect->name == "Fatigue Buff")
+	{
+		effect->applied = true;
+		attacker->maxFatiguePoints += effect->magnitude;
+		attacker->fatiguePoints += effect->magnitude;
+	}
+	else if (effect->name == "Cast Speed")
+	{
+		effect->applied = true;
+		if (dynamic_cast<Human*>(attacker))
+		{
+			dynamic_cast<Human*>(attacker)->castSpeed += effect->magnitude;
+		}
+	}
+	else if (effect->name == "Shocking Thorns")
+	{
+		if (target->distanceFromPlayer <= effect->range)
+		{
+			target->healthPoints -= effect->getEffectDamage(target, *effect);
+			if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " is" << dye::light_purple(" SHOCKED!") <<
+				" from the enchantment and takes " << effect->getEffectDamage(target, *effect) << " points of damage!" << std::endl;
+			if (!target->namedCharacter) std::cout << " The " << target->name << " is" << dye::light_purple(" SHOCKED!") <<
+				" from the enchantment and takes " << effect->getEffectDamage(target, *effect) << " points of damage!" << std::endl;
+			if (target->healthPoints <= 0)
+			{
+				target->healthPoints = 0;
+				target->killCharacter();
+				return;
 			}
 		}
 	}

@@ -7,8 +7,9 @@ Armor::Armor() {
 }
 Armor::Armor(std::string name, std::string description, float weight, float value, bool isLight, bool isMedium,
 	bool isHeavy, ArmorDescriptor armorDescriptor, PhysicalDamageType physType, MagicDamageType magType) : 
-	Item(true, name, description, physType, magType, value, weight, 1.0f, EquipSlots::BACKPACK),
-	isLight(isLight), isMedium(isMedium), isHeavy(isHeavy)
+	Item(true, name, description, value, weight, 1.0f, EquipSlots::BACKPACK),
+	isLight(isLight), isMedium(isMedium), isHeavy(isHeavy), armorDescriptor(armorDescriptor), 
+	physType(physType), magType(magType)
 { 
 	//sets physical resistances to the map to default values
 	for (PhysicalDamageType type : {PhysicalDamageType::BLUNT, PhysicalDamageType::PIERCE,

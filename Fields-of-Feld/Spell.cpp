@@ -11,7 +11,7 @@ Spell::Spell(bool buff, bool useOnSelf , bool healing, bool useOnAlly, bool summ
 	PhysicalDamageType physDmg, MagicDamageType magDmg, float range, float magnitude, bool stackable,
 	int stacks, int maxStacks, float fatigueCost, float arcaneScaling, float intelligenceScaling,
 	float faithScaling, float charismaScaling, float luckScaling, float attackSpeed, bool doesDamage)
-	: Effect(doesDamage, applied, name, description, physDmg, magDmg, duration, magnitude, stackable, stacks, maxStacks, areaOfEffect),
+	: Effect(doesDamage, applied, name, description, physDmg, magDmg, range, duration, magnitude, stackable, stacks, maxStacks, areaOfEffect),
 	useOnSelf(useOnSelf),
 	healing(healing),
 	useOnAlly(useOnAlly),
@@ -26,7 +26,9 @@ Spell::Spell(bool buff, bool useOnSelf , bool healing, bool useOnAlly, bool summ
 	summon(summon),
 	doesDamage(doesDamage),
 	buff(buff),
-	range(range)
+	range(range),
+	physType(physDmg),
+	magType(magDmg)
 {
 
 }
@@ -78,7 +80,21 @@ float Spell::calculateSpellDamage(Character* target, Spell spell)
 			}
 		}
 
-		//TODO: Implement enchanted item resistances
+		cumulativeSlashResist = std::max(cumulativeSlashResist, 0.0f);
+		cumulativePierceResist = std::max(cumulativePierceResist, 0.0f);
+		cumulativeBluntResist = std::max(cumulativeBluntResist, 0.0f);
+		cumulativeChopResist = std::max(cumulativeChopResist, 0.0f);
+
+		cumulativeMagicResist = std::max(cumulativeMagicResist, 0.0f);
+		cumulativeFireResist = std::max(cumulativeFireResist, 0.0f);
+		cumulativeIceResist = std::max(cumulativeIceResist, 0.0f);
+		cumulativeShockResist = std::max(cumulativeShockResist, 0.0f);
+		cumulativePoisonResist = std::max(cumulativePoisonResist, 0.0f);
+		cumulativeBleedResist = std::max(cumulativeBleedResist, 0.0f);
+		cumulativeSleepResist = std::max(cumulativeSleepResist, 0.0f);
+		cumulativeDarkResist = std::max(cumulativeDarkResist, 0.0f);
+		cumulativeHolyResist = std::max(cumulativeHolyResist, 0.0f);
+		cumulativeWindResist = std::max(cumulativeWindResist, 0.0f);
 
 		//damage = damage - (damage * (resistance / 500)) - max won't let it go below 0
 		float cumulativeSlashDamage = spell.getPhysicalDamage(PhysicalDamageType::SLASH) - (spell.getPhysicalDamage(PhysicalDamageType::SLASH) * (cumulativeSlashResist / 500));
@@ -173,9 +189,9 @@ Spell* Spell::getBonetrousleEffect(Character& caster)
 	//Determine which version of the spell is the one used by the player
 	if (statInvestment < 30)
 	{
-		bonetrousle = new Spell(false, false, false, false, false, false, false, "Bonetrousle I", "A flurry of tiny sharpened bone fragments pelt the target", PhysicalDamageType::PIERCE, MagicDamageType::BLEED, 50, bonetrousleDamage, false, 1, 1, 25, 100, 0, 0, 0, 0, 66, true);
-		bonetrousle->effects.push_back(new Effect(true, true, "Blood Loss", "The target is bleeding. If attacks persist a hemmorage will occur", PhysicalDamageType::NONE, MagicDamageType::BLEED,
-			1, 5, false, 1, 1, false));
+		bonetrousle = new Spell(false, false, false, false, false, false, false, "Bonetrousle I", "A flurry of tiny sharpened bone fragments pelt the target", PhysicalDamageType::PIERCE, MagicDamageType::BLEED, 75, bonetrousleDamage, false, 1, 1, 25, 100, 0, 0, 0, 0, 66, true);
+		bonetrousle->effects.push_back(new Effect(true, false, "Blood Loss", "The target is bleeding. If attacks persist a hemmorage will occur", PhysicalDamageType::NONE, MagicDamageType::BLEED,
+			bonetrousle->range, 1, 5, false, 1, 1, false));
 		bonetrousle->setPhysicalDamage(PhysicalDamageType::PIERCE, bonetrousleDamage * .8);
 		bonetrousle->setMagicDamage(MagicDamageType::DARK, bonetrousleDamage * .2);
 
@@ -183,18 +199,18 @@ Spell* Spell::getBonetrousleEffect(Character& caster)
 	}
 	else if (statInvestment < 60)
 	{
-		bonetrousle = new Spell(false, false, false, false, false, false, false, "Bonetrousle II", "A flurry of sharpened bone fragments pelt the target", PhysicalDamageType::PIERCE, MagicDamageType::BLEED, 50, bonetrousleDamage, false, 1, 1, 50, 100, 0, 0, 0, 0, 75, true);
-		bonetrousle->effects.push_back(new Effect(true, true, "Blood Loss", "The target is bleeding. If attacks persist a hemmorage will occur", PhysicalDamageType::NONE, MagicDamageType::BLEED,
-			1, 7, false, 1, 1, false));
+		bonetrousle = new Spell(false, false, false, false, false, false, false, "Bonetrousle II", "A flurry of sharpened bone fragments pelt the target", PhysicalDamageType::PIERCE, MagicDamageType::BLEED, 75, bonetrousleDamage, false, 1, 1, 50, 100, 0, 0, 0, 0, 75, true);
+		bonetrousle->effects.push_back(new Effect(true, false, "Blood Loss", "The target is bleeding. If attacks persist a hemmorage will occur", PhysicalDamageType::NONE, MagicDamageType::BLEED,
+			bonetrousle->range, 1, 7, false, 1, 1, false));
 		bonetrousle->setPhysicalDamage(PhysicalDamageType::PIERCE, bonetrousleDamage * .8);
 		bonetrousle->setMagicDamage(MagicDamageType::DARK, bonetrousleDamage * .2);
 		return bonetrousle;
 	}
 	else
 	{
-		bonetrousle = new Spell(false, false, false, false, false, false, false, "Bonetrousle III", "A flurry of sharpened bone chunks pelt the target", PhysicalDamageType::PIERCE, MagicDamageType::BLEED, 50, bonetrousleDamage, false, 1, 1, 75, 100, 0, 0, 0, 0, 80, true);
-		bonetrousle->effects.push_back(new Effect(true, true, "Blood Loss", "The target is bleeding. If attacks persist a hemmorage will occur", PhysicalDamageType::NONE, MagicDamageType::BLEED,
-			1, 10, false, 1, 1, false));
+		bonetrousle = new Spell(false, false, false, false, false, false, false, "Bonetrousle III", "A flurry of sharpened bone chunks pelt the target", PhysicalDamageType::PIERCE, MagicDamageType::BLEED, 75, bonetrousleDamage, false, 1, 1, 75, 100, 0, 0, 0, 0, 80, true);
+		bonetrousle->effects.push_back(new Effect(true, false, "Blood Loss", "The target is bleeding. If attacks persist a hemmorage will occur", PhysicalDamageType::NONE, MagicDamageType::BLEED,
+			bonetrousle->range, 1, 10, false, 1, 1, false));
 		bonetrousle->setPhysicalDamage(PhysicalDamageType::PIERCE, bonetrousleDamage * .8);
 		bonetrousle->setMagicDamage(MagicDamageType::DARK, bonetrousleDamage * .2);
 		return bonetrousle;
@@ -210,19 +226,19 @@ Spell* Spell::getSummonAnimalAllyEffect(Character& caster)
 	if (statInvestment < 30)
 	{
 		animalAlly = new Spell(false, true, false, false, true, false, false, "Summon Vulture", "A large vulture will come to your aid in combat!", PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 0, false, 1, 1, 50, 100, 0, 0, 0, 0, 0, false);
-		animalAlly->effects.push_back(new Effect(false, true, "Summon Vulture", "A large vulture comes to aid you in combat!", PhysicalDamageType::NONE, MagicDamageType::NONE, 10, 0, false, 1, 1, false));
+		animalAlly->effects.push_back(new Effect(false, false, "Summon Vulture", "A large vulture comes to aid you in combat!", PhysicalDamageType::NONE, MagicDamageType::NONE, animalAlly->range, 10, 0, false, 1, 1, false));
 		return animalAlly;
 	}
 	else if (statInvestment < 60)
 	{
 		animalAlly = new Spell(false, true, false, false, true, false, false, "Summon Wolf", "A rugged wolf will come to your aid in combat!", PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 0, false, 1, 1, 50, 100, 0, 0, 0, 0, 0, false);
-		animalAlly->effects.push_back(new Effect(false, true, "Summon Wolf", "A mountain bear will come to your aid in combat!", PhysicalDamageType::NONE, MagicDamageType::NONE, 10, 0, false, 1, 1, false));
+		animalAlly->effects.push_back(new Effect(false, false, "Summon Wolf", "A mountain bear will come to your aid in combat!", PhysicalDamageType::NONE, MagicDamageType::NONE, animalAlly->range, 10, 0, false, 1, 1, false));
 		return animalAlly;
 	}
 	else
 	{
 		animalAlly = new Spell(false, true, false, false, true, false, false, "Summon Bear", "A mountain bear will come to your aid in combat!", PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 0, false, 1, 1, 50, 100, 0, 0, 0, 0, 0, false);
-		animalAlly->effects.push_back(new Effect(false, true, "Summon Bear", "A mountain bear will come to your aid in combat!", PhysicalDamageType::NONE, MagicDamageType::NONE, 10, 0, false, 1, 1, false));
+		animalAlly->effects.push_back(new Effect(false, false, "Summon Bear", "A mountain bear will come to your aid in combat!", PhysicalDamageType::NONE, MagicDamageType::NONE, animalAlly->range, 10, 0, false, 1, 1, false));
 		return animalAlly;
 	}
 }
@@ -235,24 +251,24 @@ Spell* Spell::getOakenArmorEffect(Character& caster)
 	if (statInvestment < 30)
 	{
 		oakArmor = new Spell(true, true, false, false, false, false, false, "Oaken Armor I", "The trees give willingly when asked nicely. Project a thin layer of magically strengthened wood upon the surface of your body increasing physical damage negation for 3 turns. Investment in arcane causes the armor to gain a healing effect",
-			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 0, false, 1, 1, 50, 100, 0, 0, 0, 0, 1, false);
-		oakArmor->effects.push_back(new Effect(false, true, "Oaken Armor I", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 100, false, 1, 1, false));
+			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 0, false, 1, 1, 50, 100, 0, 0, 0, 0, 0.1f, false);
+		oakArmor->effects.push_back(new Effect(false, false, "Oaken Armor I", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, oakArmor->range, 5, 100, false, 1, 1, false));
 		return oakArmor;
 	}
 	else if (statInvestment < 60)
 	{
 		oakArmor = new Spell(true, true, true, false, false, false, false, "Oaken Armor II", "The trees give willingly when asked nicely. Project a thin layer of magically strengthened wood upon the surface of your body increasing physical damage negation for 3 turns. Investment in arcane causes the armor to gain a healing effect",
-			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 0, false, 1, 1, 50, 150, 0, 0, 0, 0, 1, false);
-		oakArmor->effects.push_back(new Effect(false, true, "Oaken Armor II", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 100, false, 1, 1, false));
-		oakArmor->effects.push_back(new Effect(false, true, "Nature's Bounty I", "The target is healed by the magic of the forest", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 50, false, 1, 1, false));
+			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 0, false, 1, 1, 50, 150, 0, 0, 0, 0, 0.1f, false);
+		oakArmor->effects.push_back(new Effect(false, false, "Oaken Armor II", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, oakArmor->range, 5, 100, false, 1, 1, false));
+		oakArmor->effects.push_back(new Effect(false, false, "Nature's Bounty I", "The target is healed by the magic of the forest", PhysicalDamageType::NONE, MagicDamageType::NONE, oakArmor->range, 5, 50, false, 1, 1, false));
 		return oakArmor;
 	}
 	else
 	{
 		oakArmor = new Spell(true, true, true, false, false, false, false, "Oaken Armor III", "The trees give willingly when asked nicely. Project a thin layer of magically strengthened wood upon the surface of your body increasing physical damage negation for 3 turns. Investment in arcane causes the armor to gain a healing effect",
-			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 0, false, 1, 1, 50, 200, 0, 0, 0, 0, 1, false);
-		oakArmor->effects.push_back(new Effect(false, true, "Oaken Armor III", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 100, false, 1, 1, false));
-		oakArmor->effects.push_back(new Effect(false, true, "Nature's Bounty II", "The target is healed greatly by the magic of the forest", PhysicalDamageType::NONE, MagicDamageType::NONE, 5, 100, false, 1, 1, false));
+			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 0, false, 1, 1, 50, 200, 0, 0, 0, 0, 0.1f, false);
+		oakArmor->effects.push_back(new Effect(false, false, "Oaken Armor III", "The target is protected by a thin layer of magically strengthened wood", PhysicalDamageType::NONE, MagicDamageType::NONE, oakArmor->range, 5, 100, false, 1, 1, false));
+		oakArmor->effects.push_back(new Effect(false, false, "Nature's Bounty II", "The target is healed greatly by the magic of the forest", PhysicalDamageType::NONE, MagicDamageType::NONE, oakArmor->range, 5, 100, false, 1, 1, false));
 		return oakArmor;
 	}
 }
@@ -265,22 +281,22 @@ Spell* Spell::getFruitOfTheEarthEffect(Character& caster)
 	if (statInvestment < 30)
 	{
 		fruit = new Spell(false, true, true, false, false, false, true, "Fruit of the Earth I", "Vegetation nearby grows a nutritious fruit. Consume it and regain health and fatigue. Investment in arcane increases the restorative effects of the fruit",
-			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 150, false, 1, 1, 50, 100, 0, 0, 0, 0, 1, false);
-		fruit->effects.push_back(new Effect(true, true, "Fruit of the Earth I", "The target consumes a fruit from the earth and regains health and fatigue", PhysicalDamageType::NONE, MagicDamageType::NONE, 1, 175, false, 1, 1, false));
+			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 150, false, 1, 1, 50, 100, 0, 0, 0, 0, 0.1f, false);
+		fruit->effects.push_back(new Effect(true, false, "Fruit of the Earth I", "The target consumes a fruit from the earth and regains health and fatigue", PhysicalDamageType::NONE, MagicDamageType::NONE, fruit->range, 1, 175, false, 1, 1, false));
 		return fruit;
 	}
 	else if (statInvestment < 60)
 	{
 		fruit = new Spell(false, true, true, false, false, false, true, "Fruit of the Earth II", "Vegetation nearby grows a highly nutritious fruit. Consume it and regain health and fatigue. Investment in arcane increases the restorative effects of the fruit",
-			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 150, false, 1, 1, 60, 100, 0, 0, 0, 0, 1, false);
-		fruit->effects.push_back(new Effect(true, true, "Fruit of the Earth II", "The target consumes a fruit from the earth and regains health and fatigue", PhysicalDamageType::NONE, MagicDamageType::NONE, 1, 200, false, 1, 1, false));
+			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 150, false, 1, 1, 60, 100, 0, 0, 0, 0, 0.1f, false);
+		fruit->effects.push_back(new Effect(true, false, "Fruit of the Earth II", "The target consumes a fruit from the earth and regains health and fatigue", PhysicalDamageType::NONE, MagicDamageType::NONE, fruit->range, 1, 200, false, 1, 1, false));
 		return fruit;
 	}
 	else
 	{
 		fruit = new Spell(false, true, true, false, false, false, true, "Fruit of the Earth III", "Vegetation nearby grows a unbelievably nutritious fruit. Consume it and regain health and fatigue. Investment in arcane increases the restorative effects of the fruit",
-			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 150, false, 1, 1, 75, 100, 0, 0, 0, 0, 1, false);
-		fruit->effects.push_back(new Effect(true, true, "Fruit of the Earth III", "The target consumes a fruit from the earth and regains health and fatigue", PhysicalDamageType::NONE, MagicDamageType::NONE, 1, 300, false, 1, 1, false));
+			PhysicalDamageType::NONE, MagicDamageType::NONE, 0, 150, false, 1, 1, 75, 100, 0, 0, 0, 0, 0.1f, false);
+		fruit->effects.push_back(new Effect(true, false, "Fruit of the Earth III", "The target consumes a fruit from the earth and regains health and fatigue", PhysicalDamageType::NONE, MagicDamageType::NONE, fruit->range, 1, 300, false, 1, 1, false));
 		return fruit;
 	}
 }
@@ -294,28 +310,28 @@ Spell* Spell::getEndothermicGraspEffect(Character& caster)
 	if (statInvestment < 30)
 	{
 		endothermicGrasp = new Spell(false, false, false, false, false, false, false, "Endorthermic Nudge",
-			"A chilling touch that applies frost burst and freezes weaker targets solid!", PhysicalDamageType::NONE, MagicDamageType::FROST, 10, 0, false,
+			"A chilling touch that applies frost burst and freezes weaker targets solid!", PhysicalDamageType::NONE, MagicDamageType::FROST, 10, 1, false,
 			1, 1, 25, 0, 100, 0, 0, 0, 1, false);
-		endothermicGrasp->effects.push_back(new Effect(false, false, "Frost Burst", "The target suffers a frost burst!", PhysicalDamageType::NONE, MagicDamageType::FROST, 1, 5000, false, 1, 1, false));
-		endothermicGrasp->effects.push_back(new Effect(false, false, "Freeze 1", "The target is frozen solid and loses a turn!", PhysicalDamageType::NONE, MagicDamageType::FROST, 1, 1, false, 1, 1, false));
+		endothermicGrasp->effects.push_back(new Effect(false, false, "Frost Burst", "The target suffers a frost burst!", PhysicalDamageType::NONE, MagicDamageType::FROST, endothermicGrasp->range, 1, 5000, false, 1, 1, false));
+		endothermicGrasp->effects.push_back(new Effect(false, false, "Freeze 1", "The target is frozen solid and loses a turn!", PhysicalDamageType::NONE, MagicDamageType::FROST, endothermicGrasp->range, 1, 1, false, 1, 1, false));
 		return endothermicGrasp;
 	}
 	else if (statInvestment < 60)
 	{
 		endothermicGrasp = new Spell(false, false, false, false, false, false, false, "Endorthermic Touch",
-			"A chilling touch that applies frost burst and freezes weaker targets solid!", PhysicalDamageType::NONE, MagicDamageType::FROST, 10, 0, false,
+			"A chilling touch that applies frost burst and freezes weaker targets solid!", PhysicalDamageType::NONE, MagicDamageType::FROST, 10, 1, false,
 			1, 1, 40, 0, 100, 0, 0, 0, 1, false);
-		endothermicGrasp->effects.push_back(new Effect(false, false, "Frost Burst", "The target suffers a frost burst!", PhysicalDamageType::NONE, MagicDamageType::FROST, 1, 5000, false, 1, 1, false));
-		endothermicGrasp->effects.push_back(new Effect(false, false, "Freeze 2", "The target is frozen solid and loses a turn!", PhysicalDamageType::NONE, MagicDamageType::FROST, 1, 1, false, 1, 1, false));
+		endothermicGrasp->effects.push_back(new Effect(false, false, "Frost Burst", "The target suffers a frost burst!", PhysicalDamageType::NONE, MagicDamageType::FROST, endothermicGrasp->range, 1, 5000, false, 1, 1, false));
+		endothermicGrasp->effects.push_back(new Effect(false, false, "Freeze 2", "The target is frozen solid and loses a turn!", PhysicalDamageType::NONE, MagicDamageType::FROST, endothermicGrasp->range, 1, 1, false, 1, 1, false));
 		return endothermicGrasp;
 	}
 	else
 	{
 		endothermicGrasp = new Spell(false, false, false, false, false, false, false, "Endorthermic Grasp",
-			"A chilling touch that applies frost burst and freezes weaker targets solid!", PhysicalDamageType::NONE, MagicDamageType::FROST, 10, 0, false,
+			"A chilling touch that applies frost burst and freezes weaker targets solid!", PhysicalDamageType::NONE, MagicDamageType::FROST, 10, 1, false,
 			1, 1, 50, 0, 100, 0, 0, 0, 1, false);
-		endothermicGrasp->effects.push_back(new Effect(false, false, "Frost Burst", "The target suffers a frost burst!", PhysicalDamageType::NONE, MagicDamageType::FROST, 1, 5000, false, 1, 1, false));
-		endothermicGrasp->effects.push_back(new Effect(false, false, "Freeze 3", "The target is frozen solid and loses a turn!", PhysicalDamageType::NONE, MagicDamageType::FROST, 1, 1, false, 1, 1, false));
+		endothermicGrasp->effects.push_back(new Effect(false, false, "Frost Burst", "The target suffers a frost burst!", PhysicalDamageType::NONE, MagicDamageType::FROST, endothermicGrasp->range, 1, 5000, false, 1, 1, false));
+		endothermicGrasp->effects.push_back(new Effect(false, false, "Freeze 3", "The target is frozen solid and loses a turn!", PhysicalDamageType::NONE, MagicDamageType::FROST, endothermicGrasp->range, 1, 1, false, 1, 1, false));
 		return endothermicGrasp;
 	}
 }
@@ -331,24 +347,24 @@ Spell* Spell::getForceBurstEffect(Character& caster)
 	if (statInvestment < 30)
 	{
 		forceBurst = new Spell(false, false, false, false, false, true, false, "Force Burst I", "Create a small burst of holy energy dealing tiny amounts of damage and pushing enemies in melee range away from you. Investments in faith increase the damage and the knockback",
-			PhysicalDamageType::BLUNT, MagicDamageType::HOLY, 10, damage * 1, false, 1, 1, 20, 0, 0, 100, 0, 0, 1, true);
-		forceBurst->effects.push_back(new Effect(true, true, "Knockback I", "The target is pushed back", PhysicalDamageType::NONE, MagicDamageType::NONE, 1, damage * 1, false, 1, 1, true));
+			PhysicalDamageType::BLUNT, MagicDamageType::HOLY, 20, damage * 1, false, 1, 1, 20, 0, 0, 100, 0, 0, 0.1f, true);
+		forceBurst->effects.push_back(new Effect(true, false, "Knockback I", "The target is pushed back", PhysicalDamageType::NONE, MagicDamageType::NONE, forceBurst->range, 1, damage * 1, false, 1, 1, true));
 		forceBurst->setMagicDamage(MagicDamageType::HOLY, damage * 1);
 		return forceBurst;
 	}
 	else if (statInvestment < 60)
 	{
 		forceBurst = new Spell(false, false, false, false, false, true, false, "Force Burst II", "Create a small burst of holy energy dealing tiny amounts of damage and pushing enemies in melee range away from you. Investments in faith increase the damage and the knockback",
-			PhysicalDamageType::BLUNT, MagicDamageType::HOLY, 10, damage * 1.5, false, 1, 1, 20, 0, 0, 100, 0, 0, 1, true);
-		forceBurst->effects.push_back(new Effect(true, true, "Knockback II", "The target is pushed back", PhysicalDamageType::NONE, MagicDamageType::NONE, 1, damage * 1.5, false, 1, 1, true));
+			PhysicalDamageType::BLUNT, MagicDamageType::HOLY, 20, damage * 1.5, false, 1, 1, 20, 0, 0, 100, 0, 0, 0.1f, true);
+		forceBurst->effects.push_back(new Effect(true, false, "Knockback II", "The target is pushed back", PhysicalDamageType::NONE, MagicDamageType::NONE, forceBurst->range, 1, damage * 1.5, false, 1, 1, true));
 		forceBurst->setMagicDamage(MagicDamageType::HOLY, damage * 2);
 		return forceBurst;
 	}
 	else
 	{
 		forceBurst = new Spell(false, false, false, false, false, true, false, "Force Burst III", "Create a small burst of holy energy dealing tiny amounts of damage and pushing enemies in melee range away from you. Investments in faith increase the damage and the knockback",
-			PhysicalDamageType::BLUNT, MagicDamageType::HOLY, 10, damage * 2.5, false, 1, 1, 20, 0, 0, 100, 0, 0, 1, true);
-		forceBurst->effects.push_back(new Effect(true, true, "Knockback III", "The target is pushed back", PhysicalDamageType::NONE, MagicDamageType::NONE, 1, damage * 2.5, false, 1, 1, true));
+			PhysicalDamageType::BLUNT, MagicDamageType::HOLY, 20, damage * 2.5, false, 1, 1, 20, 0, 0, 100, 0, 0, 0.1f, true);
+		forceBurst->effects.push_back(new Effect(true, false, "Knockback III", "The target is pushed back", PhysicalDamageType::NONE, MagicDamageType::NONE, forceBurst->range, 1, damage * 2.5, false, 1, 1, true));
 		forceBurst->setMagicDamage(MagicDamageType::HOLY, damage * 3);
 		return forceBurst;
 	}
@@ -365,30 +381,30 @@ Spell* Spell::getFireBallEffect(Character& caster)
 	//Determine which version of the spell is the one used by the player
 	if (statInvestment < 30)
 	{
-		fireball = new Spell(false, false, false, false, false, false, false, "Fire Bolt", "A bolt of holy fire that deals burning damage", PhysicalDamageType::NONE, MagicDamageType::FIRE, 100, fireballDamage + 100 + caster.getFaith(), false, 1, 1, 20, 0, 0, 100, 0, 0, 1, true);
-		fireball->effects.push_back(new Effect(true, true, "Burn", "The target is engulfed in flames causing damage each turn", PhysicalDamageType::NONE, MagicDamageType::FIRE,
-			3, caster.maxHealthPoints * 0.05f, false, 1, 1, false));
+		fireball = new Spell(false, false, false, false, false, false, false, "Fire Bolt", "A bolt of holy fire that deals burning damage", PhysicalDamageType::NONE, MagicDamageType::FIRE, 100, fireballDamage + 50 + caster.getFaith(), false, 1, 1, 20, 0, 0, 100, 0, 0, 1, true);
+		fireball->effects.push_back(new Effect(true, false, "Burn", "The target is engulfed in flames causing damage each turn", PhysicalDamageType::NONE, MagicDamageType::FIRE,
+			fireball->range, 3, caster.maxHealthPoints * 0.05f, false, 1, 1, false));
 		fireball->effects[0]->setMagicDamage(MagicDamageType::FIRE, 25 + caster.getFaith() * 0.5);
-		fireball->setMagicDamage(MagicDamageType::FIRE, fireballDamage + 100);
+		fireball->setMagicDamage(MagicDamageType::FIRE, fireballDamage + 75);
 		return fireball;
 	}
 	else if (statInvestment < 60)
 	{
-		fireball = new Spell(false, false, false, false, false, false, false, "Fire Ball", "A ball of holy fire that deals moderate burning damage", PhysicalDamageType::NONE, MagicDamageType::FIRE, 100, fireballDamage + 150, false, 1, 1, 30, 0, 0, 100, 0, 0, 1, true);
-		fireball->effects.push_back(new Effect(true, true, "Burn", "The target is engulfed in flames causing damage each turn", PhysicalDamageType::NONE, MagicDamageType::FIRE,
-			3, caster.maxHealthPoints * 0.1f, false, 1, 1, false));
+		fireball = new Spell(false, false, false, false, false, false, false, "Fire Ball", "A ball of holy fire that deals moderate burning damage", PhysicalDamageType::NONE, MagicDamageType::FIRE, 100, fireballDamage + 75, false, 1, 1, 30, 0, 0, 100, 0, 0, 1, true);
+		fireball->effects.push_back(new Effect(true, false, "Burn", "The target is engulfed in flames causing damage each turn", PhysicalDamageType::NONE, MagicDamageType::FIRE,
+			fireball->range, 3, caster.maxHealthPoints * 0.1f, false, 1, 1, false));
 		fireball->effects[0]->setMagicDamage(MagicDamageType::FIRE, 25 + caster.getFaith() * 0.5);
-		fireball->setMagicDamage(MagicDamageType::FIRE, fireballDamage + 150);
+		fireball->setMagicDamage(MagicDamageType::FIRE, fireballDamage + 100);
 		return fireball;
 	}
 	else
 	{
-		fireball = new Spell(false, false, false, false, false, true, false, "Captive Sun", "A searing ball of holy plasma that does immense burning damage", PhysicalDamageType::NONE, MagicDamageType::FIRE, 100, fireballDamage + 250, false, 1, 1, 50, 0, 0, 100, 0, 0, 1, true);
-		fireball->effects.push_back(new Effect(true, true, "Burn", "The target is engulfed in flames causing damage each turn", PhysicalDamageType::NONE, MagicDamageType::FIRE,
-			3, caster.maxHealthPoints * 0.15f, false, 1, 1, false));
+		fireball = new Spell(false, false, false, false, false, true, false, "Captive Sun", "A searing ball of holy plasma that does immense burning damage", PhysicalDamageType::NONE, MagicDamageType::FIRE, 100, fireballDamage + 100, false, 1, 1, 50, 0, 0, 100, 0, 0, 1, true);
+		fireball->effects.push_back(new Effect(true, false, "Burn", "The target is engulfed in flames causing damage each turn", PhysicalDamageType::NONE, MagicDamageType::FIRE,
+			fireball->range, 3, caster.maxHealthPoints * 0.15f, false, 1, 1, false));
 		fireball->effects[0]->setMagicDamage(MagicDamageType::FIRE, 25 + caster.getFaith() * 0.5);
-		fireball->effects.push_back(new Effect(true, true, "Fiery Explosion", "Enemies in close proximity to the target take splash damage", PhysicalDamageType::NONE, MagicDamageType::FIRE, 1, 50, false, 1, 1, true));
-		fireball->setMagicDamage(MagicDamageType::FIRE, fireballDamage + 250);
+		fireball->effects.push_back(new Effect(true, false, "Fiery Explosion", "Enemies in close proximity to the target take splash damage", PhysicalDamageType::NONE, MagicDamageType::FIRE, fireball->range * 0.5f, 1, 50, false, 1, 1, true));
+		fireball->setMagicDamage(MagicDamageType::FIRE, fireballDamage + 125);
 		return fireball;
 	}
 }
