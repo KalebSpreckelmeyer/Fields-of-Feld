@@ -5,7 +5,7 @@ Dialogue::Dialogue()
 
 }
 
-Dialogue::Dialogue(Character* speaker, Character* target, std::string text, std::string emotion, float gravity, int coolDown) 
+Dialogue::Dialogue(std::shared_ptr<Character> speaker, std::shared_ptr<Character> target, std::string text, std::string emotion, float gravity, int coolDown) 
 	: speaker(speaker), target(target), text(text), emotion(emotion), gravity(gravity), coolDown(coolDown), effect(nullptr), condition(nullptr)
 {
 

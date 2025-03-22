@@ -6,6 +6,10 @@
 #include "MagicDamageType.h"
 #include "PhysicalDamageType.h"
 #include "unordered_map"
+#include "nlohmann/json.hpp"
+#include "memory"
+
+using json = nlohmann::json;
 
 class Character;
 
@@ -29,11 +33,17 @@ public:
 	bool applied = false;
 	bool areaOfEffect = false;
 
-	Effect();
+	Effect() = default;
 	virtual ~Effect() = default;
-	Effect(bool doesDamage, bool applied, std::string name, std::string description, PhysicalDamageType physType,
-		MagicDamageType magType, float range, float duration, float magnitude, bool stackable,
+	Effect(bool doesDamage, bool applied, std::string name, std::string description, float range, float duration, float magnitude, bool stackable,
 		int stacks, int maxStacks, bool areaOfEffect);
+
+	virtual nlohmann::json toJson() const = 0;
+	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
+
+	virtual void apply(Character& target) = 0;
+	virtual void tick(Character& target) = 0;
+	virtual bool isExpired() const = 0;
 
 	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
 
@@ -43,16 +53,30 @@ public:
 
 	float getMagicDamage(MagicDamageType magType);
 
-	float getEffectDamage(Character* target, Effect ammo);
+	float getEffectDamage(std::shared_ptr<Character> target, std::shared_ptr<Effect> effect);
 
-	void refreshEffects(Character* target);
+	void refreshEffects(std::shared_ptr<Character> target);
 
-	void deleteEffect(Character& target, Effect& effectToDelete);
+	void deleteEffect(std::shared_ptr<Character> target, Effect& effectToDelete);
 
-	void removeEffect(Character& target, Effect& effectToRemove);
+	void removeEffect(std::shared_ptr<Character> target, Effect& effectToRemove);
+
+	//Called when attacking an enemy, applies target's defensive effects to attacker
+	void applyDefensiveEffect(std::shared_ptr<Effect> effect, std::shared_ptr<Character> wielder, std::shared_ptr<Character> attacker);
+
+	//Called when attacking an enemy, applies attacker's offensive effects to target
+	void applyOffensiveEffect(std::shared_ptr<Effect> effect, std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
+
+	//Called before attacking an enemy, applies enemy's passive effects to enemy
+	void applyPassiveEffect(std::shared_ptr<Effect> effect, std::shared_ptr<Character> wielder);
+	
+	//Called when using a 
+	// 
+	// 
+	// , applies consumable's effects to target
+	void applyConsumableEffect(std::shared_ptr<Effect> effect, std::shared_ptr<Character> target);
 
 
-	void applyEffect(Effect* effect, Character* attacker, Character* target);
 };
 
 #endif // !EFFECT_H

@@ -11,19 +11,26 @@
 class Item;
 class Inventory {
 public:
-
 	//equipped items
-	std::vector<Item*> equippedItems;
+	std::vector<std::shared_ptr<Item>> equippedItems;
 
-	std::vector<Item*> backpackItems;
+	std::vector<std::shared_ptr<Item>>  backpackItems;
 
-	void getEquippedItems(Weapon*& mainHand, Weapon*& offHand, Weapon*& reserve1, Weapon*& reserve2, Armor*& head, Armor*& chest,
-		Armor*& legs, Armor*& arms, Trinket*& amulet, Trinket*& ring1, Trinket*& ring2, Trinket*& misc);
+	nlohmann::json toJson() const;
+	void fromJson(const nlohmann::json& j);
 
-	void getEquippedWeapons(Weapon* mainHand, Weapon* offHand, Weapon* reserve1, Weapon* reserve2);
+	void getEquippedItems(std::shared_ptr<Weapon>& mainHand, std::shared_ptr<Weapon>& offHand, std::shared_ptr<Weapon>& reserve1,
+		std::shared_ptr<Weapon>& reserve2, std::shared_ptr<Armor>& head, std::shared_ptr<Armor>& chest, std::shared_ptr<Armor>& legs,
+		std::shared_ptr<Armor>& arms, std::shared_ptr<Trinket>& amulet, std::shared_ptr<Trinket>& ring1, std::shared_ptr<Trinket>& ring2, std::shared_ptr<Trinket>& misc);
 
-	Item* findEquippedItem(std::string name);
-
+	void getEquippedWeapons(std::shared_ptr<Weapon>& mainHand, std::shared_ptr<Weapon>& offHand, std::shared_ptr<Weapon>& reserve1, 
+		std::shared_ptr<Weapon>& reserve2);
+	
+	void addToBackpack(std::shared_ptr<Item> item);
+	void addToEquippedItems(std::shared_ptr<Item> item);
+	void save(const std::string& fileName) const;
+	void load(const std::string& fileName);
+	void print() const;
 };
 
 #endif // !Inventory_h

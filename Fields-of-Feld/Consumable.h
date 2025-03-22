@@ -2,21 +2,24 @@
 #include "Item.h"
 #include "Effect.h"
 #include "Enchantment.h"
+#include "nlohmann/json.hpp"
 
 class Consumable :
     public Item
 {
 public:
-	std::vector<Effect*> effects;
-	enum class ConsumableType { DEFAULT, POTION, FOOD, DRINK, SCROLL, GEM };
-	ConsumableType consumableType = ConsumableType::DEFAULT;
-	enum class PotionType { NOTPOTION, HEALING, FATIGUE };
-	PotionType potionType = PotionType::NOTPOTION;
     float magnitude = 0.0f;
+	std::vector<std::shared_ptr<Effect>> effects;
 
-	Consumable();
-	Consumable(ConsumableType consumableType, PotionType potionType, std::string name, std::string description, 
+	Consumable() = default;
+	Consumable(std::string name, std::string description, 
 		float magnitude, float weight, float quantity, float value);
-	~Consumable();
+	virtual ~Consumable() = default;
+
+	nlohmann::json toJson() const override;
+
+	static std::shared_ptr<Item> fromJson(const nlohmann::json& j);
+
+	virtual void use() = 0; //virtual function to be overwritten in the derived classes
 };
 

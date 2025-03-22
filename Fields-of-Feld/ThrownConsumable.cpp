@@ -2,27 +2,49 @@
 #include "Item.h"
 #include "Human.h"
 
-ThrownConsumable::ThrownConsumable()
-{
-}
-
-ThrownConsumable::ThrownConsumable(bool specialDamage, std::string name, std::string description, PhysicalDamageType physType, MagicDamageType magType,
-	 float reach, float attackSpeed, float weight, float quantity, float value)
+ThrownConsumable::ThrownConsumable(bool specialDamage, std::string name, std::string description, float reach, float attackSpeed, float weight, float quantity, float value)
 	: Item(hasBeenInitialized, name, description, value, weight, quantity, slot), 
-	specialDamage(specialDamage), reach(reach), attackSpeed(attackSpeed), physType(physType), magType(magType)
+	specialDamage(specialDamage), reach(reach), attackSpeed(attackSpeed)
 {
 }
 
-ThrownConsumable::~ThrownConsumable()
+nlohmann::json ThrownConsumable::toJson() const
 {
+	return{
+		{"id", id },
+		{ "type", "ThrownConsumable"},
+		{ "name", name },
+		{ "description", description },
+		{ "value", value },
+		{ "weight", weight },
+		{ "quantity", quantity },
+		{ "specialDamage", specialDamage },
+		{ "reach", reach },
+		{ "attackSpeed", attackSpeed }
+	};
 }
 
-float ThrownConsumable::getThrownConsumableDamage(Character* target, ThrownConsumable consumable)
+std::shared_ptr<Item> ThrownConsumable::fromJson(const nlohmann::json& j)
+{
+	auto thrownConsumable = std::make_shared<ThrownConsumable>(
+		j.at("specialDamage"),
+		j.at("name"),
+		j.at("description"),
+		j.at("reach"),
+		j.at("attackSpeed"),
+		j.at("weight"),
+		j.at("quantity"),
+		j.at("value"));
+	thrownConsumable->id = j.at("id");
+	return thrownConsumable;
+}
+
+float ThrownConsumable::getThrownConsumableDamage(std::shared_ptr<Character> target, ThrownConsumable consumable)
 {
 	//Target is human
-	if (dynamic_cast<Human*>(target))
+	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
 	{
-		Human* human = dynamic_cast<Human*>(target);
+		std::shared_ptr<Human> human = std::dynamic_pointer_cast<Human>(target);
 		//GET ARMOR RESISTANCES
 		float cumulativeSlashResist = 0;
 		float cumulativePierceResist = 0;
@@ -40,9 +62,9 @@ float ThrownConsumable::getThrownConsumableDamage(Character* target, ThrownConsu
 		float cumulativeHolyResist = 0;
 		float cumulativeWindResist = 0;
 
-		for (Item* item : target->inventory.equippedItems)
+		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
 		{
-			if (Armor* armor = dynamic_cast<Armor*>(item))
+			if (std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item))
 			{
 				cumulativeSlashResist += armor->getPhysicalResistance(PhysicalDamageType::SLASH);
 				cumulativePierceResist += armor->getPhysicalResistance(PhysicalDamageType::PIERCE);
@@ -111,7 +133,7 @@ float ThrownConsumable::getThrownConsumableDamage(Character* target, ThrownConsu
 		//DAMAGE AFTER RESISTANCES = damage of all damages after resistances applied added together	
 		float consumableDamage = (cumulativeSlashDamage + cumulativePierceDamage + cumulativeBluntDamage + cumulativeChopDamage +
 			cumulativeMagicDamage + cumulativeFireDamage + cumulativeIceDamage + cumulativeShockDamage + cumulativePoisonDamage +
-			cumulativeBleedDamage + cumulativeSleepDamage + cumulativeDarkDamage + cumulativeHolyDamage + cumulativeWindDamage) - human->flatDefense * (human->flatDefense / 500);
+			cumulativeBleedDamage + cumulativeSleepDamage + cumulativeDarkDamage + cumulativeHolyDamage + cumulativeWindDamage);
 		consumableDamage = std::max(consumableDamage, 0.0f);
 
 		return consumableDamage;
@@ -144,4 +166,26 @@ float ThrownConsumable::getMagicDamage(MagicDamageType magType)
 {
 	auto it = magicDamages.find(magType);
 	return (it != magicDamages.end()) ? it->second : 0.0f;
+}
+
+float ThrownConsumable::getThrownConsumableScalingValue(StatScaling)
+{
+	auto it = scalingStats.find(scalingStat);
+	return (it != scalingStats.end()) ? it->second : 0.0f;
+}
+
+float ThrownConsumable::getThrownConsumableRequirementValue(StatScaling)
+{
+	auto it = statRequirements.find(statRequirement);
+	return (it != statRequirements.end()) ? it->second : 0.0f;
+}
+
+void ThrownConsumable::setThrownConsumableScalingValue(StatScaling, float scalingValue)
+{
+	scalingStats[scalingStat] = scalingValue;
+}
+
+void ThrownConsumable::setThrownConsumableRequirementValue(StatScaling, float requirementValue)
+{
+	statRequirements[statRequirement] = requirementValue;
 }

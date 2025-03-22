@@ -21,6 +21,7 @@
 #include "Enchantment.h"
 #include "Effect.h"
 #include "Spell.h"
+#include "Potion.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -33,7 +34,7 @@ int validateInput(int min, int max);
 //DESC:
 //PRE:
 //POST:
-void openCombat(Human* player, Character* enemy);
+void openCombat(std::shared_ptr<Human> player, shared_ptr<Character> enemy);
 //DESC: Gets a random, context sensitive banter line from the sender to the reciever
 //PRE: Sender and reciever must be initialized
 //POST: Reciever will be insulted, results printed to console (enemy characters will have their confidence lowered)
@@ -45,20 +46,20 @@ void openCombat(Human* player, Character* enemy);
 //DESC:
 //PRE:
 //POST:
-void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spell* spellChoice, Character* targetChoice, ThrownConsumable* thrownConsumableChoice,
-	Consumable* consumableChoice, float playerMovement);
+void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, std::shared_ptr<Ammunition> ammoChoice, shared_ptr<Spell> spellChoice, shared_ptr<Character> targetChoice, std::shared_ptr<ThrownConsumable> thrownConsumableChoice,
+	std::shared_ptr<Consumable> consumableChoice, float playerMovement);
 #pragma endregion Function Declarations
-extern void setupDialogue(std::vector<Dialogue>& dialogues, Character* player, Character* npc);
+extern void setupDialogue(std::vector<Dialogue>& dialogues, shared_ptr<Character> player, shared_ptr<Character> npc);
 
 int main()
 {
-	std::cout << std::fixed << std::setprecision(2) << std::endl;
+	/*std::cout << std::fixed << std::setprecision(2) << std::endl;
 	json example = { {"name", "BUNGUS"}, {"class", "WIZARD"} };
-	cout << "Character: " << example.dump(4) << endl;
+	cout << "Character: " << example.dump(4) << endl;*/
 	/*vector<Dialogue> dialogues;
-	Human* player = new Human;
+	std::shared_ptr<Human> player = new Human;
 	player->setCharacterClass(Human::CharacterClass::WIZARD);
-	Human* npc = new Human;
+	std::shared_ptr<Human> npc = new Human;
 	npc->setCharacterClass(Human::CharacterClass::KNIGHT);
 	npc->name = "Knight";
 	player->name = "BUNGUS";
@@ -68,15 +69,15 @@ int main()
 
 	delete player;
 	delete npc;*/
-	//Human* npc = new Human();
+	//std::shared_ptr<Human> npc = new Human();
 	////npc->setCharacterClass(Human::CharacterClass::KNIGHT);
 	//npc->name = "Knight";
 	//npc->healthPoints = 500;
 	//npc->maxHealthPoints = 500;
 	//npc->distanceFromPlayer = 5;
-	//Human* npc2 = new Human();
+	//std::shared_ptr<Human> npc2 = new Human();
 	//npc->allies.push_back(npc2);
-	//Human* player = new Human();
+	//std::shared_ptr<Human> player = new Human();
 	//player->name = "BUNGUS";
 
 
@@ -86,31 +87,33 @@ int main()
 	//	player->chooseSpell(*staff, npc);
 	//	cout << "enemy health: " << npc->healthPoints << endl;
 	//	cout << "enemy distance: " << npc->distanceFromPlayer << endl;
-	//	Effect* effect = new Effect();
+	//	std::shared_ptr<Effect> effect = new Effect();
 	//	effect->refreshEffects(npc);
 	//} while (npc->healthPoints > 0);
 
 
 
 
-	Human* player = new Human();
-	Human* ally1 = new Human();
-	Human* bandit1 = new Human();
-	Human* bandit2 = new Human();
+	auto player = make_shared<Human>();
+	auto ally1 = make_shared<Human>();
+	auto bandit1 = make_shared<Human>();
+	auto bandit2 = make_shared<Human>();
 	player->allies.push_back(ally1);
 	bandit1->allies.push_back(bandit2);
 	bandit2->allies.push_back(bandit1);
-	Weapon* staff = new Weapon(false, "Staff", "A simple wooden staff", 1, 200, 20, 1, 10, false, false, Weapon::WeaponType::STAFF, PhysicalDamageType::BLUNT, MagicDamageType::MAGIC, PhysicalDamageType::NONE, MagicDamageType::NONE, Item::EquipSlots::OFFHAND);
-	Spell* force = new Spell;
+	//shared_ptr<Item> staff = std::make_shared<Weapon>("Staff", "A simple wooden staff", 1, 200, 20, 1, 10, false, false, Weapon::WeaponType::STAFF, Item::EquipSlots::OFFHAND);
+	shared_ptr<Spell> force;
 	player->faith = 100;
 	force = force->getForceBurstEffect(*player);
 	player->attunedSpells.push_back(force);
 	bandit1->distanceFromPlayer = 10;
 	bandit2->distanceFromPlayer = 30;
-	Weapon* sword = new Weapon(false, "Sword", "A simple steel sword", 1, 10, 20, 1, 10, false, false, Weapon::WeaponType::STRAIGHTSWORD, PhysicalDamageType::SLASH, MagicDamageType::NONE, PhysicalDamageType::NONE, MagicDamageType::NONE, Item::EquipSlots::MAINHAND);
-	sword->setPhysicalDamage(PhysicalDamageType::SLASH, 10);
-	player->inventory.equippedItems.push_back(sword);
-	player->inventory.equippedItems.push_back(staff);
+	//shared_ptr<Weapon> sword = std::make_shared<Weapon>(false, "Sword", "A simple steel sword", 1, 10, 20, 1, 10, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+	//sword->setPhysicalDamage(PhysicalDamageType::SLASH, 10);
+	//sword->setWeaponRequirementValue(StatScaling::STRENGTH, 20);
+	////cout << sword->getWeaponRequirementValue(StatScaling::STRENGTH) << endl;
+	//player->inventory.equippedItems.push_back(sword);
+	//player->inventory.equippedItems.push_back(staff);
 	bandit1->name = "Bandit 1";
 	bandit2->name = "Bandit 2";
 	bandit1->speed = 250;
@@ -119,7 +122,7 @@ int main()
 	player->speed = 500;
 	player->name = "BING BONG";
 	ally1->name = "ALLY 1";
-	staff->hasBeenInitialized = true;
+	//staff->hasBeenInitialized = true;
 	player->isPlayer = true;
 	ally1->isAlly = true;
 	player->fatiguePoints = 500;
@@ -130,35 +133,35 @@ int main()
 	bandit2->maxHealthPoints = 5000;
 	player->arcane = 20;
 	player->intelligence = 100;
-	Enchantment* enchant = new Enchantment();
+	shared_ptr<Enchantment> enchant;
 	enchant = enchant->getMagicWeaponEffect(*player);
-	sword->enchantments.push_back(enchant);
-	Armor* armor = new Armor("Steel Chestplate", "TESTING", 40, 50, false, false, true, Armor::ArmorDescriptor::FULLPLATE, PhysicalDamageType::NONE, MagicDamageType::NONE);
-	armor->setPhysicalResistance(PhysicalDamageType::SLASH, 100);
-	armor->setPhysicalResistance(PhysicalDamageType::PIERCE, 100);
-	armor->setPhysicalResistance(PhysicalDamageType::BLUNT, 100);
-	armor->setPhysicalResistance(PhysicalDamageType::CHOP, 100);
-	Enchantment* enchant2 = new Enchantment();
-	enchant2 = enchant2->getMagicArmorEffect(*player);
-	armor->enchantments.push_back(enchant2);
-	player->inventory.equippedItems.push_back(armor);
-	bandit1->inventory.equippedItems.push_back(armor);
-	Spell* fireball = new Spell();
+	//sword->enchantments.push_back(enchant);
+	////std::shared_ptr<Armor> armor = std::make_shared<Armor>("Steel Chestplate", "TESTING", 40, 50, false, false, true, Armor::ArmorDescriptor::FULLPLATE);
+	//armor->setPhysicalResistance(PhysicalDamageType::SLASH, 100);
+	//armor->setPhysicalResistance(PhysicalDamageType::PIERCE, 100);
+	//armor->setPhysicalResistance(PhysicalDamageType::BLUNT, 100);
+	//armor->setPhysicalResistance(PhysicalDamageType::CHOP, 100);
+	shared_ptr<Enchantment> enchant2;
+	enchant2 = enchant2->getFrostArmorEffect(*player);
+	//armor->enchantments.push_back(enchant2);
+	//player->inventory.equippedItems.push_back(armor);
+	//bandit1->inventory.equippedItems.push_back(armor);
+	std::shared_ptr<Spell> fireball;
 	fireball = fireball->getFireBallEffect(*player);
 
-	Spell* oak = new Spell();
+	std::shared_ptr<Spell> oak;
 	oak = oak->getOakenArmorEffect(*player);
 
-	Spell* summon = new Spell();
+	std::shared_ptr<Spell> summon;
 	summon = summon->getSummonAnimalAllyEffect(*player);
 
-	Spell* bonetrousle = new Spell();
+	std::shared_ptr<Spell> bonetrousle;
 	bonetrousle = bonetrousle->getBonetrousleEffect(*player);
 
-	Spell* grasp = new Spell();
+	std::shared_ptr<Spell> grasp;
 	grasp = grasp->getEndothermicGraspEffect(*player);
 
-	Spell* fruit = new Spell();
+	std::shared_ptr<Spell> fruit;
 	fruit = fruit->getFruitOfTheEarthEffect(*player);
 	player->attunedSpells.push_back(fruit);
 	player->attunedSpells.push_back(grasp);
@@ -192,7 +195,7 @@ int validateInput(int min, int max)
 
 //Grab dialogue files from DialogueLines.cpp
 
-string getConfidenceDescription(Human* character)
+string getConfidenceDescription(std::shared_ptr<Human> character)
 {
 	if (character->confidenceLevel >= 100)
 		return "They're jovial, as if you aren't a threat at all.";
@@ -214,7 +217,7 @@ string getConfidenceDescription(Human* character)
 
 }
 
-void openCombat(Human* player, Character* enemy)
+void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 {
 	//set this condition to true if the fight ends for any reason
 	bool exitFight = false;
@@ -224,12 +227,10 @@ void openCombat(Human* player, Character* enemy)
 		//SETS ALL NECESSARY VARIABLES FOR THE COMBAT LOOP
 
 		//Get player equipment 
-		Weapon* mainHand = new Weapon(), * reserve1 = new Weapon(), * offHand = new Weapon(), * reserve2 = new Weapon();
+		shared_ptr<Weapon> mainHand, reserve1, offHand, reserve2;
 
-		Armor* headArmor = new Armor(), * chestArmor = new Armor(), * armArmor = new Armor(), * legArmor = new Armor();
-
-		Trinket* amulet = new Trinket(), * ring1 = new Trinket(), * ring2 = new Trinket(), * misc = new Trinket();
-
+		shared_ptr<Armor> headArmor, chestArmor, armArmor, legArmor;
+		shared_ptr<Trinket> amulet, ring1, ring2, misc;
 		player->inventory.getEquippedItems(mainHand, offHand, reserve1, reserve2, headArmor, chestArmor, armArmor, legArmor, amulet, ring1, ring2, misc);
 
 		//check if player has equipment to swap to (changes menu color to represent this)
@@ -241,23 +242,23 @@ void openCombat(Human* player, Character* enemy)
 		}
 
 		//Used to track the player's consumables and grey out the consumable option if they have none
-		/*vector<Item*> consumables = player->inventory.consumables();
-		vector<Item*> throwingWeapons = player->inventory.getThrownWeapons();*/
+		/*vector<std::shared_ptr<Item>> consumables = player->inventory.consumables();
+		vector<std::shared_ptr<Item>> throwingWeapons = player->inventory.getThrownWeapons();*/
 
 		//tracks the spent ammunition and throwing weapons to be returned at the end of the turn (based on luck and proficiency with item skill)
 		vector<Item> spentProjectiles;
 
 		//tracks the living/dead allies and enemies
-		vector<Character*> deadAllies;
-		vector<Character*> deadEnemies;
+		vector<shared_ptr<Character>> deadAllies;
+		vector<shared_ptr<Character>> deadEnemies;
 
-		vector<Character*> livingAlliesPointers;
-		vector<Character*> livingEnemiesPointers;
+		vector<shared_ptr<Character>> livingAlliesPointers;
+		vector<shared_ptr<Character>> livingEnemiesPointers;
 		
 		//checks if the allies and enemies are alive and adds them to the living/dead vectors
 		if (player->allies.size() > 0)
 		{
-			for (Character* ally : player->allies)
+			for (shared_ptr<Character> ally : player->allies)
 			{
 				if (ally->isAlive)
 				{
@@ -271,7 +272,7 @@ void openCombat(Human* player, Character* enemy)
 		}
 		if (enemy->allies.size() > 0)
 		{
-			for (Character* enemy : enemy->allies)
+			for (shared_ptr<Character> enemy : enemy->allies)
 			{
 				if (enemy->isAlive)
 				{
@@ -298,7 +299,6 @@ void openCombat(Human* player, Character* enemy)
 				minDistanceFromPlayer = livingEnemiesPointers[i]->distanceFromPlayer;
 			}
 		}
-		cout << minDistanceFromPlayer << endl;
 		//used to determine the color of menu text in the attack option (gold for in range, grey for out of range)
 		// they will not be able to select out of range options and this will help them intuit why
 		// set to 1000 initially as range will never be this high in practice 
@@ -486,10 +486,10 @@ void openCombat(Human* player, Character* enemy)
 
 				//Option 1 variables
 				float playerMovement = 0.0f;
-				Weapon* weaponChoice = nullptr;;
-				Ammunition* ammoChoice = nullptr; //this will be a pointer to the ammo choice so that the quantity can be updated
-				Spell* spellChoice = nullptr;;
-				Character* targetChoice = nullptr; //this is a pointer to the target choice so that the target's health can be updated
+				shared_ptr<Weapon> weaponChoice = nullptr;;
+				std::shared_ptr<Ammunition> ammoChoice = nullptr; //this will be a pointer to the ammo choice so that the quantity can be updated
+				shared_ptr<Spell> spellChoice = nullptr;;
+				shared_ptr<Character> targetChoice = nullptr; //this is a pointer to the target choice so that the target's health can be updated
 
 				//Option 2 variables
 				//NONE
@@ -498,31 +498,19 @@ void openCombat(Human* player, Character* enemy)
 				//NONE
 
 				//Option 4 variables
-				Consumable* potionChoice = nullptr; //this is a pointer to the potion choice so that the quantity can be updated
-				Character* potionTarget = nullptr; //this is a pointer to the target choice so that the target's health can be updated
+				std::shared_ptr<Potion> potionChoice = nullptr; //this is a pointer to the potion choice so that the quantity can be updated
+				shared_ptr<Character> potionTarget = nullptr; //this is a pointer to the target choice so that the target's health can be updated
 
 				//ADD MORE AS MORE POTION TYPES GET IMPLEMENTED
 				//Used to track the player's potions and grey out the potion option if they have none
-				vector<Consumable*> fatiguePotions;
-				vector<Consumable*> healingPotions;
-				vector<Consumable*> Potions;
+				vector<std::shared_ptr<Potion>> fatiguePotions;
+				vector<std::shared_ptr<Potion>> healingPotions;
+				vector<std::shared_ptr<Potion>> Potions;
 
 				int numPotionCategories = 0;
-				for (Item* item : player->inventory.backpackItems)
+				for (shared_ptr<Item> item : player->inventory.backpackItems)
 				{
-					if (Consumable* consumable = dynamic_cast<Consumable*>(item))
-					{
-						if (consumable->potionType == Consumable::PotionType::HEALING)
-						{
-							healingPotions.push_back(consumable);
-							numPotionCategories++;
-						}
-						if (consumable->potionType == Consumable::PotionType::FATIGUE)
-						{
-							fatiguePotions.push_back(consumable);
-							numPotionCategories++;
-						}
-					}
+					//TODO ADD CONSUMABLE LOGIC
 				}
 
 				bool hasPotion = false;
@@ -534,21 +522,21 @@ void openCombat(Human* player, Character* enemy)
 				}
 
 				//Option 5 variables
-				ThrownConsumable* thrownConsumableChoice = nullptr;
-				Consumable* consumableChoice = nullptr;
-				Character* consumableTarget = nullptr;
-				Character* thrownConsumableTarget = nullptr;
-				vector<Item*> consumables;
-				vector<Item*> throwingWeapons;
+				shared_ptr<ThrownConsumable> thrownConsumableChoice;
+				shared_ptr<Consumable> consumableChoice;
+				shared_ptr<Character> consumableTarget;
+				shared_ptr<Character> thrownConsumableTarget;
+				vector<shared_ptr<Consumable>> consumables;
+				vector<shared_ptr<ThrownConsumable>> throwingWeapons;
 
-				for (Item* item : player->inventory.backpackItems)
+				for (shared_ptr<Item> item : player->inventory.backpackItems)
 				{
 					//gets throwing weapons and consumables
-					if (ThrownConsumable* consumable = dynamic_cast<ThrownConsumable*>(item))
+					if (shared_ptr<ThrownConsumable> consumable = std::dynamic_pointer_cast<ThrownConsumable>(item))
 					{
 						throwingWeapons.push_back(consumable);
 					}
-					if (Consumable* consumable = dynamic_cast<Consumable*>(item))
+					if (shared_ptr<Consumable> consumable = std::dynamic_pointer_cast<Consumable>(item))
 					{
 						consumables.push_back(consumable);
 					}
@@ -715,10 +703,11 @@ void openCombat(Human* player, Character* enemy)
 						else cout << dye::grey(" 2) Stand Your Ground and Attack!") << endl;
 						if (numEnemiesInRangeBackward > 0 || spellsInRange > 0) cout << dye::light_yellow(" 3) Retreat and Attack!") << endl;
 						else cout << dye::grey(" 3) Retreat and Attack!") << endl;
-						cout << dye::light_yellow(" 4) Go back") << endl;
+						cout << dye::light_yellow(" 4) Move Without Attacking!") << endl;
+						cout << dye::light_yellow(" 5) Go back") << endl;
 
 						//input validation
-						int attackChoice = validateInput(1, 4);
+						int attackChoice = validateInput(1, 5);
 
 						switch (attackChoice)
 						{
@@ -730,7 +719,7 @@ void openCombat(Human* player, Character* enemy)
 							{
 								//get enemies in range of a spell if they move forward and attack and check if player has fatiuge to cast spell
 								spellsInRange = 0;
-								for (Spell* spells : player->attunedSpells)
+								for (shared_ptr<Spell> spells : player->attunedSpells)
 								{
 									if (spells->range >= minDistanceFromPlayer - distanceTraveled && spells->fatigueCost <= player->fatiguePoints)
 									{
@@ -826,7 +815,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												//check if player has enough fatigue to cast any spells
 												int spellsPlayerCanCast = 0;
-												for (Spell* spell : player->attunedSpells)
+												for (shared_ptr<Spell> spell : player->attunedSpells)
 												{
 													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 												}
@@ -916,7 +905,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												//check if player has enough fatigue to cast any spells
 												int spellsPlayerCanCast = 0;
-												for (Spell* spell : player->attunedSpells)
+												for (shared_ptr<Spell> spell : player->attunedSpells)
 												{
 													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 												}
@@ -1010,7 +999,7 @@ void openCombat(Human* player, Character* enemy)
 										{
 											//check if player has enough fatigue to cast any spells
 											int spellsPlayerCanCast = 0;
-											for (Spell* spell : player->attunedSpells)
+											for (shared_ptr<Spell> spell : player->attunedSpells)
 											{
 												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 											}
@@ -1093,7 +1082,7 @@ void openCombat(Human* player, Character* enemy)
 										{
 											//check if player has enough fatigue to cast any spells
 											int spellsPlayerCanCast = 0;
-											for (Spell* spell : player->attunedSpells)
+											for (shared_ptr<Spell> spell : player->attunedSpells)
 											{
 												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 											}
@@ -1246,7 +1235,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												//check if player has enough fatigue to cast any spells
 												int spellsPlayerCanCast = 0;
-												for (Spell* spell : player->attunedSpells)
+												for (shared_ptr<Spell> spell : player->attunedSpells)
 												{
 													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 												}
@@ -1330,7 +1319,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												//check if player has enough fatigue to cast any spells
 												int spellsPlayerCanCast = 0;
-												for (Spell* spell : player->attunedSpells)
+												for (shared_ptr<Spell> spell : player->attunedSpells)
 												{
 													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 												}
@@ -1424,7 +1413,7 @@ void openCombat(Human* player, Character* enemy)
 										{
 											//check if player has enough fatigue to cast any spells
 											int spellsPlayerCanCast = 0;
-											for (Spell* spell : player->attunedSpells)
+											for (shared_ptr<Spell> spell : player->attunedSpells)
 											{
 												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 											}
@@ -1507,7 +1496,7 @@ void openCombat(Human* player, Character* enemy)
 										{
 											//check if player has enough fatigue to cast any spells
 											int spellsPlayerCanCast = 0;
-											for (Spell* spell : player->attunedSpells)
+											for (shared_ptr<Spell> spell : player->attunedSpells)
 											{
 												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 											}
@@ -1660,7 +1649,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												//check if player has enough fatigue to cast any spells
 												int spellsPlayerCanCast = 0;
-												for (Spell* spell : player->attunedSpells)
+												for (shared_ptr<Spell> spell : player->attunedSpells)
 												{
 													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 												}
@@ -1742,7 +1731,7 @@ void openCombat(Human* player, Character* enemy)
 											{
 												//check if player has enough fatigue to cast any spells
 												int spellsPlayerCanCast = 0;
-												for (Spell* spell : player->attunedSpells)
+												for (shared_ptr<Spell> spell : player->attunedSpells)
 												{
 													if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 												}
@@ -1836,7 +1825,7 @@ void openCombat(Human* player, Character* enemy)
 										{
 											//check if player has enough fatigue to cast any spells
 											int spellsPlayerCanCast = 0;
-											for (Spell* spell : player->attunedSpells)
+											for (shared_ptr<Spell> spell : player->attunedSpells)
 											{
 												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 											}
@@ -1918,7 +1907,7 @@ void openCombat(Human* player, Character* enemy)
 										{
 											//check if player has enough fatigue to cast any spells
 											int spellsPlayerCanCast = 0;
-											for (Spell* spell : player->attunedSpells)
+											for (shared_ptr<Spell> spell : player->attunedSpells)
 											{
 												if (spell->fatigueCost <= player->fatiguePoints) spellsPlayerCanCast++;
 											}
@@ -2011,7 +2000,68 @@ void openCombat(Human* player, Character* enemy)
 								break;
 							}
 						}
-						case 4: // GO BACK
+						case 4://MOVE WITHOUT ATTACKING
+						{
+							std::cout << "\n=--->\n" << std::endl;
+							cout << dye::light_yellow(" 1) Move Forward") << endl;
+							cout << dye::light_yellow(" 2) Move Backward") << endl;
+							cout << dye::light_yellow(" 3) Go back") << endl;
+
+							int moveChoice = validateInput(1, 3);
+							switch (moveChoice)
+							{
+							case 1: //ADVANCE
+							{
+								float advanceMovement = 0 - player->speed / 20;
+								for (int i = 0; i < livingEnemiesPointers.size(); i++)
+								{
+									cout << dye::light_yellow(" " + to_string(i + 1) + ") Advance on: " + livingEnemiesPointers[i]->name) << endl;
+								}
+								cout << dye::light_yellow(" " + to_string(livingEnemiesPointers.size() + 1) + ") ") << dye::light_yellow("Go back...") << endl;
+								int advanceNoAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);
+								if (advanceNoAttackChoice == livingEnemiesPointers.size() + 1) break;
+								else
+								{
+									targetChoice = livingEnemiesPointers[advanceNoAttackChoice - 1];
+									playerMovement = advanceMovement;
+									inputChosen = true;
+									break;
+								}
+								
+								break;
+							}
+							case 2: //RETREAT
+							{
+								float retreatMovement = player->speed / 20;
+								for (int i = 0; i < livingEnemiesPointers.size(); i++)
+								{
+									cout << dye::light_yellow(" " + to_string(i + 1) + ") Retreat from: " + livingEnemiesPointers[i]->name) << endl;
+								}
+								cout << dye::light_yellow(" " + to_string(livingEnemiesPointers.size() + 1) + ") ") << dye::light_yellow("Go back...") << endl;
+								int advanceNoAttackChoice = validateInput(1, livingEnemiesPointers.size() + 1);
+								if (advanceNoAttackChoice == livingEnemiesPointers.size() + 1) break;
+								else
+								{
+									targetChoice = livingEnemiesPointers[advanceNoAttackChoice - 1];
+									playerMovement = retreatMovement;
+									inputChosen = true;
+									break;
+								}
+								break;
+							}
+							case 3: //GO BACK
+							{
+								break;
+							}
+							default:
+							{
+								cout << dye::white("\n  Enter a number between 1 - 3") << endl;
+								break;
+							}
+							}
+							break;
+						}
+						case 5:// GO BACK
 						{
 							break;
 						}
@@ -2245,7 +2295,7 @@ void openCombat(Human* player, Character* enemy)
 					std::cout << "\n=--->\n" << std::endl;
 					for (int i = 0; i < livingEnemiesPointers.size(); i++)
 					{
-						string confidenceDescription = getConfidenceDescription(dynamic_cast<Human*>(livingEnemiesPointers[i]));
+						string confidenceDescription = getConfidenceDescription(std::dynamic_pointer_cast<Human>(livingEnemiesPointers[i]));
 						cout << dye::light_yellow(i + 1) << ") " << dye::light_yellow(livingEnemiesPointers[i]->name) << dye::light_yellow("; ") << dye::white(confidenceDescription) << endl;
 					}
 					cout << dye::light_yellow(livingEnemiesPointers.size() + 1) << dye::light_yellow(") Go back") << endl;
@@ -2315,10 +2365,10 @@ void openCombat(Human* player, Character* enemy)
 				case 9: // CHECK ALLY/SELF EQUIPMENT
 				{
 					//To be assigned to each character's equipment
-					Weapon* mainhand = nullptr;
-					Weapon* offhand = nullptr;
-					Weapon* mainhand2 = nullptr;
-					Weapon* offhand2 = nullptr;
+					shared_ptr<Weapon> mainhand = nullptr;
+					shared_ptr<Weapon> offhand = nullptr;
+					shared_ptr<Weapon> mainhand2 = nullptr;
+					shared_ptr<Weapon> offhand2 = nullptr;
 					std::cout << "\n=--->\n" << std::endl;
 					if (!livingAlliesPointers.empty())
 					{
@@ -2381,30 +2431,24 @@ void openCombat(Human* player, Character* enemy)
 					/*static_assert(std::is_base_of<Character, Creature>::value, "Creature should inherit from Character!");
 					static_assert(std::is_base_of<Character, Human>::value, "Human should inherit from Character!");
 					std::cout << "Type of summoned creature: " << typeid(*player->allies.back()).name() << std::endl;*/
-					vector<Character*> combatants;
+					vector<shared_ptr<Character>> combatants;
 					combatants.push_back(player);
 					combatants.insert(combatants.end(), livingAlliesPointers.begin(), livingAlliesPointers.end());
 					combatants.insert(combatants.end(), livingEnemiesPointers.begin(), livingEnemiesPointers.end());
 
 					//sorts combatants by speed
-					sort(combatants.begin(), combatants.end(), [](Character* a, Character* b) {return a->speed > b->speed; });
+					sort(combatants.begin(), combatants.end(), [](shared_ptr<Character> a, shared_ptr<Character> b) {return a->speed > b->speed; });
 
 					//dummy effect to call refresh effects
-					Effect* effect = nullptr;
+					std::shared_ptr<Effect> effect = nullptr;
 
 					// Process turns
 					for (int i = 0; i < combatants.size(); i++)
 					{
 						if (combatants[i]->isAlive)
 						{
-							if (Character* creature = dynamic_cast<Creature*>(combatants[i]))
+							if (shared_ptr<Creature> creature = std::dynamic_pointer_cast<Creature>(combatants[i]))
 							{
-								effect->refreshEffects(combatants[i]);
-								if (combatants[i]->healthPoints <= 0)
-								{
-									combatants[i]->killCharacter();
-									break;
-								}
 									if (creature->isAlly)
 									{
 										cout << "CREATURE ALLY TURN" << endl;
@@ -2414,17 +2458,10 @@ void openCombat(Human* player, Character* enemy)
 										// Enemy Turn
 										cout << "CREATURE ENEMY TURN" << endl;
 									}
-								
 							}
 
-							else if (auto* human = dynamic_cast<Human*>(combatants[i]); human && human->isPlayer)
+							else if (shared_ptr<Human> human = dynamic_pointer_cast<Human>(combatants[i]); human && human->isPlayer)
 							{
-								effect->refreshEffects(combatants[i]);
-								if (combatants[i]->healthPoints <= 0)
-								{
-									combatants[i]->killCharacter();
-									break;
-								}
 								// Player Turn
 								playerTurn(human, weaponChoice, ammoChoice, spellChoice, targetChoice, thrownConsumableChoice, consumableChoice, playerMovement);
 								
@@ -2433,31 +2470,21 @@ void openCombat(Human* player, Character* enemy)
 								{
 									if (spellChoice->summon)
 									{
-										Character* summonedCreature = player->allies.back();
+										shared_ptr<Character> summonedCreature = player->allies.back();
 										livingAlliesPointers.push_back(summonedCreature);
 									}
 								}
 							}
 
-							else if (auto* human = dynamic_cast<Human*>(combatants[i]); human && human->isAlly)
+							else if (auto human = dynamic_pointer_cast<Human>(combatants[i]); human && human->isAlly)
 							{
-								effect->refreshEffects(combatants[i]);
-								if (combatants[i]->healthPoints <= 0)
-								{
-									combatants[i]->killCharacter();
-									break;
-								}
 								// Ally Turn
 								cout << "HUMAN ALLY TURN" << endl;
 							}
 							else
 							{
-								effect->refreshEffects(combatants[i]);
-								if (combatants[i]->healthPoints <= 0)
-								{
-									combatants[i]->killCharacter();
-									break;
-								}
+								
+								
 								// Enemy Turn
 								cout << "ENEMY TURN" << endl;
 								cout << combatants[i]->name << " DISTANCE: " << combatants[i]->distanceFromPlayer << endl;
@@ -2465,9 +2492,19 @@ void openCombat(Human* player, Character* enemy)
 						}
 					}
 
+					//refresh effects at the end of each round (Pokemon rules baby)
+					for (shared_ptr<Character> combatant : combatants)
+					{
+						effect->refreshEffects(combatant);
+						if (combatant->healthPoints <= 0)
+						{
+							combatant->killCharacter();
+							break;
+						}
+					}
 					// Remove dead combatants 
-					auto removeDead = [](vector<Character*>& vec) {
-						vec.erase(remove_if(vec.begin(), vec.end(), [](Character* c) { return !c->isAlive; }), vec.end());
+					auto removeDead = [](vector<shared_ptr<Character>>& vec) {
+						vec.erase(remove_if(vec.begin(), vec.end(), [](shared_ptr<Character> c) { return !c->isAlive; }), vec.end());
 						};
 
 					removeDead(livingEnemiesPointers);
@@ -2582,8 +2619,8 @@ void openCombat(Human* player, Character* enemy)
 
 	} while (exitFight == false);
 }
-void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spell* spellChoice, Character* targetChoice, ThrownConsumable* thrownConsumableChoice,
-	Consumable* consumableChoice, float playerMovement)
+void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, std::shared_ptr<Ammunition> ammoChoice, shared_ptr<Spell> spellChoice, shared_ptr<Character> targetChoice, std::shared_ptr<ThrownConsumable> thrownConsumableChoice,
+	std::shared_ptr<Consumable> consumableChoice, float playerMovement)
 {
 	//Check if player object is null
 	if (!player)
@@ -2592,9 +2629,9 @@ void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spe
 		return;
 	}
 	//Target is a human
-	if (dynamic_cast<Human*>(targetChoice))
+	if (dynamic_pointer_cast<std::shared_ptr<Human>>(targetChoice))
 	{
-		Human* humanTarget = dynamic_cast<Human*>(targetChoice);
+		std::shared_ptr<Human> humanTarget = dynamic_pointer_cast<Human>(targetChoice);
 
 		//move player
 		
@@ -2610,15 +2647,25 @@ void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spe
 			targetChoice->distanceFromPlayer = 0;
 			cout << "You stand close enough to touch " << targetChoice->name << "!" << endl;
 		}
-		//Applying Armor and Weapon effects
-		for (Item* item : player->inventory.equippedItems)
+
+		//Stop the turn if the player only chose to move
+		if (playerMovement && !weaponChoice && !spellChoice && !thrownConsumableChoice && !consumableChoice)
 		{
-			if (dynamic_cast<Armor*>(item))
+			return;
+		}
+
+		//Applying Passive Armor Enchantments
+		for (std::shared_ptr<Item> item : player->inventory.equippedItems)
+		{
+			if (dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
 			{
-				Armor* armor = dynamic_cast<Armor*>(item);
-				for (Enchantment* enchant : armor->enchantments)
+				std::shared_ptr<Armor> armor = dynamic_pointer_cast<Armor>(item);
+				for (std::shared_ptr<Enchantment> enchant : armor->enchantments)
 				{
-					enchant->applyEnchantment(player, targetChoice);
+					if (!enchant->doesDamage)
+					{
+						//enchant->applyPassiveEffect(enchant, player);
+					}
 				}
 			}
 		}
@@ -2757,7 +2804,7 @@ void playerTurn(Human* player, Weapon* weaponChoice, Ammunition* ammoChoice, Spe
 //	}
 //}
 
-//void enemyTurn(Character& player, Character* enemy, vector<Character>& deadAllies, vector<Character>& livingAllies)
+//void enemyTurn(Character& player, shared_ptr<Character> enemy, vector<Character>& deadAllies, vector<Character>& livingAllies)
 //{
 //	//get enemy items
 //	//should really make this kind of thing a function...

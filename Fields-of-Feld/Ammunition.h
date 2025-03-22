@@ -25,7 +25,7 @@ public:
 	enum class AmmoType { ARROW, GREATARROW, MINIBOLT, BOLT, BALLISTABOLT, CANNONSHELL };
 	AmmoType ammoType = AmmoType::ARROW;
 
-	std::vector<Enchantment*> enchantments;
+	std::vector<std::shared_ptr<Enchantment>> enchantments;
 
 	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
 
@@ -35,15 +35,20 @@ public:
 
 	float getMagicDamage(MagicDamageType magType);
 
-	float getAmmoDamage(Character* target, Ammunition ammo);
+	float getAmmoDamage(std::shared_ptr<Character> target, std::shared_ptr<Ammunition> ammo);
 
-	Ammunition();
+	nlohmann::json toJson() const override;
+
+	static std::shared_ptr<Ammunition> fromJson(const nlohmann::json& j);
+
+
+	Ammunition() = default;
 
 	Ammunition(bool specialDamage, bool hasBeenInitialized, std::string name, std::string description,
-		PhysicalDamageType physType, MagicDamageType magType, float value, float weight, float quantity, 
+		 float value, float weight, float quantity, 
 		EquipSlots slot, float range, AmmoType ammoType);
 
-	~Ammunition();
+	~Ammunition() = default;
 };
 #endif // !AMMUNITION_H
 

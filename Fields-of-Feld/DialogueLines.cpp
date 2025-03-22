@@ -1,6 +1,6 @@
 #include "Dialogue.h"
 
-void setupDialogue(std::vector<Dialogue>& dialogues, Character* player, Character* npc)
+void setupDialogue(std::vector<Dialogue>& dialogues, std::shared_ptr<Character> player, std::shared_ptr<Character> npc)
 {
 	//create dialogue nodes
 	Dialogue greeting(npc, player, "What's up shitass", "Joking", 1, 1);

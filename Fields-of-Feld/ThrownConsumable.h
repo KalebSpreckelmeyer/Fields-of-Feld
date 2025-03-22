@@ -5,6 +5,7 @@
 #include "Enchantment.h"
 #include <vector>
 #include <unordered_map>
+#include "StatScaling.h"
 
 class Enchantment;
 
@@ -18,15 +19,27 @@ public:
 	PhysicalDamageType physType = PhysicalDamageType::BLUNT;
 	MagicDamageType magType = MagicDamageType::NONE;
 
+	//Weapon Scaling Stats
+	std::unordered_map<StatScaling, float> scalingStats;
+	StatScaling scalingStat = StatScaling::NONE;
+
+	//Weapon Requirements
+	std::unordered_map<StatScaling, float> statRequirements;
+	StatScaling statRequirement = StatScaling::NONE;
+
 	bool specialDamage = false;
 	float reach = 0.0f;
 	float attackSpeed = 0.0f;
 	float minRange = 0.0f;
 	float maxRange = 0.0f;
 
-	std::vector<Enchantment*> enchantments;
+	std::vector<std::shared_ptr<Enchantment>> enchantments;
 
-	float getThrownConsumableDamage(Character* target, ThrownConsumable consumable);
+	nlohmann::json toJson() const override;
+
+	static std::shared_ptr<Item> fromJson(const nlohmann::json& j);
+
+	float getThrownConsumableDamage(std::shared_ptr<Character> target, ThrownConsumable consumable);
 
 	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
 
@@ -36,12 +49,19 @@ public:
 
 	float getMagicDamage(MagicDamageType magType);
 
-	ThrownConsumable();
+	float getThrownConsumableScalingValue(StatScaling);
 
-	ThrownConsumable(bool specialDamage, std::string name, std::string description, PhysicalDamageType physType, MagicDamageType magType,
-		float reach, float attackSpeed, float weight, float quantity, float value);
+	float getThrownConsumableRequirementValue(StatScaling);
 
-	~ThrownConsumable();
+	void setThrownConsumableScalingValue(StatScaling, float scalingValue);
+
+	void setThrownConsumableRequirementValue(StatScaling, float requirementValue);
+
+	ThrownConsumable() = default;
+
+	ThrownConsumable(bool specialDamage, std::string name, std::string description, float reach, float attackSpeed, float weight, float quantity, float value);
+
+	~ThrownConsumable() = default;
 };
 #endif // !THROWNCONSUMABLE_H
 

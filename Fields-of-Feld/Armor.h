@@ -23,7 +23,7 @@ public:
     enum class ArmorDescriptor { LEATHER, PADDED, STUDDEDLEATHER, CHAIN, LAMELLAR, SCALE, CHAINPLATE, BEASTSCALE, FULLPLATE };
 	ArmorDescriptor armorDescriptor = ArmorDescriptor::LEATHER;
 
-	std::vector<Enchantment*> enchantments;
+	std::vector<std::shared_ptr<Enchantment>> enchantments;
 
 	void setPhysicalResistance(PhysicalDamageType physType, float physResistance);
 
@@ -33,10 +33,14 @@ public:
 
 	float getMagicResistance(MagicDamageType magType);
 
+	nlohmann::json toJson() const override;
+
+	static std::shared_ptr<Item> fromJson(const nlohmann::json& j);
+
 	Armor();
 
 	Armor(std::string name, std::string description, float weight, float value, bool isLight, 
-        bool isMedium, bool isHeavy, ArmorDescriptor armorDescriptor, PhysicalDamageType physType, MagicDamageType magType);
+        bool isMedium, bool isHeavy, ArmorDescriptor armorDescriptor);
 
     ~Armor();
 };

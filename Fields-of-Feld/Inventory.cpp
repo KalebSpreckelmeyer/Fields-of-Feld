@@ -1,48 +1,190 @@
 #include "Inventory.h"
 #include <vector>
 #include <string>
+#include <fstream>
 #include "color.hpp"
 #include "Item.h"
 #include "Weapon.h"
 #include "Armor.h"
 #include "Trinket.h"
 
-//Equipped Items
-Item* Inventory::findEquippedItem(std::string name)
+nlohmann::json Inventory::toJson() const
 {
-	for (Item* item : equippedItems)
+	nlohmann::json j;
+	for (const auto& item : backpackItems)
 	{
-		if (item->name == name) return item;
+		j["backpackItems"].push_back(item->toJson());
+	}
+	for (const auto& item : equippedItems)
+	{
+		j["equippedItems"].push_back(item->toJson());
+	}
+	return j;
+}
+
+void Inventory::fromJson(const nlohmann::json& j)
+{
+	backpackItems.clear();
+	equippedItems.clear();
+	for (const auto& item : j["backpackItems"])
+	{
+		backpackItems.push_back(Item::fromJson(item));
+	}
+	for (const auto& item : j["equippedItems"])
+	{
+		equippedItems.push_back(Item::fromJson(item));
 	}
 }
 
-void Inventory::getEquippedItems(Weapon*& mainHand, Weapon*& offHand, Weapon*& reserve1, Weapon*& reserve2, Armor*& head, Armor*& chest, 
-	Armor*& legs, Armor*& arms, Trinket*& amulet, Trinket*& ring1, Trinket*& ring2, Trinket*& misc)
+void Inventory::getEquippedItems(std::shared_ptr<Weapon>& mainHand, std::shared_ptr<Weapon>& offHand, std::shared_ptr<Weapon>& reserve1, 
+	std::shared_ptr<Weapon>& reserve2, std::shared_ptr<Armor>& head, std::shared_ptr<Armor>& chest, std::shared_ptr<Armor>& legs, 
+	std::shared_ptr<Armor>& arms, std::shared_ptr<Trinket>& amulet, std::shared_ptr<Trinket>& ring1, std::shared_ptr<Trinket>& ring2, std::shared_ptr<Trinket>& misc)
 {
 	for (int i = 0; i < this->equippedItems.size(); i++)
 	{
-		if (this->equippedItems[i]->slot == Item::EquipSlots::MAINHAND) mainHand = dynamic_cast<Weapon*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::OFFHAND) offHand = dynamic_cast<Weapon*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::RESERVE1) reserve1 = dynamic_cast<Weapon*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::RESERVE2) reserve2 = dynamic_cast<Weapon*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::HEAD) head = dynamic_cast<Armor*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::CHEST) chest = dynamic_cast<Armor*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::LEGS) legs = dynamic_cast<Armor*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::ARMS) arms = dynamic_cast<Armor*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::AMULET) amulet = dynamic_cast<Trinket*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::RING1) ring1 = dynamic_cast<Trinket*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::RING2) ring2 = dynamic_cast<Trinket*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::MISC) misc = dynamic_cast<Trinket*>(equippedItems[i]);
+		//cast the shared pointer into a weapon
+		auto weapon = std::dynamic_pointer_cast<Weapon>(equippedItems[i]);
+		
+		//check the slot of the weapon
+		switch (weapon->slot)
+		{
+		case Item::EquipSlots::MAINHAND:
+			mainHand = weapon;
+			break;
+		case Item::EquipSlots::OFFHAND:
+			offHand = weapon;
+			break;
+		case Item::EquipSlots::RESERVE1:
+			reserve1 = weapon;
+			break;
+		case Item::EquipSlots::RESERVE2:
+			reserve2 = weapon;
+			break;
+		}
+
+		//cast the shared pointer into an armor
+		auto armor = std::dynamic_pointer_cast<Armor>(equippedItems[i]);
+
+		//check the slot of the armor
+		switch (armor->slot)
+		{
+		case Item::EquipSlots::HEAD:
+			head = armor;
+			break;
+		case Item::EquipSlots::CHEST:
+			chest = armor;
+			break;
+		case Item::EquipSlots::LEGS:
+			legs = armor;
+			break;
+		case Item::EquipSlots::ARMS:
+			arms = armor;
+			break;
+		}
+
+		//cast the shared pointer into a trinket
+		auto trinket = std::dynamic_pointer_cast<Trinket>(equippedItems[i]);
+
+		//check the slot of the trinket
+		switch (trinket->slot)
+		{
+		case Item::EquipSlots::AMULET:
+			amulet = trinket;
+			break;
+		case Item::EquipSlots::RING1:
+			ring1 = trinket;
+			break;
+		case Item::EquipSlots::RING2:
+			ring2 = trinket;
+			break;
+		case Item::EquipSlots::MISC:
+			misc = trinket;
+			break;
+		}
+
 	}
 }
 
-void Inventory::getEquippedWeapons(Weapon* mainHand, Weapon* offHand, Weapon* reserve1, Weapon* reserve2)
+void Inventory::getEquippedWeapons(std::shared_ptr<Weapon>& mainHand, std::shared_ptr<Weapon>& offHand, std::shared_ptr<Weapon>& reserve1, std::shared_ptr<Weapon>& reserve2)
 {
 	for (int i = 0; i < this->equippedItems.size(); i++)
 	{
-		if (this->equippedItems[i]->slot == Item::EquipSlots::MAINHAND) mainHand = dynamic_cast<Weapon*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::OFFHAND) offHand = dynamic_cast<Weapon*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::RESERVE1) reserve1 = dynamic_cast<Weapon*>(equippedItems[i]);
-		if (this->equippedItems[i]->slot == Item::EquipSlots::RESERVE2) reserve2 = dynamic_cast<Weapon*>(equippedItems[i]);
+		auto weapon = std::dynamic_pointer_cast<Weapon>(equippedItems[i]);
+		if (!weapon) continue;
+
+		// Then check which slot it's in
+		switch (weapon->slot)
+		{
+		case Item::EquipSlots::MAINHAND:
+			mainHand = weapon;
+			break;
+		case Item::EquipSlots::OFFHAND:
+			offHand = weapon;
+			break;
+		case Item::EquipSlots::RESERVE1:
+			reserve1 = weapon;
+			break;
+		case Item::EquipSlots::RESERVE2:
+			reserve2 = weapon;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void Inventory::addToBackpack(std::shared_ptr<Item> item)
+{
+	backpackItems.push_back(item);
+}
+
+void Inventory::addToEquippedItems(std::shared_ptr<Item> item)
+{
+	equippedItems.push_back(item);
+}
+
+void Inventory::save(const std::string& filename) const {
+	json j;
+	for (const auto& item : backpackItems)
+	{
+		j["backpackItems"].push_back(item->toJson());
+	}
+	for (const auto& item : equippedItems)
+	{
+		j["equippedItems"].push_back(item->toJson());
+	}
+	std::ofstream out(filename);
+	out << j.dump(4);
+}
+
+void Inventory::load(const std::string& filename)
+{
+	backpackItems.clear();
+	equippedItems.clear();
+	std::ifstream in(filename);
+	json j;
+	in >> j;
+
+	for (const auto& item : j["backpackItems"])
+	{
+		backpackItems.push_back(Item::fromJson(item));
+	}
+	for (const auto& item : j["equippedItems"])
+	{
+		equippedItems.push_back(Item::fromJson(item));
+	}
+}
+
+void Inventory::print() const
+{
+	std::cout << "Equipped Items: " << std::endl;
+	for (const auto& item : equippedItems)
+	{
+		std::cout << item->name << std::endl;
+	}
+	std::cout << "Backpack Items: " << std::endl;
+	for (const auto& item : backpackItems)
+	{
+		std::cout << item->name << std::endl;
 	}
 }

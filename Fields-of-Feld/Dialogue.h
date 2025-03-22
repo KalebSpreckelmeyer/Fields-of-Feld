@@ -12,7 +12,7 @@ class Dialogue
 {
 public:
 	Dialogue();
-	Dialogue(Character* speaker, Character* target, std::string text = "DEFAULT", std::string emotion = "DEFAULT", float gravity = 1.0f, int coolDown = 1.0f);
+	Dialogue(std::shared_ptr<Character> speaker, std::shared_ptr<Character> target, std::string text = "DEFAULT", std::string emotion = "DEFAULT", float gravity = 1.0f, int coolDown = 1.0f);
 	~Dialogue();
 	
 	void playConversation();
@@ -24,8 +24,8 @@ public:
 	void setEffect(std::function<void()> effect);
 
 private:
-	Character* speaker = nullptr;
-	Character* target = nullptr;
+	std::shared_ptr<Character> speaker = nullptr;
+	std::shared_ptr<Character> target = nullptr;
 	std::string text = "DEFAULT TEXT PLS CHANGE";
 	float gravity = 1.0f; //chance of dialogue playing over other options
 	std::vector<Dialogue> responses; //responses to the dialogue

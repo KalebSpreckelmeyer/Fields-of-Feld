@@ -10,24 +10,22 @@
 #include <iomanip>
 #include "Weapon.h"
 #include "optional"
-Character::Character()
-{
+int Character::nextId = 1;
 
-}
 Character::Character(bool isAlly, bool namedCharacter, bool isAlive, bool active, bool alert,
 	std::string name, std::string description, float confidenceLevel,
 	float healthPoints, float maxHealthPoints, float fatiguePoints,
 	float maxFatiguePoints, float speed, float critChance, float dodgeChance,
-	float blockChance, float damageThreshold, float damageResistance, float bleedPoints, float maxBleedPoints,
+	float blockChance, float bleedPoints, float maxBleedPoints,
 	float burnPoints, float maxBurnPoints, float poisonPoints,
 	float maxPoisonPoints, float frostPoints, float maxFrostPoints,
 	float shockPoints, float maxShockPoints, float sleepPoints,
 	float maxSleepPoints, const Inventory& inventory, float distanceFromPlayer,
-	float level, CombatFlags combatFlag) :
+	float level, CombatFlags combatFlag) : id(nextId++),
 	isAlly(isAlly), namedCharacter(namedCharacter), isAlive(isAlive), active(active), alert(alert), name(name), description(description),
 	confidenceLevel(confidenceLevel), healthPoints(healthPoints), maxHealthPoints(maxHealthPoints), fatiguePoints(fatiguePoints),
 	maxFatiguePoints(maxFatiguePoints), speed(speed), critChance(critChance), dodgeChance(dodgeChance), blockChance(blockChance),
-	damageThreshold(damageThreshold), damageResistance(damageResistance), bleedPoints(bleedPoints), maxBleedPoints(maxBleedPoints),
+	bleedPoints(bleedPoints), maxBleedPoints(maxBleedPoints),
 	burnPoints(burnPoints), maxBurnPoints(maxBurnPoints), poisonPoints(poisonPoints), maxPoisonPoints(maxPoisonPoints), frostPoints(frostPoints),
 	maxFrostPoints(maxFrostPoints), shockPoints(shockPoints), maxShockPoints(maxShockPoints),
 	sleepPoints(sleepPoints), maxSleepPoints(maxSleepPoints), inventory(inventory), distanceFromPlayer(distanceFromPlayer), level(level)
@@ -35,27 +33,47 @@ Character::Character(bool isAlly, bool namedCharacter, bool isAlive, bool active
 
 }
 
+int Character::getId() const {
+	return id;
+}
+
+std::shared_ptr<Character> Character::fromJson(const nlohmann::json& j) {
+	std::string type = j.at("type");
+	if (type == "Human") return Human::fromJson(j);
+	if (type == "Creature") return Creature::fromJson(j);
+	return nullptr;
+}
+
 void Character::addTag(std::string& tag)
 {
-	tags.push_back(tag);
+	tags.push_back(std::make_shared<std::string>(tag));
+}
+
+float Character::getDefenseValue(Defense defenseValue)
+{
+	auto it = defenseValues.find(defenseValue);
+	return (it != defenseValues.end()) ? it->second : 0.0f;
+}
+
+void Character::setDefenseValue(Defense stat, float defenseValue)
+{
+	defenseValues[stat] = defenseValue;
 }
 
 //this doesnt need to have ammo passed to it 
-bool Character::chooseAmmunition(Weapon* weapon, Character* target, Ammunition* ammo)
+bool Character::chooseAmmunition(std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target, std::shared_ptr<Ammunition> ammo)
 {
 	//get the ammo the player has stored in each quiver slot
 
-	//potentially copying by reference, check functionality then remove this message ------ < 
-	std::vector<Ammunition*> quiver;
-	for (Item* item : inventory.equippedItems)
+	std::vector<std::shared_ptr<Ammunition>> quiver;
+	for (std::shared_ptr<Item> item : inventory.equippedItems)
 	{
-		if (Ammunition* ammo = dynamic_cast<Ammunition*>(item))
-		{
-			if (ammo->slot == Item::EquipSlots::QUIVER1) quiver.push_back(ammo);
-			if (ammo->slot == Item::EquipSlots::QUIVER2) quiver.push_back(ammo);
-			if (ammo->slot == Item::EquipSlots::QUIVER3) quiver.push_back(ammo);
-			if (ammo->slot == Item::EquipSlots::QUIVER4) quiver.push_back(ammo);
-		}
+		auto ammo = std::dynamic_pointer_cast<Ammunition>(item);
+		if (!ammo) continue;
+		if (ammo->slot == Item::EquipSlots::QUIVER1) quiver.push_back(ammo);
+		if (ammo->slot == Item::EquipSlots::QUIVER2) quiver.push_back(ammo);
+		if (ammo->slot == Item::EquipSlots::QUIVER3) quiver.push_back(ammo);
+		if (ammo->slot == Item::EquipSlots::QUIVER4) quiver.push_back(ammo);
 	}
 	//prints a menu of all the ammo the player has in their quiver
 	std::cout << dye::light_yellow(" Choose your ammunition:") << std::endl;
@@ -63,7 +81,7 @@ bool Character::chooseAmmunition(Weapon* weapon, Character* target, Ammunition* 
 	int occupiedSlots = 0;
 	for (int i = 0; i < quiver.size(); i++)
 	{
-		float totalDamage = quiver[0]->getAmmoDamage(target, *quiver[0]);
+		float totalDamage = quiver[0]->getAmmoDamage(target, quiver[0]);
 		if (quiver[i]->slot == Item::EquipSlots::QUIVER1)
 		{
 			std::cout << " " << dye::light_yellow(i + 1) << dye::light_yellow(") ") << quiver[i]->name
@@ -128,13 +146,29 @@ bool Character::chooseAmmunition(Weapon* weapon, Character* target, Ammunition* 
 	}
 }
 
-void Character::fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* ammo)
+void Character::fireRangedWeapon(std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon, std::shared_ptr<Ammunition> ammo)
 {
 	//target is a human
-	if (dynamic_cast<Human*>(target))
+	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
 	{
-		Human* humanAttacker = dynamic_cast<Human*>(this);
-		Human* humanTarget = dynamic_cast<Human*>(target);
+		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
+		std::shared_ptr<Human> humanTarget = std::dynamic_pointer_cast<Human>(target);
+
+		//APPLY DEFENSIVE EFFECTS OF TARGET IF IN RANGE
+		//get enchantments of target
+		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
+		{
+			auto armor = std::dynamic_pointer_cast<Armor>(item);
+			if (!armor) continue;
+				for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+				{
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
+					{
+						effect->applyDefensiveEffect(effect, target, humanAttacker);
+					}
+				}
+		}
+
 		if (weapon->weaponType == Weapon::WeaponType::LONGBOW || weapon->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
 			weapon->weaponType == Weapon::WeaponType::GREATBOW || weapon->weaponType == Weapon::WeaponType::MINICROSSBOW ||
 			weapon->weaponType == Weapon::WeaponType::CROSSBOW || weapon->weaponType == Weapon::WeaponType::BALLISTA)
@@ -146,13 +180,38 @@ void Character::fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* 
 				return;
 			}
 
+			//Damage modifier will be changed to 0.7 if the player lacks requirements for the weapon
+			float damageModifier = 1.0f;
+			bool lacksRequirements = false;
+			//Get the stat scaling values of the weapon, adjust damage values as needed
+			float strengthScaling = weapon->getWeaponRequirementValue(StatScaling::STRENGTH);
+			if (strengthScaling > this->getStrength()) lacksRequirements = true;
+			float agilityScaling = weapon->getWeaponRequirementValue(StatScaling::AGILITY);
+			if (agilityScaling > this->getAgility()) lacksRequirements = true;
+			float intelligenceScaling = weapon->getWeaponRequirementValue(StatScaling::INTELLIGENCE);
+			if (intelligenceScaling > this->getIntelligence()) lacksRequirements = true;
+			float faithScaling = weapon->getWeaponRequirementValue(StatScaling::FAITH);
+			if (faithScaling > this->getFaith()) lacksRequirements = true;
+			float luckScaling = weapon->getWeaponRequirementValue(StatScaling::LUCK);
+			if (luckScaling > this->getLuck()) lacksRequirements = true;
+			float arcaneScaling = weapon->getWeaponRequirementValue(StatScaling::ARCANE);
+			if (arcaneScaling > this->getArcane()) lacksRequirements = true;
+			float charismaScaling = weapon->getWeaponRequirementValue(StatScaling::CHARISMA);
+			if (charismaScaling > this->getCharisma()) lacksRequirements = true;
+
+			if (lacksRequirements) damageModifier = 0.7f;
+
+			//Inform player of their lack of requirements
+			if (lacksRequirements == true) std::cout << dye::light_red(" You lack the requirements to wield ")
+				<< weapon->name << dye::light_red(" effectively! Normal damage is reduced by 30%!") << std::endl;
+
 			//get random number for crit chance influenced by luck slightly
 			int randomNum = (rand() % 100 - this->getLuck()) + 1;
 			//This is just Overwatch's damage falloff formula lmao
 
 			//damage falloff variables
-			float minDamage = ammo->getAmmoDamage(target, *ammo) * .3;
-			float maxDamage = ammo->getAmmoDamage(target, *ammo) * 1.3;
+			float minDamage = ammo->getAmmoDamage(target, ammo) * .3;
+			float maxDamage = ammo->getAmmoDamage(target, ammo) * 1.3;
 			float nearRange = ammo->range * 0.1;
 
 			float farRange = weapon->reach + ammo->range;
@@ -161,17 +220,13 @@ void Character::fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* 
 			float normalizedDistance = std::clamp((target->distanceFromPlayer - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
 
 			//raw damage of the arrow
-			float arrowDamage = max(maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage), 1.0f);
+			float arrowDamage = max((maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage) * damageModifier), 1.0f);
 			//crit damage modifier
 			float critDamage = arrowDamage * 1.5;
 
-			//damage reduction modfiiers
-			float critDamageReduction = max(critDamage * this->damageResistance + this->damageThreshold / 2, 0.0f);
-			float normalDamageReduction = max(arrowDamage * this->damageResistance + this->damageThreshold, 0.0f);
-
 			//final damage taken, either crit or non crit
-			float critDamageTaken = critDamage - critDamageReduction;
-			float damageTaken = arrowDamage - normalDamageReduction;
+			float critDamageTaken = critDamage;
+			float damageTaken = arrowDamage;
 
 			//ensures that the damage will never be negative 
 			if (critDamageTaken < 0) critDamageTaken = 0;
@@ -183,17 +238,16 @@ void Character::fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* 
 				//Player landed critical hit
 				if (humanAttacker->isPlayer)
 				{
-					for (Enchantment* enchantment : ammo->enchantments)
+					for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
 					{
-						for (Effect* effect : enchantment->effects)
+						for (std::shared_ptr<Effect> effect : enchantment->effects)
 						{
-							effect->applyEffect(effect, humanAttacker, humanTarget);
+							effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
 						}
 					}
 					target->healthPoints -= critDamageTaken;
 					humanAttacker->consumeAmmo(ammo);
 					std::cout << dye::light_red(" Critical Hit!") << std::endl;
-					if (critDamageReduction > 0) std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << "'s armor absorbs " << critDamageReduction << " points of damage from the projectile!" << std::endl;
 					std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << critDamageTaken << " points of damage from "
 						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
 					if (target->healthPoints <= 0) target->killCharacter();
@@ -202,17 +256,16 @@ void Character::fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* 
 				//NPC landed critical hit
 				else
 				{
-					for (Enchantment* enchantment : ammo->enchantments)
+					for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
 					{
-						for (Effect* effect : enchantment->effects)
+						for (std::shared_ptr<Effect> effect : enchantment->effects)
 						{
-							effect->applyEffect(effect, humanAttacker, humanTarget);
+							effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
 						}
 					}
 					target->healthPoints -= critDamageTaken;
 					humanAttacker->consumeAmmo(ammo);
 					std::cout << dye::light_red(" Critical Hit!") << std::endl;
-					if (critDamageReduction > 0) std::cout << std::setprecision(2) << " Your armor absorbs " << critDamageReduction << " points of damage from the projectile!" << std::endl;
 					std::cout << std::setprecision(2) << " You take " << critDamageTaken << " points of damage from the "
 						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
 					if (target->healthPoints <= 0) target->killCharacter();
@@ -225,16 +278,15 @@ void Character::fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* 
 				//Player landed normal hit
 				if (humanAttacker->isPlayer)
 				{
-					for (Enchantment* enchantment : ammo->enchantments)
+					for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
 					{
-						for (Effect* effect : enchantment->effects)
+						for (std::shared_ptr<Effect> effect : enchantment->effects)
 						{
-							effect->applyEffect(effect, humanAttacker, humanTarget);
+							effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
 						}
 					}
 					target->healthPoints -= damageTaken;
 					humanAttacker->consumeAmmo(ammo);
-					if (normalDamageReduction > 0) std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << "'s armor absorbs " << normalDamageReduction << " points of damage from the projectile!" << std::endl;
 					std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << damageTaken << " points of damage from "
 						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
 					if (target->healthPoints <= 0) target->killCharacter();
@@ -243,16 +295,15 @@ void Character::fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* 
 				//NPC landed normal hit
 				else
 				{
-					for (Enchantment* enchantment : ammo->enchantments)
+					for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
 					{
-						for (Effect* effect : enchantment->effects)
+						for (std::shared_ptr<Effect> effect : enchantment->effects)
 						{
-							effect->applyEffect(effect, humanAttacker, humanTarget);
+							effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
 						}
 					}
 					target->healthPoints -= damageTaken;
 					humanAttacker->consumeAmmo(ammo);
-					if (normalDamageReduction > 0) std::cout << std::setprecision(2) << " Your armor absorbs " << normalDamageReduction << " points of damage from the projectile!" << std::endl;
 					std::cout << std::setprecision(2) << " You take " << damageTaken << " points of damage from the "
 						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
 					if (target->healthPoints <= 0) target->killCharacter();
@@ -272,7 +323,7 @@ void Character::fireRangedWeapon(Character* target, Weapon* weapon, Ammunition* 
 	}
 }
 
-void Character::consumeAmmo(Item* ammo)
+void Character::consumeAmmo(std::shared_ptr<Ammunition> ammo)
 {
 	if (ammo == nullptr) {
 		std::cout << "ERROR: Attempted to consume a nullptr ammo." << std::endl;
@@ -286,7 +337,6 @@ void Character::consumeAmmo(Item* ammo)
 		if (it != inventory.equippedItems.end()) {
 			inventory.equippedItems.erase(it, inventory.equippedItems.end());
 			std::cout << " Removed " << ammo->name << " from inventory." << std::endl;
-			delete ammo;
 		}
 		else {
 			std::cout << "WARNING: Item not found in inventory during removal!" << std::endl;
@@ -298,13 +348,29 @@ void Character::consumeAmmo(Item* ammo)
 	}
 }
 
-void Character::throwThrownConsumable(ThrownConsumable* consumable, Character* target)
+void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumable, std::shared_ptr<Character> target)
 {
 	//target is a human
-	if (dynamic_cast<Human*>(target))
+	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
 	{
-		Human* humanAttacker = dynamic_cast<Human*>(this);
-		Human* humanTarget = dynamic_cast<Human*>(target);
+
+		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
+		std::shared_ptr<Human> humanTarget = std::dynamic_pointer_cast<Human>(target);
+
+		//APPLY DEFENSIVE EFFECTS OF TARGET IF IN RANGE
+		//get enchantments of target
+		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
+		{
+			auto armor = std::dynamic_pointer_cast<Armor>(item);
+				for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+				{
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
+					{
+						effect->applyDefensiveEffect(effect, target, humanAttacker);
+					}
+				}
+		}
+
 		//archery specific sanity check
 		if (consumable == nullptr)
 		{
@@ -316,6 +382,32 @@ void Character::throwThrownConsumable(ThrownConsumable* consumable, Character* t
 			std::cout << dye::light_red("ERROR: No target provided for dealDamage method") << std::endl;
 			return;
 		}
+
+		//Damage modifier will be changed to 0.7 if the player lacks requirements for the weapon
+		float damageModifier = 1.0f;
+		bool lacksRequirements = false;
+		//Get the stat scaling values of the weapon, adjust damage values as needed
+		float strengthScaling = consumable->getThrownConsumableRequirementValue(StatScaling::STRENGTH);
+		if (strengthScaling > this->getStrength()) lacksRequirements = true;
+		float agilityScaling = consumable->getThrownConsumableRequirementValue(StatScaling::AGILITY);
+		if (agilityScaling > this->getAgility()) lacksRequirements = true;
+		float intelligenceScaling = consumable->getThrownConsumableRequirementValue(StatScaling::INTELLIGENCE);
+		if (intelligenceScaling > this->getIntelligence()) lacksRequirements = true;
+		float faithScaling = consumable->getThrownConsumableRequirementValue(StatScaling::FAITH);
+		if (faithScaling > this->getFaith()) lacksRequirements = true;
+		float luckScaling = consumable->getThrownConsumableRequirementValue(StatScaling::LUCK);
+		if (luckScaling > this->getLuck()) lacksRequirements = true;
+		float arcaneScaling = consumable->getThrownConsumableRequirementValue(StatScaling::ARCANE);
+		if (arcaneScaling > this->getArcane()) lacksRequirements = true;
+		float charismaScaling = consumable->getThrownConsumableRequirementValue(StatScaling::CHARISMA);
+		if (charismaScaling > this->getCharisma()) lacksRequirements = true;
+
+		if (lacksRequirements) damageModifier = 0.7f;
+
+		//Inform player of their lack of requirements
+		if (lacksRequirements == true) std::cout << dye::light_red(" You lack the requirements to wield ")
+			<< consumable->name << dye::light_red(" effectively! Normal damage is reduced by 30%!") << std::endl;
+
 		//get random number for crit chance influenced by luck slightly
 		int randomNum = (rand() % 100 - this->getLuck()) + 1;
 		//This is just Overwatch's damage falloff formula lmao
@@ -331,18 +423,14 @@ void Character::throwThrownConsumable(ThrownConsumable* consumable, Character* t
 		float normalizedDistance = std::clamp((target->distanceFromPlayer - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
 
 		//raw damage of the arrow
-		float consumableDamage = max(maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage), 1.0f);
+		float consumableDamage = max((maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage) * damageModifier), 1.0f);
 
 		//crit damage modifier
 		float critDamage = consumableDamage * 1.5;
 
-		//damage reduction modfiiers
-		float critDamageReduction = max(critDamage * this->damageResistance + this->damageThreshold / 2, 0.0f);
-		float normalDamageReduction = max(consumableDamage * this->damageResistance + this->damageThreshold, 0.0f);
-
 		//final damage taken, either crit or non crit
-		float critDamageTaken = critDamage - critDamageReduction;
-		float damageTaken = consumableDamage - normalDamageReduction;
+		float critDamageTaken = critDamage;
+		float damageTaken = consumableDamage;
 
 		//ensures that the damage will never be negative 
 		if (critDamageTaken < 0) critDamageTaken = 0;
@@ -354,17 +442,16 @@ void Character::throwThrownConsumable(ThrownConsumable* consumable, Character* t
 			//Player landed critical hit
 			if (humanAttacker->isPlayer)
 			{
-				for (Enchantment* enchantment : consumable->enchantments)
+				for (std::shared_ptr<Enchantment> enchantment : consumable->enchantments)
 				{
-					for (Effect* effect : enchantment->effects)
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyEffect(effect, humanAttacker, humanTarget);
+						effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
 					}
 				}
 				target->healthPoints -= critDamageTaken;
 				humanAttacker->consumeThrownConsumable(consumable);
 				std::cout << dye::light_red(" Critical Hit!") << std::endl;
-				if (critDamageReduction > 0) std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << "'s armor absorbs " << critDamageReduction << " points of damage from the projectile!" << std::endl;
 				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << critDamageTaken << " points of damage from "
 					<< humanAttacker->name << "'s " << consumable->name << "!" << std::endl;
 				if (target->healthPoints <= 0) target->killCharacter();
@@ -373,17 +460,16 @@ void Character::throwThrownConsumable(ThrownConsumable* consumable, Character* t
 			//NPC landed critical hit
 			else
 			{
-				for (Enchantment* enchantment : consumable->enchantments)
+				for (std::shared_ptr<Enchantment> enchantment : consumable->enchantments)
 				{
-					for (Effect* effect : enchantment->effects)
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyEffect(effect, humanAttacker, humanTarget);
+						effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
 					}
 				}
 				target->healthPoints -= critDamageTaken;
 				humanAttacker->consumeThrownConsumable(consumable);
 				std::cout << dye::light_red(" Critical Hit!") << std::endl;
-				if (critDamageReduction > 0) std::cout << std::setprecision(2) << " Your armor absorbs " << critDamageReduction << " points of damage from the projectile!" << std::endl;
 				std::cout << std::setprecision(2) << " You take " << critDamageTaken << " points of damage from the "
 					<< humanAttacker->name << "'s " << consumable->name << "!" << std::endl;
 				if (target->healthPoints <= 0) target->killCharacter();
@@ -396,16 +482,15 @@ void Character::throwThrownConsumable(ThrownConsumable* consumable, Character* t
 			//Player landed normal hit
 			if (humanAttacker->isPlayer)
 			{
-				for (Enchantment* enchantment : consumable->enchantments)
+				for (std::shared_ptr<Enchantment> enchantment : consumable->enchantments)
 				{
-					for (Effect* effect : enchantment->effects)
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyEffect(effect, humanAttacker, humanTarget);
+						effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
 					}
 				}
 				target->healthPoints -= damageTaken;
 				humanAttacker->consumeThrownConsumable(consumable);
-				if (normalDamageReduction > 0) std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << "'s armor absorbs " << normalDamageReduction << " points of damage from the projectile!" << std::endl;
 				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << damageTaken << " points of damage from "
 					<< humanAttacker->name << "'s " << consumable->name << "!" << std::endl;
 				if (target->healthPoints <= 0) target->killCharacter();
@@ -414,16 +499,15 @@ void Character::throwThrownConsumable(ThrownConsumable* consumable, Character* t
 			//NPC landed normal hit
 			else
 			{
-				for (Enchantment* enchantment : consumable->enchantments)
+				for (std::shared_ptr<Enchantment> enchantment : consumable->enchantments)
 				{
-					for (Effect* effect : enchantment->effects)
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyEffect(effect, humanAttacker, humanTarget);
+						effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
 					}
 				}
 				target->healthPoints -= damageTaken;
 				humanAttacker->consumeThrownConsumable(consumable);
-				if (normalDamageReduction > 0) std::cout << std::setprecision(2) << " Your armor absorbs " << normalDamageReduction << " points of damage from the projectile!" << std::endl;
 				std::cout << std::setprecision(2) << " You take " << damageTaken << " points of damage from the "
 					<< humanAttacker->name << "'s " << consumable->name << "!" << std::endl;
 				if (target->healthPoints <= 0) target->killCharacter();
@@ -438,7 +522,7 @@ void Character::throwThrownConsumable(ThrownConsumable* consumable, Character* t
 	}
 }
 
-void Character::consumeThrownConsumable(ThrownConsumable* consumable)
+void Character::consumeThrownConsumable(std::shared_ptr<ThrownConsumable> consumable)
 {
 	if (consumable == nullptr) {
 		std::cout << "ERROR: Attempted to consume a nullptr consumable." << std::endl;
@@ -452,7 +536,6 @@ void Character::consumeThrownConsumable(ThrownConsumable* consumable)
 		if (it != inventory.backpackItems.end()) {
 			inventory.backpackItems.erase(it, inventory.backpackItems.end());
 			std::cout << " Removed " << consumable->name << " from inventory." << std::endl;
-			delete consumable;
 		}
 		else {
 			std::cout << "WARNING: Item not found in inventory during removal!" << std::endl;
@@ -475,7 +558,7 @@ void Character::killCharacter()
 }
 
 //SPELLS
-bool Character::chooseSpell(Weapon& weapon, Character* target, Spell*& spell)
+bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, std::shared_ptr<Spell> spell)
 {
 	//checks if they're using an appropriate casting tool
 	if (weapon.weaponType == Weapon::WeaponType::WAND || weapon.weaponType == Weapon::WeaponType::STAFF ||
@@ -544,7 +627,7 @@ bool Character::chooseSpell(Weapon& weapon, Character* target, Spell*& spell)
 				}
 			} while (choice < 1 || choice > this->attunedSpells.size());
 			//player tried to cast a summon spell that was already applied
-			for (const Effect* effect : this->effects)
+			for (const std::shared_ptr<Effect> effect : this->effects)
 			{
 				//global variable for now: add more if summons should last more or less than 10 turns
 				if (effect->name == "Summon Cooldown" && this->attunedSpells[choice - 1]->summon)
@@ -662,14 +745,32 @@ void Character::viewSpellsBrief()
 		std::cout << " " << dye::grey(i + 1) << dye::grey(") Empty Slot") << std::endl;
 	}
 }
-void Character::castSpell(Spell& spell, Character* target, float playerMovement)
+void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float playerMovement)
 {
-	Character* character = this;
+	std::shared_ptr<Character> character = (shared_from_this());
 	
 
-	if (dynamic_cast<Human*>(target))
+	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
 	{
-		Human* humanAttacker = dynamic_cast<Human*>(this);
+		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
+		
+		//APPLY DEFENSIVE EFFECTS OF TARGET IF IN RANGE
+		//get enchantments of target
+		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
+		{
+			if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+			{
+				std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
+				for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+				{
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
+					{
+						effect->applyDefensiveEffect(effect, target, humanAttacker);
+					}
+				}
+			}
+		}
+
 		//CHECK THE TYPE OF SPELL
 
 		//SUMMON ALLY
@@ -679,11 +780,10 @@ void Character::castSpell(Spell& spell, Character* target, float playerMovement)
 			this->fatiguePoints -= spell.fatigueCost;
 
 			//adds summoning cooldown to caster
-			this->effects.push_back(new Effect(false, false, "Summon Cooldown", "Cooldown for summoning another creature", PhysicalDamageType::NONE, MagicDamageType::NONE, 0.0f, 10, 1, false, 1, 1, false));
-			for (Effect* effect : spell.effects)
+			this->effects.push_back(std::make_shared<Effect>(false, false, "Summon Cooldown", "Cooldown for summoning another creature", 0.0f, 10, 1, false, 1, 1, false));
+			for (std::shared_ptr<Effect> effect : spell.effects)
 			{
-				spell.applied = true;
-				effect->applyEffect(effect, character, character);
+				effect->applyPassiveEffect(effect, character);
 			}
 		}
 		//CAPTIVE SUN SPECIFIC LOGIC
@@ -699,28 +799,28 @@ void Character::castSpell(Spell& spell, Character* target, float playerMovement)
 				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
 				i += abs(spell.attackSpeed - 100);
 				//apply effects to target
-				for (Effect* effect : spell.effects)
+				for (std::shared_ptr<Effect> effect : spell.effects)
 				{
 					if (target->isAlive)
 					{
 						if (!effect->areaOfEffect)
 						{
-							effect->applyEffect(effect, character, target);
+							effect->applyOffensiveEffect(effect, character, target);
 						}
 					}
 				}
 				//apply effects to all allies
-				for (Character* ally : target->allies)
+				for (std::shared_ptr<Character> ally : target->allies)
 				{
 					if (ally->isAlive)
 					{
-						for (Effect* effect : spell.effects)
+						for (std::shared_ptr<Effect> effect : spell.effects)
 						{
 							if (ally->distanceFromPlayer <= effect->range)
 							{
 
 								ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
-								effect->applyEffect(effect, character, ally);
+								effect->applyOffensiveEffect(effect, character, ally);
 
 							}
 						}
@@ -741,16 +841,16 @@ void Character::castSpell(Spell& spell, Character* target, float playerMovement)
 				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
 				i += abs(spell.attackSpeed - 100);
 				//apply effects to target
-				for (Effect* effect : spell.effects)
+				for (std::shared_ptr<Effect> effect : spell.effects)
 				{
-					effect->applyEffect(effect, character, target);
+					effect->applyOffensiveEffect(effect, character, target);
 				}
 				//apply effects to all allies
-				for (Character* ally : target->allies)
+				for (std::shared_ptr<Character> ally : target->allies)
 				{
 					if (ally->isAlive)
 					{
-						for (Effect* effect : spell.effects)
+						for (std::shared_ptr<Effect> effect : spell.effects)
 						{
 							if (ally->distanceFromPlayer <= effect->range)
 							{
@@ -761,7 +861,7 @@ void Character::castSpell(Spell& spell, Character* target, float playerMovement)
 									ally->killCharacter();
 									break;
 								}
-								effect->applyEffect(effect, character, ally);
+								effect->applyOffensiveEffect(effect, character, ally);
 
 							}
 						}
@@ -778,9 +878,9 @@ void Character::castSpell(Spell& spell, Character* target, float playerMovement)
 			
 				if (this->namedCharacter) std::cout << dye::light_yellow(" " + this->name) << " has a buff applied to them!" << std::endl;
 				if (!this->namedCharacter) std::cout << " The " << dye::light_yellow(this->name) << " has a buff applied to them!" << std::endl;
-				for (Effect* effect : spell.effects)
+				for (std::shared_ptr<Effect> effect : spell.effects)
 				{
-					effect->applyEffect(effect, character, character);
+					effect->applyPassiveEffect(effect, character);
 				}
 			
 		}
@@ -792,19 +892,19 @@ void Character::castSpell(Spell& spell, Character* target, float playerMovement)
 
 			
 				//apply effects to target
-				for (Effect* effect : spell.effects)
+				for (std::shared_ptr<Effect> effect : spell.effects)
 				{
-					effect->applyEffect(effect, character, target);
+					effect->applyPassiveEffect(effect, character);
 				}
 				//apply effects to all allies
-				for (Character* ally : target->allies)
+				for (std::shared_ptr<Character> ally : target->allies)
 				{
 					if (ally->distanceFromPlayer <= 10)
 					{
 						ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
-						for (Effect* effect : spell.effects)
+						for (std::shared_ptr<Effect> effect : spell.effects)
 						{
-							effect->applyEffect(effect, character, ally);
+							effect->applyOffensiveEffect(effect, character, ally);
 						}
 					}
 				}
@@ -828,9 +928,9 @@ void Character::castSpell(Spell& spell, Character* target, float playerMovement)
 				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
 				i += abs(spell.attackSpeed - 100);
 				//apply effects to target
-				for (Effect* effect : spell.effects)
+				for (std::shared_ptr<Effect> effect : spell.effects)
 				{
-					effect->applyEffect(effect, character, target);
+					effect->applyOffensiveEffect(effect, character, target);
 				}
 			}
 		}
@@ -841,27 +941,52 @@ void Character::castSpell(Spell& spell, Character* target, float playerMovement)
 	}
 }
 
-void Character::attackWithMelee(Weapon* weapon, Character* target)
+void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target)
 {
-	if (dynamic_cast<Human*>(target))
+	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
 	{
-		Human* humanAttacker = dynamic_cast<Human*>(this);
-		Human* humanTarget = dynamic_cast<Human*>(target);
+		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
+		std::shared_ptr<Human> humanTarget = std::dynamic_pointer_cast<Human>(target);
 
 		//Apply enchantment effects first:
-		for (Enchantment* enchantment : weapon->enchantments)
+		for (std::shared_ptr<Enchantment> enchantment : weapon->enchantments)
 		{
-			for (Effect* effect : enchantment->effects)
+			for (std::shared_ptr<Effect> effect : enchantment->effects)
 			{
-				effect->applyEffect(effect, humanAttacker, humanTarget);
+				effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
 			}
 		}
+
+		//Damage modifier will be changed to 0.7 if the player lacks requirements for the weapon
+		float damageModifier = 1.0f;
+		bool lacksRequirements = false;
+		//Get the stat scaling values of the weapon, adjust damage values as needed
+		float strengthScaling = weapon->getWeaponRequirementValue(StatScaling::STRENGTH);
+		if (strengthScaling > this->getStrength()) lacksRequirements = true;
+		float agilityScaling = weapon->getWeaponRequirementValue(StatScaling::AGILITY);
+		if (agilityScaling > this->getAgility()) lacksRequirements = true;
+		float intelligenceScaling = weapon->getWeaponRequirementValue(StatScaling::INTELLIGENCE);
+		if (intelligenceScaling > this->getIntelligence()) lacksRequirements = true;
+		float faithScaling = weapon->getWeaponRequirementValue(StatScaling::FAITH);
+		if (faithScaling > this->getFaith()) lacksRequirements = true;
+		float luckScaling = weapon->getWeaponRequirementValue(StatScaling::LUCK);
+		if (luckScaling > this->getLuck()) lacksRequirements = true;
+		float arcaneScaling = weapon->getWeaponRequirementValue(StatScaling::ARCANE);
+		if (arcaneScaling > this->getArcane()) lacksRequirements = true;
+		float charismaScaling = weapon->getWeaponRequirementValue(StatScaling::CHARISMA);
+		if (charismaScaling > this->getCharisma()) lacksRequirements = true;
+
+		if (lacksRequirements) damageModifier = 0.7f;
+
+		//Inform player of their lack of requirements
+		if(lacksRequirements == true) std::cout << dye::light_red(" You lack the requirements to wield ") 
+			<< weapon->name << dye::light_red(" effectively! Normal damage is reduced by 30%!") << std::endl;
 
 		//Calculate crit damage and damage reduction
 		int randomNum = (rand() % 100 - this->getLuck()) + 1;
 
-		float normalDamage = weapon->getWeaponDamage(target, *weapon);
-		float critDamage = weapon->getWeaponDamage(target, *weapon) * 1.5f;
+		float normalDamage = weapon->getWeaponDamage(target, *weapon) * damageModifier;
+		float critDamage = weapon->getWeaponDamage(target, *weapon) * 1.5f * damageModifier;
 
 		//ensures that the damage will never be negative
 		if (critDamage < 0) critDamage = 0;
@@ -879,6 +1004,21 @@ void Character::attackWithMelee(Weapon* weapon, Character* target)
 				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << critDamage << " points of damage from the "
 					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
 				if (target->healthPoints <= 0) target->killCharacter();
+				//get enchantments of target
+				for (std::shared_ptr<Item> item : target->inventory.equippedItems)
+				{
+					if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+					{
+						std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
+						for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+						{
+							for (std::shared_ptr<Effect> effect : enchantment->effects)
+							{
+								effect->applyDefensiveEffect(effect, target, humanAttacker);
+							}
+						}
+					}
+				}
 				return;
 			}
 			//NPC landed a critical hit
@@ -888,6 +1028,21 @@ void Character::attackWithMelee(Weapon* weapon, Character* target)
 				std::cout << std::setprecision(2) << " You take " << critDamage << " points of damage from the "
 					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
 				if (target->healthPoints <= 0) target->killCharacter();
+				//get enchantments of target
+				for (std::shared_ptr<Item> item : target->inventory.equippedItems)
+				{
+					if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+					{
+						std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
+						for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+						{
+							for (std::shared_ptr<Effect> effect : enchantment->effects)
+							{
+								effect->applyDefensiveEffect(effect, target, humanAttacker);
+							}
+						}
+					}
+				}
 				return;
 			}
 		}
@@ -901,6 +1056,21 @@ void Character::attackWithMelee(Weapon* weapon, Character* target)
 				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << normalDamage << " points of damage from the "
 					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
 				if (target->healthPoints <= 0) target->killCharacter();
+				//get enchantments of target
+				for (std::shared_ptr<Item> item : target->inventory.equippedItems)
+				{
+					if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+					{
+						std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
+						for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+						{
+							for (std::shared_ptr<Effect> effect : enchantment->effects)
+							{
+								effect->applyDefensiveEffect(effect, target, humanAttacker);
+							}
+						}
+					}
+				}
 				return;
 			}
 			//NPC landed a normal hit
@@ -910,6 +1080,21 @@ void Character::attackWithMelee(Weapon* weapon, Character* target)
 				std::cout << std::setprecision(2) << " You take " << normalDamage << " points of damage from the "
 					<< dye::light_yellow(humanAttacker->name) << "'s " << weapon->name << "!" << std::endl;
 				if (target->healthPoints <= 0) target->killCharacter();
+				//get enchantments of target
+				for (std::shared_ptr<Item> item : target->inventory.equippedItems)
+				{
+					if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+					{
+						std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
+						for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+						{
+							for (std::shared_ptr<Effect> effect : enchantment->effects)
+							{
+								effect->applyDefensiveEffect(effect, target, humanAttacker);
+							}
+						}
+					}
+				}
 				return;
 			}
 		}

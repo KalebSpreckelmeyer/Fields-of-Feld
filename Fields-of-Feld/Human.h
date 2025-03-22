@@ -7,7 +7,7 @@
 #include "Trinket.h"
 #include <vector>
 class Human :
-    public Character
+	public Character 
 {
 public:
 	bool isPlayer = false;
@@ -25,7 +25,6 @@ public:
 	float arcane = 10.0f;
 	float faith = 10.0f;
 	float luck = 10.0f;
-	float flatDefense = 0.0f;
 	float weightBurden = 0.0f;
 	float maxWeightBurden = 100.0f;
 	float castSpeed = 99.0f;
@@ -46,10 +45,12 @@ public:
 	virtual float getSpeed() const override { return agility; }
 	virtual float getLevel() const override { return experience; }
 
+	nlohmann::json toJson() const override;
+	static std::shared_ptr<Character> fromJson(const nlohmann::json& j);
 
-	Human();
+	Human() = default;
 
-	Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality personality, float flatDefense, float health, float fatigue, float strength, float agility, float charisma,
+	Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality personality, float health, float fatigue, float strength, float agility, float charisma,
 		float intelligence, float arcane, float faith, float luck, float weightBurden, float maxWeightBurden, float castSpeed,
 		double experience, double experienceToNextLevel,
 		int gold);
@@ -73,7 +74,7 @@ public:
 	//DESC:
 	//PRE:
 	//POST:
-	Human* setCharacterClass(Human::CharacterClass classChoice);
+	std::shared_ptr<Human> setCharacterClass(Human::CharacterClass classChoice);
 
 	//DESC:
 	//PRE:
@@ -83,9 +84,9 @@ public:
 	//DESC:
 	//PRE:
 	//POST:
-	void takeDamage(Character* attacker, Character* target, Weapon* weapon, Ammunition* ammunition,
-		ThrownConsumable* consumable, Spell* spell, std::optional<std::vector<Character*>>& allies,
-		std::optional<std::vector<Character*>>& enemyAllies) override;
+	void takeDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon, std::shared_ptr<Ammunition> ammunition,
+		std::shared_ptr<ThrownConsumable> consumable, Spell* spell, std::optional<std::vector<std::shared_ptr<Character>>>& allies,
+		std::optional<std::vector<std::shared_ptr<Character>>>& enemyAllies) override;
 
 };
 

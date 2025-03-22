@@ -1,0 +1,15 @@
+#ifndef STATSCALING_H
+#define STATSCALING_H
+
+enum class StatScaling {
+	NONE,
+	STRENGTH,
+	AGILITY,
+	CHARISMA,
+	INTELLIGENCE,
+	ARCANE,
+	FAITH,
+	LUCK
+
+};
+#endif // !STATSCALING_H

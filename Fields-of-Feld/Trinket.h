@@ -7,12 +7,16 @@ class Trinket :
     public Item
 {
 public:
-	std::vector<Enchantment*> enchantments;
+	std::vector<std::shared_ptr<Enchantment>> enchantments;
 	enum class TrinketType { AMULET, RING, MISC};
 	TrinketType trinketType = TrinketType::MISC;
 
-	Trinket();
-	Trinket(TrinketType trinketType);
-	~Trinket();
+	nlohmann::json toJson() const override;
+
+	static std::shared_ptr<Item> fromJson(const nlohmann::json& j);
+
+	Trinket() = default;
+	Trinket(std::string name, std::string description, float value, float weight, float quantity, TrinketType trinketType);
+	~Trinket() = default;
 };
 

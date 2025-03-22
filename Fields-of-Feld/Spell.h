@@ -3,9 +3,10 @@
 #include <string>
 #include <vector>
 #include "Effect.h"
-#include <unordered_map>	
+#include <unordered_map>
+#include "memory"
 
-class Spell : public Effect {
+class Spell {
 public:
 	
 	std::unordered_map<PhysicalDamageType, float>physicalDamages;
@@ -14,7 +15,21 @@ public:
 	PhysicalDamageType physType = PhysicalDamageType::BLUNT;
 	MagicDamageType magType = MagicDamageType::NONE;
 
-	std::vector<Effect*> effects;
+	std::vector<std::shared_ptr<Effect>> effects;
+	std::string name;
+	std::string description;
+	bool areaOfEffect = false;
+	bool summon = false;
+	bool doesDamage = false;
+	bool healing = false;
+	bool useOnAlly = false;
+	bool useOnSelf = false;
+	bool buff = false;
+	int duration;
+	float magnitude;
+	bool stackable;
+	int stacks;
+	int maxStacks;
 	float intelligenceScaling = 0.0f;
 	float faithScaling = 0.0f;
 	float arcaneScaling = 0.0f;
@@ -23,22 +38,18 @@ public:
 	float fatigueCost = 0.0f;
 	float attackSpeed = 0.0f;
 	float range = 0.0f;
-	bool areaOfEffect = false;
-	bool summon = false;
-	bool doesDamage = false;	
-	bool healing = false;
-	bool useOnAlly = false;
-	bool useOnSelf = false;
-	bool buff = false;
+	
 
-	Spell();
-	Spell(bool buff, bool useOnSelf , bool healing, bool useOnAlly, bool summon, bool areaOfEffect, bool applied, std::string name, std::string description,
-		PhysicalDamageType physDmg, MagicDamageType magDmg, float range, float magnitude, bool stackable,
-		int stacks, int maxStacks, float fatigueCost, float arcaneScaling, float intelligenceScaling,
-		float faithScaling, float charismaScaling, float luckScaling, float attackSpeed, bool doesDamage);
-	~Spell();
+	Spell() = default;
+	Spell(bool areaOfEffect, bool summon, bool doesDamage, bool healing, bool useOnAlly, bool useOnSelf, bool buff, int duration,
+		float magnitude, bool stackable, int stacks, int maxStacks, float intelligenceScaling, float faithScaling, float arcaneScaline,
+		float luckScaling, float charismaScaling, float fatigueCost, float attackSpeed, float range);
+	~Spell() = default;
 
-	float calculateSpellDamage(Character* target, Spell spell);
+	nlohmann::json toJson() const;
+	static std::shared_ptr<Spell> fromJson(const nlohmann::json& j);
+
+	float calculateSpellDamage(std::shared_ptr<Character> target, Spell spell);
 
 	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
 
@@ -50,18 +61,18 @@ public:
 
 	//SORCERIES
 	//NECROMANCY
-	Spell* getBonetrousleEffect(Character& caster);
+	std::shared_ptr<Spell> getBonetrousleEffect(Character& caster);
 	//GEOMANCY
-	Spell* getSummonAnimalAllyEffect(Character& caster);
-	Spell* getOakenArmorEffect(Character& caster);
-	Spell* getFruitOfTheEarthEffect(Character& caster);
+	std::shared_ptr<Spell> getSummonAnimalAllyEffect(Character& caster);
+	std::shared_ptr<Spell> getOakenArmorEffect(Character& caster);
+	std::shared_ptr<Spell> getFruitOfTheEarthEffect(Character& caster);
 	//CRYOMANCY
-	Spell* getEndothermicGraspEffect(Character& caster);
+	std::shared_ptr<Spell> getEndothermicGraspEffect(Character& caster);
 	//MELODIC ARTS
 	//MIRACLES
-	Spell* getForceBurstEffect(Character& caster);
+	std::shared_ptr<Spell> getForceBurstEffect(Character& caster);
 	//PYROMANCY
-	Spell* getFireBallEffect(Character& caster);
+	std::shared_ptr<Spell> getFireBallEffect(Character& caster);
 	//AEROMANCY
 	//FULGURAMANCY
 	//VENOMANCY

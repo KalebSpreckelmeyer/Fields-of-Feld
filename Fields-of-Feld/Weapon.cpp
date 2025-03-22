@@ -3,32 +3,61 @@
 #include "Human.h"
 #include <algorithm>
 
-Weapon::Weapon()
-{
-}
-
 Weapon::Weapon(bool specialDamage, std::string name, std::string description, float stability, float reach, 
 	float attackSpeed, float weight, float value, bool twohanded, bool needsAmmo, 
-	WeaponType weaponType, PhysicalDamageType physAttack, MagicDamageType magAttack, 
-	PhysicalDamageType physDefense, MagicDamageType magDefense, EquipSlots slot)
+	WeaponType weaponType, EquipSlots slot)
 	: Item(true, name, description, value, weight, 1.0f, slot),
 		specialDamage(specialDamage), reach(reach), 
 		attackSpeed(attackSpeed), twoHanded(twohanded), needsAmmo(needsAmmo),
-	weaponType(weaponType), stability(stability), physDmgType(physAttack), magDmgType(magAttack), physDefType(physDefense), 
-	magDefType(magDefense)
+	weaponType(weaponType), stability(stability)
 {
 }
 
-Weapon::~Weapon()
+nlohmann::json Weapon::toJson() const
 {
+	return{
+		{"id", id },
+		{ "type", "Weapon"},
+		{ "name", name },
+		{ "description", description },
+		{ "value", value },
+		{ "weight", weight },
+		{ "quantity", quantity },
+		{ "specialDamage", specialDamage },
+		{ "reach", reach },
+		{ "attackSpeed", attackSpeed },
+		{ "twoHanded", twoHanded },
+		{ "needsAmmo", needsAmmo },
+		{ "stability", stability },
+		{ "weaponType", weaponType }
+	};
 }
 
-float Weapon::getWeaponDamage(Character* target, Weapon weapon)
+std::shared_ptr<Item> Weapon::fromJson(const nlohmann::json& j)
+{
+	auto weapon = std::make_shared<Weapon>(
+		j.at("specialDamage"),
+		j.at("name"),
+		j.at("description"),
+		j.at("stability"),
+		j.at("reach"),
+		j.at("attackSpeed"),
+		j.at("weight"),
+		j.at("value"),
+		j.at("twoHanded"),
+		j.at("needsAmmo"),
+		j.at("weaponType"),
+		j.at("slot"));
+	weapon->id = j.at("id");
+	return weapon;
+}
+
+float Weapon::getWeaponDamage(std::shared_ptr<Character> target, Weapon weapon)
 {
 	//Target is human
-	if (dynamic_cast<Human*>(target))
+	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
 	{
-		Human* human = dynamic_cast<Human*>(target);
+		std::shared_ptr<Human> human = std::dynamic_pointer_cast<Human>(target);
 		//GET ARMOR RESISTANCES
 		float cumulativeSlashResist = 0;
 		float cumulativePierceResist = 0;
@@ -46,9 +75,9 @@ float Weapon::getWeaponDamage(Character* target, Weapon weapon)
 		float cumulativeHolyResist = 0;
 		float cumulativeWindResist = 0;
 
-		for (Item* item : target->inventory.equippedItems)
+		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
 		{
-			if (Armor* armor = dynamic_cast<Armor*>(item))
+			if (std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item))
 			{
 				cumulativeSlashResist += armor->getPhysicalResistance(PhysicalDamageType::SLASH);
 				cumulativePierceResist += armor->getPhysicalResistance(PhysicalDamageType::PIERCE);
@@ -117,7 +146,7 @@ float Weapon::getWeaponDamage(Character* target, Weapon weapon)
 		//DAMAGE AFTER RESISTANCES = damage of all damages after resistances applied added together	
 		float weaponDamage = (cumulativeSlashDamage + cumulativePierceDamage + cumulativeBluntDamage + cumulativeChopDamage +
 			cumulativeMagicDamage + cumulativeFireDamage + cumulativeIceDamage + cumulativeShockDamage + cumulativePoisonDamage +
-			cumulativeBleedDamage + cumulativeSleepDamage + cumulativeDarkDamage + cumulativeHolyDamage + cumulativeWindDamage) - human->flatDefense * (human->flatDefense / 500);;
+			cumulativeBleedDamage + cumulativeSleepDamage + cumulativeDarkDamage + cumulativeHolyDamage + cumulativeWindDamage);
 		weaponDamage = std::max(weaponDamage, 0.0f);
 
 		return weaponDamage;
@@ -130,12 +159,12 @@ float Weapon::getWeaponDamage(Character* target, Weapon weapon)
 	}
 }
 
-float Weapon::getWeaponDefense(Character* target)
+float Weapon::getWeaponDefense(std::shared_ptr<Character> target)
 {
 	//Target is human
-	if (dynamic_cast<Human*>(target))
+	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
 	{
-		Human* human = dynamic_cast<Human*>(target);
+		std::shared_ptr<Human> human = std::dynamic_pointer_cast<Human>(target);
 		//GET ARMOR RESISTANCES
 		float cumulativeSlashResist = 0;
 		float cumulativePierceResist = 0;
@@ -153,9 +182,9 @@ float Weapon::getWeaponDefense(Character* target)
 		float cumulativeHolyResist = 0;
 		float cumulativeWindResist = 0;
 
-		for (Item* item : target->inventory.equippedItems)
+		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
 		{
-			if (Armor* armor = dynamic_cast<Armor*>(item))
+			if (std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item))
 			{
 				cumulativeSlashResist += armor->getPhysicalResistance(PhysicalDamageType::SLASH);
 				cumulativePierceResist += armor->getPhysicalResistance(PhysicalDamageType::PIERCE);
@@ -224,4 +253,26 @@ float Weapon::getMagicDefense(MagicDamageType magType)
 {
 	auto it = magicResistance.find(magType);
 	return (it != magicResistance.end()) ? it->second : 0.0f;
+}
+
+float Weapon::getWeaponScalingValue(StatScaling)
+{
+	auto it = scalingStats.find(scalingStat);
+	return (it != scalingStats.end()) ? it->second : 0.0f;
+}
+
+float Weapon::getWeaponRequirementValue(StatScaling)
+{
+	auto it = statRequirements.find(statRequirement);
+	return (it != statRequirements.end()) ? it->second : 0.0f;
+}
+
+void Weapon::setWeaponScalingValue(StatScaling, float scalingValue)
+{
+	scalingStats[scalingStat] = scalingValue;
+}
+
+void Weapon::setWeaponRequirementValue(StatScaling, float requirementValue)
+{
+	statRequirements[statRequirement] = requirementValue;
 }

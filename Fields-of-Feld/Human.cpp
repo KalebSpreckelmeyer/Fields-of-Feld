@@ -8,20 +8,18 @@
 #include <algorithm> 
 #include <iomanip>
 #include "optional"
+#include "Effect.h"
+#include "Enchantment.h"
 
-Human::Human()
-{
-}
-
-Human::Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality personality, float flatDefense, float health, float mana, float strength, float agility, float charisma,
+Human::Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality personality, float health, float fatigue, float strength, float agility, float charisma,
 	float intelligence, float arcane, float faith, float luck, float weightBurden, float castSpeed, float maxWeightBurden,
 	double experience, double experienceToNextLevel,
 	int gold)
 	: Character(isAlly, namedCharacter, true, true, false,
-		"NAME", "DESC", 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+		"NAME", "DESC", 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, inventory, 1.0f,
 		1.0f, CombatFlags::NEUTRAL),
-	flatDefense(flatDefense), isPlayer(isPlayer), classChoice(classChoice), health(health), fatigue(fatigue),
+	isPlayer(isPlayer), classChoice(classChoice), health(health), fatigue(fatigue),
 	strength(strength), agility(agility), charisma(charisma), intelligence(intelligence), 
 	arcane(arcane), faith(faith), luck(luck), weightBurden(weightBurden), castSpeed(castSpeed),
 	maxWeightBurden(maxWeightBurden), experience(experience), experienceToNextLevel(experienceToNextLevel),
@@ -30,16 +28,154 @@ Human::Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality
 	setInitialHumanStats();
 }
 
+nlohmann::json Human::toJson() const {
+	nlohmann::json j;
+
+	// Identity & state
+	j["type"] = "Human"; // Required for proper deserialization
+	j["id"] = id;
+	j["isPlayer"] = isPlayer;
+	j["isAlly"] = isAlly;
+
+	// Enum values stored as integers
+	j["classChoice"] = static_cast<int>(classChoice);
+	j["personality"] = static_cast<int>(personality);
+
+	// Core stats
+	j["health"] = health;
+	j["fatigue"] = fatigue;
+	j["strength"] = strength;
+	j["agility"] = agility;
+	j["charisma"] = charisma;
+	j["intelligence"] = intelligence;
+	j["arcane"] = arcane;
+	j["faith"] = faith;
+	j["luck"] = luck;
+
+	// Load-bearing stats
+	j["weightBurden"] = weightBurden;
+	j["maxWeightBurden"] = maxWeightBurden;
+	j["castSpeed"] = castSpeed;
+
+	// Progression
+	j["experience"] = experience;
+	j["experienceToNextLevel"] = experienceToNextLevel;
+	j["gold"] = gold;
+
+	// Inventory
+	j["inventory"] = inventory.toJson();
+
+	// Spells
+	for (const auto& s : attunedSpells)
+		j["attunedSpells"].push_back(s->toJson());
+
+	for (const auto& s : knownSpells)
+		j["knownSpells"].push_back(s->toJson());
+
+	// Allies
+	for (const auto& ally : allies)
+		j["allies"].push_back(ally->toJson());
+
+	// Tags
+	for (const auto& tag : tags)
+		j["tags"].push_back(*tag); // shared_ptr<std::string> ? string
+
+	// Combat Flags (store as int)
+	for (const auto& flag : combatFlags)
+		j["combatFlags"].push_back(static_cast<int>(flag));
+
+	// Effects
+	for (const auto& eff : effects)
+		j["effects"].push_back(eff->toJson());
+
+	// Resistances / defenses
+	j["defenseValues"] = defenseValues;
+
+	return j;
+}
+
+std::shared_ptr<Character> Human::fromJson(const nlohmann::json& j) {
+	auto c = std::make_shared<Human>();
+
+	// Base values
+	c->id = j.at("id");
+	c->isPlayer = j.at("isPlayer");
+	c->isAlly = j.at("isAlly");
+
+	// Enums (cast from int stored in JSON)
+	c->classChoice = static_cast<Human::CharacterClass>(j.at("classChoice"));
+	c->personality = static_cast<Human::Personality>(j.at("personality"));
+
+	// Core stats
+	c->health = j.at("health");
+	c->fatigue = j.at("fatigue");
+	c->strength = j.at("strength");
+	c->agility = j.at("agility");
+	c->charisma = j.at("charisma");
+	c->intelligence = j.at("intelligence");
+	c->arcane = j.at("arcane");
+	c->faith = j.at("faith");
+	c->luck = j.at("luck");
+
+	// Weight & combat mechanics
+	c->weightBurden = j.at("weightBurden");
+	c->maxWeightBurden = j.at("maxWeightBurden");
+	c->castSpeed = j.at("castSpeed");
+
+	// Progression
+	c->experience = j.at("experience");
+	c->experienceToNextLevel = j.at("experienceToNextLevel");
+	c->gold = j.at("gold");
+
+	// Inventory
+	c->inventory.fromJson(j["inventory"]);
+
+	// Known and attuned spells
+	for (const auto& spell : j["attunedSpells"]) {
+		auto s = std::dynamic_pointer_cast<Spell>(Effect::fromJson(spell));
+		if (s) c->attunedSpells.push_back(s);
+	}
+
+	for (const auto& spell : j["knownSpells"]) {
+		auto s = std::dynamic_pointer_cast<Spell>(Effect::fromJson(spell));
+		if (s) c->knownSpells.push_back(s);
+	}
+
+	// Allies
+	for (const auto& ally : j["allies"]) {
+		c->allies.push_back(Character::fromJson(ally));
+	}
+
+	// Tags
+	for (const auto& tag : j["tags"]) {
+		c->tags.push_back(std::make_shared<std::string>(tag.get<std::string>()));
+	}
+
+	// Combat flags
+	for (const auto& flag : j["combatFlags"]) {
+		c->combatFlags.push_back(static_cast<CombatFlags>(flag.get<int>()));
+	}
+
+	// Active effects
+	for (const auto& eff : j["effects"]) {
+		c->effects.push_back(Effect::fromJson(eff));
+	}
+
+	// Resistances
+	c->defenseValues = j.at("defenseValues");
+
+	return c;
+}
 void Human::setInitialHumanStats() {
 
 	//Get all equipped items
-	Weapon* mainHand = nullptr, * offHand = nullptr, * reserve1 = nullptr, * reserve2 = nullptr;
-	Armor* head = nullptr, * chest = nullptr, * legs = nullptr, * arms = nullptr;
-	Trinket* amulet = nullptr, * ring1 = nullptr, * ring2 = nullptr, * misc = nullptr;
+	std::shared_ptr<Weapon> mainHand,  offHand, reserve1, reserve2;
+	std::shared_ptr<Armor> head, chest, legs, arms;
+	std::shared_ptr<Trinket> amulet, ring1, ring2, misc;
 	inventory.getEquippedItems(mainHand, offHand, reserve1, reserve2, head, chest, legs, arms, amulet, ring1, ring2, misc);
 
 	float backPackWeight = 0;
-	for (Item* item : inventory.backpackItems)
+	for (std::shared_ptr<Item> item : inventory.backpackItems)
 	{
 		if (item) backPackWeight += item->weight;
 	}
@@ -58,20 +194,6 @@ void Human::setInitialHumanStats() {
 	if (ring1) equipmentWeight += ring1->weight;
 	if (ring2) equipmentWeight += ring2->weight;
 
-	// ------------------------------------------------------- ADD MORE ADVANCED CALCULATIONS FOR DEFENSE HERE 
-	float armorValue = 0;
-	//if (head) armorValue += head->defense;
-	//if (chest) armorValue += chest->defense;
-	//if (legs) armorValue += legs->defense;
-	//if (arms) armorValue += arms->defense;
-
-	//exploratory values change as needed
-	damageResistance = armorValue / (armorValue + 500);
-
-	//exploratory values change as needed
-	damageThreshold = armorValue * 0.1;
-
-	//Experience needed to level up per level
 	double baseXP = 100;
 	experienceToNextLevel = baseXP * (std::pow(1.15, static_cast<double>(level)));
 
@@ -80,10 +202,11 @@ void Human::setInitialHumanStats() {
 		(arcane / 3) + (faith / 3) + (luck / 3);
 	healthPoints = maxHealthPoints;
 
-	//Max mana calculation
+	//Max Fatigue calculation
 	maxFatiguePoints = (fatigue * 10) + (arcane * 2) + (intelligence * 2) + (faith * 2);
 	fatiguePoints = maxFatiguePoints;
 
+	//Status Resistances Calculation: ------------------------------------------------------------------- TO DO
 	//crit chance calculation
 	critChance = luck * 0.5f + arcane * 0.25f + agility * 0.1f + strength * 0.1f;
 
@@ -137,13 +260,13 @@ void Human::getSpells()
 {
 
 }
-Human* Human::setCharacterClass(Human::CharacterClass classChoice)
+std::shared_ptr<Human> Human::setCharacterClass(Human::CharacterClass classChoice)
 {
 	switch (classChoice)
 	{
 	case Human::WIZARD:
 	{
-		Human* human = new Human();
+		std::shared_ptr<Human> human = std::make_shared<Human>();
 		//Wizard stats
 		human->isAlive = true;
 		human->isPlayer = true;
@@ -160,7 +283,7 @@ Human* Human::setCharacterClass(Human::CharacterClass classChoice)
 	}
 	case Human::KNIGHT:
 	{
-		Human* human = new Human();
+		std::shared_ptr<Human> human = std::make_shared<Human>();
 		//Wizard stats
 		human->isAlive = true;
 		human->isPlayer = true;
@@ -177,7 +300,7 @@ Human* Human::setCharacterClass(Human::CharacterClass classChoice)
 	}
 	case Human::CLERIC:
 	{
-		Human* human = new Human();
+		std::shared_ptr<Human> human = std::make_shared<Human>();
 		//Wizard stats
 		human->isAlive = true;
 		human->isPlayer = true;
@@ -194,7 +317,7 @@ Human* Human::setCharacterClass(Human::CharacterClass classChoice)
 	}
 	case Human::HUNTER:
 	{
-		Human* human = new Human();
+		std::shared_ptr<Human> human = std::make_shared<Human>();
 		//Wizard stats
 		human->isAlive = true;
 		human->isPlayer = true;
@@ -211,7 +334,7 @@ Human* Human::setCharacterClass(Human::CharacterClass classChoice)
 	}
 	case Human::HIGHLANDER:
 	{
-		Human* human = new Human();
+		std::shared_ptr<Human> human = std::make_shared<Human>();
 		//Wizard stats
 		human->isAlive = true;
 		human->isPlayer = true;
@@ -228,7 +351,7 @@ Human* Human::setCharacterClass(Human::CharacterClass classChoice)
 	}
 	case Human::BATTLEMAGE:
 	{
-		Human* human = new Human();
+		std::shared_ptr<Human> human = std::make_shared<Human>();
 		//Wizard stats
 		human->isAlive = true;
 		human->isPlayer = true;
@@ -245,7 +368,7 @@ Human* Human::setCharacterClass(Human::CharacterClass classChoice)
 	}
 	case Human::WRETCH:
 	{
-		Human* human = new Human();
+		std::shared_ptr<Human> human = std::make_shared<Human>();
 		//Wizard stats
 		human->isAlive = true;
 		human->isPlayer = true;
@@ -262,7 +385,7 @@ Human* Human::setCharacterClass(Human::CharacterClass classChoice)
 	}
 	case Human::BANDIT:
 	{
-		Human* human = new Human();
+		std::shared_ptr<Human> human = std::make_shared<Human>();
 		//Wizard stats
 		human->isAlive = true;
 		human->isPlayer = true;
@@ -279,7 +402,7 @@ Human* Human::setCharacterClass(Human::CharacterClass classChoice)
 	}
 	default:
 	{
-		Human* human = new Human();
+		std::shared_ptr<Human> human = std::make_shared<Human>();
 		//Wizard stats
 		human->isAlive = true;
 		human->isPlayer = true;
@@ -301,9 +424,9 @@ float Human::softCapMultiplier(float statValue) {
 	if (statValue < 60) return 30 + (statValue - 30) * 0.75f;  // 75% scaling from 30-60
 	return 52.5f + (statValue - 60) * 0.5f;           // 50% scaling beyond 60
 }
-void Human::takeDamage(Character* attacker, Character* target, Weapon* weapon, Ammunition* ammunition, 
-	ThrownConsumable* consumable, Spell* spell, std::optional<std::vector<Character*>>& allies, 
-	std::optional<std::vector<Character*>>& enemyAllies)
+void Human::takeDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon, std::shared_ptr<Ammunition> ammunition, 
+	std::shared_ptr<ThrownConsumable> consumable, Spell* spell, std::optional<std::vector<std::shared_ptr<Character>>>& allies, 
+	std::optional<std::vector<std::shared_ptr<Character>>>& enemyAllies)
 {
 	//if (!allies)
 	//{
@@ -327,7 +450,7 @@ void Human::takeDamage(Character* attacker, Character* target, Weapon* weapon, A
 	//}
 
 	////checks if the attacker is a human or a creature
-	//if (Human* humanAttacker = dynamic_cast<Human*>(attacker))
+	//if (std::shared_ptr<Human> humanAttacker = dynamic_cast<std::shared_ptr<Human>>(attacker))
 	//{
 	//	//random number generator for crit chance, rolls a number between 1 - (100 - luck ). If the number is less than the crit chance, it's a crit
 	//	int randomNum = (rand() % 100 - humanAttacker->luck) + 1;
@@ -346,7 +469,7 @@ void Human::takeDamage(Character* attacker, Character* target, Weapon* weapon, A
 	//		spellDamage *= critMultiplier;
 	//		if (humanAttacker->isPlayer)
 	//		{
-	//			for (Effect* effect : spell->effects)
+	//			for (std::shared_ptr<Effect> effect : spell->effects)
 	//			{
 	//				//don't want to run this code if the effect is a summoned animal
 	//				if (effect->doesDamage || spell->doesDamage)
@@ -374,7 +497,7 @@ void Human::takeDamage(Character* attacker, Character* target, Weapon* weapon, A
 	//		}
 	//		else
 	//		{
-	//			for (Effect* effect : spell->effects)
+	//			for (std::shared_ptr<Effect> effect : spell->effects)
 	//			{
 	//				if (effect->doesDamage || spell->doesDamage)
 	//				{
