@@ -60,7 +60,7 @@ public:
 	float maxShockPoints = 0.0f;
 	float sleepPoints = 0.0f;
 	float maxSleepPoints = 0.0f;
-	float distanceFromPlayer = 0.0f;
+	std::unordered_map<int, float> position;
 	float level = 1.0f;
 
 	//Flags for combat scenarios
@@ -137,7 +137,7 @@ public:
 		float burnPoints, float maxBurnPoints, float poisonPoints,
 		float maxPoisonPoints, float frostPoints, float maxFrostPoints,
 		float shockPoints, float maxShockPoints, float sleepPoints,
-		float maxSleepPoints, const Inventory& inventory, float distanceFromPlayer,
+		float maxSleepPoints, const Inventory& inventory,
 		float level, CombatFlags combatFlag);
 
 

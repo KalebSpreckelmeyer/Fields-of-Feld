@@ -106,8 +106,8 @@ int main()
 	player->faith = 100;
 	force = force->getForceBurstEffect(*player);
 	player->attunedSpells.push_back(force);
-	bandit1->distanceFromPlayer = 10;
-	bandit2->distanceFromPlayer = 30;
+	bandit1->position[player->getId()] = 10;
+	bandit2->position[player->getId()] = 30;
 	//shared_ptr<Weapon> sword = std::make_shared<Weapon>(false, "Sword", "A simple steel sword", 1, 10, 20, 1, 10, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
 	//sword->setPhysicalDamage(PhysicalDamageType::SLASH, 10);
 	//sword->setWeaponRequirementValue(StatScaling::STRENGTH, 20);
@@ -294,9 +294,9 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 		float minDistanceFromPlayer = 1000;
 		for (int i = 0; i < livingEnemiesPointers.size(); i++)
 		{
-			if (livingEnemiesPointers[i]->distanceFromPlayer <= minDistanceFromPlayer)
+			if (livingEnemiesPointers[i]->position[player->getId()] <= minDistanceFromPlayer)
 			{
-				minDistanceFromPlayer = livingEnemiesPointers[i]->distanceFromPlayer;
+				minDistanceFromPlayer = livingEnemiesPointers[i]->position[player->getId()];
 			}
 		}
 		//used to determine the color of menu text in the attack option (gold for in range, grey for out of range)
@@ -682,17 +682,17 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 						int numEnemiesInRangeBackward = 0;
 						for (int i = 0; i < livingEnemiesPointers.size(); i++)
 						{
-							if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach
-								|| livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach)
+							if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach
+								|| livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach)
 							{
 								numEnemiesInRangeForward++;
 							}
-							if (livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled * 0.8 <= mainHand->reach
-								|| livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled * 0.8 <= offHand->reach)
+							if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled * 0.8 <= mainHand->reach
+								|| livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled * 0.8 <= offHand->reach)
 							{
 								numEnemiesInRangeBackward++;
 							}
-							if (livingEnemiesPointers[i]->distanceFromPlayer <= mainHand->reach || livingEnemiesPointers[i]->distanceFromPlayer <= offHand->reach)
+							if (livingEnemiesPointers[i]->position[player->getId()] <= mainHand->reach || livingEnemiesPointers[i]->position[player->getId()] <= offHand->reach)
 							{
 								numEnemiesInRange++;
 							}
@@ -729,50 +729,50 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								for (int i = 0; i < livingEnemiesPointers.size(); i++)
 								{
 									//in range of both weapons and at least one spell
-									if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach &&
-										livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach &&
+									if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach &&
+										livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach &&
 										spellsInRange > 0)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< ", and " << offHand->name << ", and attuned spell(s)" << endl;
 									}
 									//in range of both weapons and no spells
-									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach &&
-										livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach &&
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach &&
+										livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach &&
 										spellsInRange == 0)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< ", and " << offHand->name << endl;
 									}
 									//in range of mainhand and at least one spell
-									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach &&
-										spellsInRange > 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > offHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach &&
+										spellsInRange > 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > offHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< ", and attuned spell(s)" << endl;
 									}
 									//in range of mainhand and no spells
-									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= mainHand->reach &&
-										spellsInRange == 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > offHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach &&
+										spellsInRange == 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > offHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name << endl;
 									}
 									//in range of offhand and at least one spell
-									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach &&
-										spellsInRange > 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > mainHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach &&
+										spellsInRange > 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > mainHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name
 											<< ", and attuned spell(s)" << endl;
 									}
 									//in range of offhand and no spells
-									else if (livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled <= offHand->reach &&
-										spellsInRange == 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > mainHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach &&
+										spellsInRange == 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > mainHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name << endl;
 									}
 									//in range of at least one spell
-									else if (spellsInRange > 0 && livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > offHand->reach
-										&& livingEnemiesPointers[i]->distanceFromPlayer - distanceTraveled > mainHand->reach)
+									else if (spellsInRange > 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > offHand->reach
+										&& livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > mainHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of attuned spell(s)" << endl;
 									}
@@ -785,8 +785,8 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								advanceChoice = validateInput(1, livingEnemiesPointers.size());
 
 								//check if the player is in range of the enemy they selected
-								if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled > mainHand->reach
-									&& livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled > offHand->reach
+								if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled > mainHand->reach
+									&& livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled > offHand->reach
 									&& spellsInRange == 0)
 								{
 									//They're not in range of choice, go back
@@ -879,7 +879,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled <= mainHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled <= mainHand->reach)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = mainHand;
@@ -962,7 +962,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled <= mainHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled <= mainHand->reach)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = offHand;
@@ -1056,7 +1056,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 										else
 										{
-											if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer - distanceTraveled <= mainHand->reach)
+											if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled <= mainHand->reach)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
@@ -1146,7 +1146,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
 											}
 											int meleeAttackChoice = validateInput(1, livingEnemiesPointers.size());
-											if (livingEnemiesPointers[meleeAttackChoice - 1]->distanceFromPlayer - distanceTraveled <= offHand->reach)
+											if (livingEnemiesPointers[meleeAttackChoice - 1]->position[player->getId()] - distanceTraveled <= offHand->reach)
 											{
 												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
 												inputChosen = true;
@@ -1183,17 +1183,17 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 							{
 								for (int i = 0; i < livingEnemiesPointers.size(); i++)
 								{
-									if (livingEnemiesPointers[i]->distanceFromPlayer <= mainHand->reach &&
-										livingEnemiesPointers[i]->distanceFromPlayer <= offHand->reach)
+									if (livingEnemiesPointers[i]->position[player->getId()] <= mainHand->reach &&
+										livingEnemiesPointers[i]->position[player->getId()] <= offHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< " and " << offHand->name << endl;
 									}
-									else if (livingEnemiesPointers[i]->distanceFromPlayer <= offHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] <= offHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name << endl;
 									}
-									else if (livingEnemiesPointers[i]->distanceFromPlayer <= mainHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] <= mainHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name << endl;
 									}
@@ -1206,8 +1206,8 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								advanceChoice = validateInput(1, livingEnemiesPointers.size());
 
 								//check if the player is in range of the enemy they selected
-								if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer > mainHand->reach
-									&& livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer > offHand->reach)
+								if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] > mainHand->reach
+									&& livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] > offHand->reach)
 								{
 									//They're not in range of choice, go back
 									cout << "You are not in range of that enemy!" << endl;
@@ -1292,7 +1292,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer <= mainHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] <= mainHand->reach)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = mainHand;
@@ -1376,7 +1376,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer <= offHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] <= offHand->reach)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = offHand;
@@ -1470,7 +1470,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 										else
 										{
-											if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer <= mainHand->reach)
+											if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] <= mainHand->reach)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
@@ -1560,7 +1560,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
 											}
 											int meleeAttackChoice = validateInput(1, livingEnemiesPointers.size());
-											if (livingEnemiesPointers[meleeAttackChoice - 1]->distanceFromPlayer <= offHand->reach)
+											if (livingEnemiesPointers[meleeAttackChoice - 1]->position[player->getId()] <= offHand->reach)
 											{
 												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
 												weaponChoice = mainHand;
@@ -1597,17 +1597,17 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 							{
 								for (int i = 0; i < livingEnemiesPointers.size(); i++)
 								{
-									if (livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled <= mainHand->reach &&
-										livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled <= offHand->reach)
+									if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= mainHand->reach &&
+										livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= offHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< " and " << offHand->name << endl;
 									}
-									else if (livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled <= offHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= offHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name << endl;
 									}
-									else if (livingEnemiesPointers[i]->distanceFromPlayer + distanceTraveled <= mainHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= mainHand->reach)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name << endl;
 									}
@@ -1620,8 +1620,8 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								advanceChoice = validateInput(1, livingEnemiesPointers.size());
 
 								//check if the player is in range of the enemy they selected
-								if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled > mainHand->reach
-									&& livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled > offHand->reach)
+								if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled > mainHand->reach
+									&& livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled > offHand->reach)
 								{
 									//They're not in range of choice, go back
 									cout << "You are not in range of that enemy!" << endl;
@@ -1706,7 +1706,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled <= mainHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled <= mainHand->reach)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													inputChosen = true;
@@ -1788,7 +1788,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled <= offHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled <= offHand->reach)
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = offHand;
@@ -1881,7 +1881,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 										else
 										{
-											if (livingEnemiesPointers[advanceChoice - 1]->distanceFromPlayer + distanceTraveled <= mainHand->reach)
+											if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled <= mainHand->reach)
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
@@ -1970,7 +1970,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
 											}
 											int meleeAttackChoice = validateInput(1, livingEnemiesPointers.size());
-											if (livingEnemiesPointers[meleeAttackChoice - 1]->distanceFromPlayer + distanceTraveled <= offHand->reach)
+											if (livingEnemiesPointers[meleeAttackChoice - 1]->position[player->getId()] + distanceTraveled <= offHand->reach)
 											{
 												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
 												weaponChoice = mainHand;
@@ -2487,7 +2487,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								
 								// Enemy Turn
 								cout << "ENEMY TURN" << endl;
-								cout << combatants[i]->name << " DISTANCE: " << combatants[i]->distanceFromPlayer << endl;
+								cout << combatants[i]->name << " DISTANCE: " << combatants[i]->position[player->getId()] << endl;
 							}
 						}
 					}
@@ -2639,12 +2639,12 @@ void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, 
 		else if (playerMovement > 0) cout << "You retreat by " << abs(playerMovement) << " units!" << endl;
 		else cout << "You stand your ground!" << endl;
 
-		targetChoice->distanceFromPlayer += playerMovement;
+		targetChoice->position[player->getId()] += playerMovement;
 
 		//Printing if the player cannot move towards the enemy any closer
-		if (targetChoice->distanceFromPlayer <= 0)
+		if (targetChoice->position[player->getId()] <= 0)
 		{
-			targetChoice->distanceFromPlayer = 0;
+			targetChoice->position[player->getId()] = 0;
 			cout << "You stand close enough to touch " << targetChoice->name << "!" << endl;
 		}
 

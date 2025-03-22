@@ -20,7 +20,7 @@ Character::Character(bool isAlly, bool namedCharacter, bool isAlive, bool active
 	float burnPoints, float maxBurnPoints, float poisonPoints,
 	float maxPoisonPoints, float frostPoints, float maxFrostPoints,
 	float shockPoints, float maxShockPoints, float sleepPoints,
-	float maxSleepPoints, const Inventory& inventory, float distanceFromPlayer,
+	float maxSleepPoints, const Inventory& inventory,
 	float level, CombatFlags combatFlag) : id(nextId++),
 	isAlly(isAlly), namedCharacter(namedCharacter), isAlive(isAlive), active(active), alert(alert), name(name), description(description),
 	confidenceLevel(confidenceLevel), healthPoints(healthPoints), maxHealthPoints(maxHealthPoints), fatiguePoints(fatiguePoints),
@@ -28,7 +28,7 @@ Character::Character(bool isAlly, bool namedCharacter, bool isAlive, bool active
 	bleedPoints(bleedPoints), maxBleedPoints(maxBleedPoints),
 	burnPoints(burnPoints), maxBurnPoints(maxBurnPoints), poisonPoints(poisonPoints), maxPoisonPoints(maxPoisonPoints), frostPoints(frostPoints),
 	maxFrostPoints(maxFrostPoints), shockPoints(shockPoints), maxShockPoints(maxShockPoints),
-	sleepPoints(sleepPoints), maxSleepPoints(maxSleepPoints), inventory(inventory), distanceFromPlayer(distanceFromPlayer), level(level)
+	sleepPoints(sleepPoints), maxSleepPoints(maxSleepPoints), inventory(inventory), level(level), combatFlag(combatFlag)
 {
 
 }
@@ -217,7 +217,7 @@ void Character::fireRangedWeapon(std::shared_ptr<Character> target, std::shared_
 			float farRange = weapon->reach + ammo->range;
 
 			//normalized distance of the attacker from their target
-			float normalizedDistance = std::clamp((target->distanceFromPlayer - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
+			float normalizedDistance = std::clamp((target->position[this->id] - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
 
 			//raw damage of the arrow
 			float arrowDamage = max((maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage) * damageModifier), 1.0f);
@@ -420,7 +420,7 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 		float farRange = consumable->reach;
 
 		//normalized distance of the attacker from their target
-		float normalizedDistance = std::clamp((target->distanceFromPlayer - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
+		float normalizedDistance = std::clamp((target->position[this->id] - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
 
 		//raw damage of the arrow
 		float consumableDamage = max((maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage) * damageModifier), 1.0f);
@@ -579,7 +579,7 @@ bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, s
 				//print the spell out as grey if the player doesn't have enough fatigue to cast it or if it is out of range of all targets
 				// also checks if the spell in question is used on an ally or self, in which case let it go through because those ones have a range of 0
 				if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints
-					&& this->attunedSpells[i]->range >= target->distanceFromPlayer
+					&& this->attunedSpells[i]->range >= target->position[this->id]
 					&& !this->attunedSpells[i]->useOnSelf
 					&& !this->attunedSpells[i]->useOnAlly)
 				{
@@ -592,7 +592,7 @@ bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, s
 					std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
 					numCategories++;
 				}
-				else if (this->attunedSpells[i]->fatigueCost > this->fatiguePoints && this->attunedSpells[i]->range < target->distanceFromPlayer
+				else if (this->attunedSpells[i]->fatigueCost > this->fatiguePoints && this->attunedSpells[i]->range < target->position[this->id]
 					&& !this->attunedSpells[i]->useOnSelf && !this->attunedSpells[i]->useOnAlly)
 				{
 					std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
@@ -666,7 +666,7 @@ bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, s
 				break;
 			}
 			//Spell is out of ransge
-			if (this->attunedSpells[choice - 1]->range < target->distanceFromPlayer)
+			if (this->attunedSpells[choice - 1]->range < target->position[this->id])
 			{
 				std::cout << " You are not in range of that target with " << this->attunedSpells[choice - 1]->name << std::endl;
 			}
@@ -816,7 +816,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 					{
 						for (std::shared_ptr<Effect> effect : spell.effects)
 						{
-							if (ally->distanceFromPlayer <= effect->range)
+							if (ally->position[this->id] <= effect->range)
 							{
 
 								ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
@@ -852,7 +852,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 					{
 						for (std::shared_ptr<Effect> effect : spell.effects)
 						{
-							if (ally->distanceFromPlayer <= effect->range)
+							if (ally->position[this->id] <= effect->range)
 							{
 
 								ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
@@ -899,7 +899,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 				//apply effects to all allies
 				for (std::shared_ptr<Character> ally : target->allies)
 				{
-					if (ally->distanceFromPlayer <= 10)
+					if (ally->position[this->id] <= 10)
 					{
 						ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
 						for (std::shared_ptr<Effect> effect : spell.effects)
@@ -911,7 +911,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 			
 		}
 		//SINGLE TARGET DAMAGE
-		else if (spell.range >= target->distanceFromPlayer - playerMovement)
+		else if (spell.range >= target->position[this->id] - playerMovement)
 		{
 			//SUBTRACT FATIGUE
 			this->fatiguePoints -= spell.fatigueCost;

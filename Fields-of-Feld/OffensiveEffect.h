@@ -148,3 +148,17 @@ public:
 	std::string getType() const;
 };
 
+class ExplosionEffect : public TimedEffect
+{
+public:
+	float range = 0.0f;
+	ExplosionEffect(float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
+
+	void apply(Character& target) override;
+	void tick(Character& target) override;
+
+	nlohmann::json toJson() const override;
+	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
+
+	std::string getType() const;
+};

@@ -18,7 +18,7 @@ public:
 		float burnPoints, float maxBurnPoints, float poisonPoints,
 		float maxPoisonPoints, float frostPoints, float maxFrostPoints,
 		float shockPoints, float maxShockPoints, float sleepPoints,
-		float maxSleepPoints, const Inventory& inventory, float distanceFromPlayer, CombatFlags combatFlag);
+		float maxSleepPoints, const Inventory& inventory, CombatFlags combatFlag);
 
 	~Creature() override = default;
 

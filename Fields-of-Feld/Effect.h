@@ -45,6 +45,8 @@ public:
 	virtual void tick(Character& target) = 0;
 	virtual bool isExpired() const = 0;
 
+	virtual std::string getType() const = 0;
+
 	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
 
 	void setMagicDamage(MagicDamageType magType, float magDamage);

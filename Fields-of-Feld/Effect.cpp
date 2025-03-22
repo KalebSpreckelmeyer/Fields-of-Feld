@@ -43,6 +43,35 @@ std::shared_ptr<Effect> Effect::fromJson(const nlohmann::json& j) {
 	if (type == "Knockback") return KnockbackEffect::fromJson(j);
 	if (type == "Fear") return FearEffect::fromJson(j);
 	if (type == "ArmorPenetration") return ArmorPenetrationEffect::fromJson(j);
+	if (type == "Explosion") return ExplosionEffect::fromJson(j);
+	//Passive Effects
+	if (type == "FatigueBuff") return FatigueBuff::fromJson(j);
+	if (type == "HealthBuff") return HealthBuff::fromJson(j);
+	if (type == "CastSpeed") return CastSpeed::fromJson(j);
+	if (type == "Summon") return Summon::fromJson(j);
+	if (type == "ArmorBuff") return ArmorBuff::fromJson(j);
+	if (type == "Healing") return Healing::fromJson(j);
+	//Consumable Effects
+	if (type == "RestoreHealth") return RestoreHealthEffect::fromJson(j);
+	if (type == "RestoreFatigue") return RestoreFatigueEffect::fromJson(j);
+	if (type == "MaxHealth") return MaxHealthEffect::fromJson(j);
+	if (type == "MaxFatigue") return MaxFatigueEffect::fromJson(j);
+	if (type == "HealthRegen") return HealthRegenEffect::fromJson(j);
+	if (type == "FatigueRegen") return FatigueRegenEffect::fromJson(j);
+	if (type == "AttackSpeed") return AttackSpeedEffect::fromJson(j);
+	if (type == "CastSpeed") return CastSpeedEffect::fromJson(j);
+	if (type == "Speed") return SpeedEffect::fromJson(j);
+	if (type == "BlockChance") return BlockChanceEffect::fromJson(j);
+	if (type == "DodgeChance") return DodgeChanceEffect::fromJson(j);
+	if (type == "CritChance") return CritChanceEffect::fromJson(j);
+	if (type == "Resistance") return ResistanceEffect::fromJson(j);
+	if (type == "Escape") return EscapeEffect::fromJson(j);
+	if (type == "Resurrect") return ResurrectEffect::fromJson(j);
+	if (type == "Attribute") return AttributeEffect::fromJson(j);
+	if (type == "Random") return RandomEffect::fromJson(j);
+	//Defensive Effects
+	if (type == "Thorns") return ThornsEffect::fromJson(j);
+	if (type == "Aura") return AuraEffect::fromJson(j);
 
 	throw std::runtime_error("Unknown effect type: " + type);
 }
@@ -1070,7 +1099,7 @@ void Effect::applyDefensiveEffect(std::shared_ptr<Effect> effect, std::shared_pt
 	if (effect == nullptr) return;
 	if (effect->name == "Shocking Thorns")
 	{
-		if (attacker->distanceFromPlayer <= effect->range)
+		if (attacker->position[wielder->getId()] <= effect->range)
 		{
 			attacker->healthPoints -= effect->getEffectDamage(attacker, effect);
 			if (attacker->namedCharacter) std::cout << dye::light_yellow(" " + attacker->name) << " is" << dye::light_purple(" SHOCKED") <<
@@ -1088,7 +1117,7 @@ void Effect::applyDefensiveEffect(std::shared_ptr<Effect> effect, std::shared_pt
 	}
 	if (effect->name == "Blood Splash")
 	{
-		if (attacker->distanceFromPlayer <= effect->range)
+		if (attacker->position[wielder->getId()] <= effect->range)
 		{
 			attacker->bleedPoints += effect->getEffectDamage(attacker, effect);
 			if (attacker->namedCharacter) std::cout << dye::light_yellow(" " + attacker->name) << " is coated in " << dye::light_red("blood") <<
@@ -1109,7 +1138,7 @@ void Effect::applyDefensiveEffect(std::shared_ptr<Effect> effect, std::shared_pt
 	}
 	if (effect->name == "Frost Armor")
 	{
-		if (attacker->distanceFromPlayer <= effect->range)
+		if (attacker->position[wielder->getId()] <= effect->range)
 		{
 			attacker->frostPoints += effect->getEffectDamage(attacker, effect);
 			if (attacker->namedCharacter) std::cout << dye::light_yellow(" " + attacker->name) << " is affected by the" << dye::light_aqua(" frigid air") <<
@@ -1332,10 +1361,10 @@ void Effect::applyOffensiveEffect(std::shared_ptr<Effect> effect, std::shared_pt
 		effect->applied = true;
 		for (int i = 0; i < target->allies.size(); i++)
 		{
-			if (target->distanceFromPlayer <= effect->range)
+			if (target->position[attacker->getId()] <= effect->range)
 			{
 				float knockback = magnitude;
-				target->distanceFromPlayer += knockback;
+				target->position[attacker->getId()] += knockback;
 				if (target->namedCharacter) std::cout << " " << dye::light_yellow(target->name) << " is hit by a" << dye::yellow(" FORCE BURST!") << std::endl;
 				if (target->namedCharacter) std::cout << " " << dye::light_yellow(target->name) << " is launched backwards by " << knockback << " units!" << std::endl;
 				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " is hit by a" << dye::yellow(" FORCE BURST!") << std::endl;

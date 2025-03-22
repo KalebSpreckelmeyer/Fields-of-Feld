@@ -11,7 +11,7 @@ Creature::Creature(bool namedCharacter, bool isAlly, bool isAlive, bool active, 
 	float burnPoints, float maxBurnPoints, float poisonPoints,
 	float maxPoisonPoints, float frostPoints, float maxFrostPoints,
 	float shockPoints, float maxShockPoints, float sleepPoints,
-	float maxSleepPoints, const Inventory& inventory, float distanceFromPlayer, CombatFlags combatFlag)
+	float maxSleepPoints, const Inventory& inventory, CombatFlags combatFlag)
     : Character(isAlly, namedCharacter, isAlive, active, alert,
 		name, description, confidenceLevel,
 		healthPoints, maxHealthPoints, fatiguePoints,
@@ -20,7 +20,7 @@ Creature::Creature(bool namedCharacter, bool isAlly, bool isAlive, bool active, 
 		burnPoints, maxBurnPoints, poisonPoints,
 		 maxPoisonPoints, frostPoints, maxFrostPoints,
 		 shockPoints, maxShockPoints, sleepPoints,
-		 maxSleepPoints, inventory, distanceFromPlayer,
+		 maxSleepPoints, inventory,
 		level, combatFlag), damage(damage), reach(reach) {
 }
 
@@ -68,7 +68,7 @@ nlohmann::json Creature::toJson() const {
     j["maxSleepPoints"] = maxSleepPoints;
 
     // Position
-    j["distanceFromPlayer"] = distanceFromPlayer;
+    j["position"] = position;
 
     // Combat flags
     for (const auto& flag : combatFlags)
@@ -134,7 +134,7 @@ std::shared_ptr<Character> Creature::fromJson(const nlohmann::json& j) {
     c->maxSleepPoints = j.at("maxSleepPoints");
 
     // Positioning
-    c->distanceFromPlayer = j.at("distanceFromPlayer");
+    c->position = j.at("position");
 
     // Combat behavior
     for (const auto& flag : j["combatFlags"])

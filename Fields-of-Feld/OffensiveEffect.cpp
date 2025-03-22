@@ -429,3 +429,48 @@ std::shared_ptr<Effect> ArmorPenetrationEffect::fromJson(const nlohmann::json& j
 	int maxStacks = j.at("maxStacks");
 	return std::make_shared<ArmorPenetrationEffect>(duration, magnitude, stackable, stacks, maxStacks);
 }
+
+// ------------------------------------------ Explosion ------------------------------------------ //
+
+ExplosionEffect::ExplosionEffect(float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks) :
+	TimedEffect(duration, magnitude, stackable, stacks, maxStacks)
+{
+
+}
+
+std::string ExplosionEffect::getType() const
+{
+	return "Explosion";
+}
+
+void ExplosionEffect::apply(Character& target)
+{
+}
+
+void ExplosionEffect::tick(Character& target)
+{
+}
+
+nlohmann::json ExplosionEffect::toJson() const
+{
+	return{
+		{"type", getType()},
+		{"range", range},
+		{"duration", duration},
+		{"magnitude", magnitude},
+		{"stackable", stackable},
+		{"stacks", stacks},
+		{"maxStacks", maxStacks}
+	};
+}
+
+std::shared_ptr<Effect> ExplosionEffect::fromJson(const nlohmann::json& j)
+{
+	float range = j.at("range");
+	int duration = j.at("duration");
+	float magnitude = j.at("magnitude");
+	bool stackable = j.at("stackable");
+	int stacks = j.at("stacks");
+	int maxStacks = j.at("maxStacks");
+	return std::make_shared<ExplosionEffect>(range, duration, magnitude, stackable, stacks, maxStacks);
+}

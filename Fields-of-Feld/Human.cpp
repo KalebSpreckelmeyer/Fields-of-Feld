@@ -17,7 +17,7 @@ Human::Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality
 	int gold)
 	: Character(isAlly, namedCharacter, true, true, false,
 		"NAME", "DESC", 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, inventory, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, inventory,
 		1.0f, CombatFlags::NEUTRAL),
 	isPlayer(isPlayer), classChoice(classChoice), health(health), fatigue(fatigue),
 	strength(strength), agility(agility), charisma(charisma), intelligence(intelligence), 
