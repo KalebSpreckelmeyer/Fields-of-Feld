@@ -22,6 +22,11 @@
 #include "Effect.h"
 #include "Spell.h"
 #include "Potion.h"
+#include "DefensiveEffect.h"
+#include "OffensiveEffect.h"
+#include "ConsumableEffect.h"
+#include "PassiveEffect.h"
+#include <fstream>
 
 using namespace std;
 using json = nlohmann::json;
@@ -47,9 +52,10 @@ void openCombat(std::shared_ptr<Human> player, shared_ptr<Character> enemy);
 //PRE:
 //POST:
 void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, std::shared_ptr<Ammunition> ammoChoice, shared_ptr<Spell> spellChoice, shared_ptr<Character> targetChoice, std::shared_ptr<ThrownConsumable> thrownConsumableChoice,
-	std::shared_ptr<Consumable> consumableChoice, float playerMovement);
+	std::shared_ptr<Consumable> consumableChoice, float playerMovement, bool onlyMove);
 #pragma endregion Function Declarations
 extern void setupDialogue(std::vector<Dialogue>& dialogues, shared_ptr<Character> player, shared_ptr<Character> npc);
+
 
 int main()
 {
@@ -92,35 +98,52 @@ int main()
 	//} while (npc->healthPoints > 0);
 
 
+	std::ifstream inFile("player.json");
+	if (!inFile) {
+		std::cerr << "Failed to open player.json" << std::endl;
+		return 0;
+	}
 
+	nlohmann::json j;
 
-	auto player = make_shared<Human>();
+	inFile >> j;
+
+	std::shared_ptr<Character> loadedChar = Character::fromJson(j);
+	std::shared_ptr<Human> player = std::dynamic_pointer_cast<Human>(loadedChar);
+
+	if (!player) {
+		std::cerr << "Failed to cast loaded character to Human." << std::endl;
+		return 0;
+	}
+
+	cout << fixed << setprecision(2) << endl;
 	auto ally1 = make_shared<Human>();
 	auto bandit1 = make_shared<Human>();
 	auto bandit2 = make_shared<Human>();
 	player->allies.push_back(ally1);
+	player->position[bandit1->getId()] = 10;
+	player->position[bandit2->getId()] = 20;
 	bandit1->allies.push_back(bandit2);
 	bandit2->allies.push_back(bandit1);
-	//shared_ptr<Item> staff = std::make_shared<Weapon>("Staff", "A simple wooden staff", 1, 200, 20, 1, 10, false, false, Weapon::WeaponType::STAFF, Item::EquipSlots::OFFHAND);
+	shared_ptr<Item> staff = std::make_shared<Weapon>(false, "Staff", "A simple wooden staff", 1, 200, 20, 1, 10, false, false, Weapon::WeaponType::STAFF, Item::EquipSlots::OFFHAND);
 	shared_ptr<Spell> force;
-	player->faith = 100;
+	player->faith = 20;
 	force = force->getForceBurstEffect(*player);
-	player->attunedSpells.push_back(force);
 	bandit1->position[player->getId()] = 10;
 	bandit2->position[player->getId()] = 30;
-	//shared_ptr<Weapon> sword = std::make_shared<Weapon>(false, "Sword", "A simple steel sword", 1, 10, 20, 1, 10, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
-	//sword->setPhysicalDamage(PhysicalDamageType::SLASH, 10);
-	//sword->setWeaponRequirementValue(StatScaling::STRENGTH, 20);
+	shared_ptr<Weapon> sword = std::make_shared<Weapon>(false, "Sword", "A simple steel sword", 1, 10, 50, 1, 10, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+	sword->setPhysicalDamage(PhysicalDamageType::SLASH, 30);
+	sword->setWeaponRequirementValue(StatScaling::STRENGTH, 1);
 	////cout << sword->getWeaponRequirementValue(StatScaling::STRENGTH) << endl;
-	//player->inventory.equippedItems.push_back(sword);
-	//player->inventory.equippedItems.push_back(staff);
+	player->inventory.equippedItems.push_back(sword);
+	player->inventory.equippedItems.push_back(staff);
 	bandit1->name = "Bandit 1";
 	bandit2->name = "Bandit 2";
 	bandit1->speed = 250;
 	bandit2->speed = 100;
 	ally1->speed = 50;
 	player->speed = 500;
-	player->name = "BING BONG";
+	player->name = "Player";
 	ally1->name = "ALLY 1";
 	//staff->hasBeenInitialized = true;
 	player->isPlayer = true;
@@ -131,21 +154,34 @@ int main()
 	bandit1->maxHealthPoints = 5000;
 	bandit2->healthPoints = 5000;
 	bandit2->maxHealthPoints = 5000;
-	player->arcane = 20;
-	player->intelligence = 100;
+	bandit1->poisonPoints = 200;
+	bandit2->poisonPoints = 200;
+	bandit1->maxPoisonPoints = 200;
+	bandit2->maxPoisonPoints = 200;
+	bandit1->bleedPoints = 200;
+	bandit1->maxBleedPoints = 200;
+	bandit2->bleedPoints = 200;
+	bandit2->maxBleedPoints = 200;
+
+	player->arcane = 50;
+	player->intelligence = 50;
+	player->faith = 50;
+
 	shared_ptr<Enchantment> enchant;
-	enchant = enchant->getMagicWeaponEffect(*player);
-	//sword->enchantments.push_back(enchant);
-	////std::shared_ptr<Armor> armor = std::make_shared<Armor>("Steel Chestplate", "TESTING", 40, 50, false, false, true, Armor::ArmorDescriptor::FULLPLATE);
-	//armor->setPhysicalResistance(PhysicalDamageType::SLASH, 100);
-	//armor->setPhysicalResistance(PhysicalDamageType::PIERCE, 100);
-	//armor->setPhysicalResistance(PhysicalDamageType::BLUNT, 100);
-	//armor->setPhysicalResistance(PhysicalDamageType::CHOP, 100);
-	shared_ptr<Enchantment> enchant2;
-	enchant2 = enchant2->getFrostArmorEffect(*player);
-	//armor->enchantments.push_back(enchant2);
-	//player->inventory.equippedItems.push_back(armor);
-	//bandit1->inventory.equippedItems.push_back(armor);
+	enchant = make_shared<Enchantment>("Poison", "", false, false, false, false, false, false, false, 1, 1, 1, 1, 1, 1);
+	enchant->effects.push_back(make_shared<PoisonEffect>(5, 50, true, 1, 5));
+	sword->enchantments.push_back(enchant);
+	std::shared_ptr<Armor> armor = std::make_shared<Armor>("Steel Chestplate", "TEST", 40, 40, false, false, true, Armor::ArmorDescriptor::FULLPLATE);
+	armor->setPhysicalResistance(PhysicalDamageType::SLASH, 100);
+	armor->setPhysicalResistance(PhysicalDamageType::PIERCE, 100);
+	armor->setPhysicalResistance(PhysicalDamageType::BLUNT, 100);
+	armor->setPhysicalResistance(PhysicalDamageType::CHOP, 100);
+	shared_ptr<Enchantment> enchant2 = std::make_shared<Enchantment>("Thorms", "TEST", true, false, true, false, false, true, false, 1, 100, false, false, 1, 1);
+	enchant2->effects.push_back(std::make_shared<ThornsEffect>(MagicDamageType::SHOCK, 20, 1, 100, false, 1, 1));;
+	//shared_ptr<Effect> effect;
+	armor->enchantments.push_back(enchant2);
+	player->inventory.equippedItems.push_back(armor);
+	bandit1->inventory.equippedItems.push_back(armor);
 	std::shared_ptr<Spell> fireball;
 	fireball = fireball->getFireBallEffect(*player);
 
@@ -169,7 +205,8 @@ int main()
 	player->attunedSpells.push_back(summon);
 	player->attunedSpells.push_back(oak);
 	player->attunedSpells.push_back(fireball);
-	
+	player->attunedSpells.push_back(force);
+
 
 	openCombat(player, bandit1);
 	return 0;
@@ -193,6 +230,24 @@ int validateInput(int min, int max)
 	return choice;
 }
 
+//helper function to get weapon reach. If weapon is null, return 0
+inline float getWeaponReach(std::shared_ptr<Weapon> weapon)
+{
+	if (weapon)
+	{
+		return weapon->reach;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+//helper function to get weapon name. If weapon is null, return ""
+inline string getWeaponName(std::shared_ptr<Weapon> weapon)
+{
+	return (weapon) ? weapon->name : "";
+}
 //Grab dialogue files from DialogueLines.cpp
 
 string getConfidenceDescription(std::shared_ptr<Human> character)
@@ -233,10 +288,16 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 		shared_ptr<Trinket> amulet, ring1, ring2, misc;
 		player->inventory.getEquippedItems(mainHand, offHand, reserve1, reserve2, headArmor, chestArmor, armArmor, legArmor, amulet, ring1, ring2, misc);
 
+		//create dummy items for if the item is nullptr for the purposes of checking ranges
+		if (!mainHand) mainHand = make_shared<Weapon>(false, "", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+		if (!offHand) offHand = make_shared<Weapon>(false, "", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+		if (!reserve1) reserve1 = make_shared<Weapon>(false, "", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+		if (!reserve2) reserve2 = make_shared<Weapon>(false, "", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+
 		//check if player has equipment to swap to (changes menu color to represent this)
 		bool hasStowedWeapons = false;
 
-		if ((reserve2->reach > 0) || (reserve1->reach > 0))
+		if ((reserve2 && reserve2->reach > 0) || (reserve1 && reserve1->reach > 0))
 		{
 			hasStowedWeapons = true;
 		}
@@ -254,7 +315,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 
 		vector<shared_ptr<Character>> livingAlliesPointers;
 		vector<shared_ptr<Character>> livingEnemiesPointers;
-		
+
 		//checks if the allies and enemies are alive and adds them to the living/dead vectors
 		if (player->allies.size() > 0)
 		{
@@ -299,6 +360,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 				minDistanceFromPlayer = livingEnemiesPointers[i]->position[player->getId()];
 			}
 		}
+
 		//used to determine the color of menu text in the attack option (gold for in range, grey for out of range)
 		// they will not be able to select out of range options and this will help them intuit why
 		// set to 1000 initially as range will never be this high in practice 
@@ -313,7 +375,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 			}
 		}
 		//check if any spells, mainhand, or offhand weapons are in range
-		if (minDistanceFromPlayer <= mainHand->reach || minDistanceFromPlayer <= offHand->reach || spellsInRange > 0)
+		if (mainHand && minDistanceFromPlayer <= getWeaponReach(mainHand) || offHand && minDistanceFromPlayer <= getWeaponReach(offHand) || spellsInRange > 0)
 		{
 			inRange = true;
 		}
@@ -326,12 +388,15 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 		{
 			cout << dye::light_red("You have fallen...") << endl;
 			exitFight = true;
-			break;
+			int choiec;
+			cin >> choiec;
 		}
 		if (player->isAlive && livingEnemiesPointers.size() == 0)
 		{
 			std::cout << "\n=--->\n" << std::endl;
 			cout << "The battlefield is quiet once again..." << endl;
+			int stop;
+			cin >> stop;
 		}
 		//End of combat encounter rewards for player (repeated in case the loop terminates here)
 		if (player->isAlive && livingEnemiesPointers.size() == 0)
@@ -474,7 +539,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 		//only play a round if exitFight = false (there are living enemies and the player is alive)
 		if (exitFight == false)
 		{
-			
+
 			//set this condition to true once the player has defeated all enemies or all allies have been defeated
 			bool exitCombat = false;
 			//COMBAT LOOP
@@ -486,10 +551,13 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 
 				//Option 1 variables
 				float playerMovement = 0.0f;
-				shared_ptr<Weapon> weaponChoice = nullptr;;
+				shared_ptr<Weapon> weaponChoice = nullptr;
 				std::shared_ptr<Ammunition> ammoChoice = nullptr; //this will be a pointer to the ammo choice so that the quantity can be updated
-				shared_ptr<Spell> spellChoice = nullptr;;
+				shared_ptr<Spell> spellChoice = make_shared<Spell>("", "", false, false, false, false, false, false, false, 1, 1, false, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1);
 				shared_ptr<Character> targetChoice = nullptr; //this is a pointer to the target choice so that the target's health can be updated
+				
+				//used to determine of the player only chose to move
+				bool onlyMove = false;
 
 				//Option 2 variables
 				//NONE
@@ -680,22 +748,38 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 						int numEnemiesInRange = 0;
 						int numEnemiesInRangeForward = 0;
 						int numEnemiesInRangeBackward = 0;
-						for (int i = 0; i < livingEnemiesPointers.size(); i++)
+						for (const auto& enemy : livingEnemiesPointers)
 						{
-							if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach
-								|| livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach)
-							{
+
+							float distance = enemy->position[player->getId()];
+
+							// Forward range: advancing reduces distance
+							bool inRangeForward =
+								(mainHand && distance - distanceTraveled <= getWeaponReach(mainHand)) ||
+								(offHand && distance - distanceTraveled <= getWeaponReach(offHand));
+
+							if (inRangeForward)
 								numEnemiesInRangeForward++;
-							}
-							if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled * 0.8 <= mainHand->reach
-								|| livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled * 0.8 <= offHand->reach)
-							{
+
+							// Backward range: retreating increases distance
+							bool inRangeBackward =
+								(mainHand && distance + distanceTraveled * 0.8 <= getWeaponReach(mainHand)) ||
+								(offHand && distance + distanceTraveled * 0.8 <= getWeaponReach(offHand));
+
+							if (inRangeBackward)
 								numEnemiesInRangeBackward++;
-							}
-							if (livingEnemiesPointers[i]->position[player->getId()] <= mainHand->reach || livingEnemiesPointers[i]->position[player->getId()] <= offHand->reach)
-							{
+
+							// Standing range: no movement
+							bool inRange =
+								(mainHand && distance <= getWeaponReach(mainHand)) ||
+								(offHand && distance <= getWeaponReach(offHand));
+
+							if (inRange)
 								numEnemiesInRange++;
-							}
+							std::cout << "Enemy " << enemy->name << " is at distance " << distance << std::endl;
+							std::cout << "  Forward in range? " << inRangeForward << std::endl;
+							std::cout << "  Backward in range? " << inRangeBackward << std::endl;
+							std::cout << "  Standing in range? " << inRange << std::endl;
 						}
 						if (numEnemiesInRangeForward > 0 || spellsInRange > 0) cout << dye::light_yellow(" 1) Advance and Attack!") << endl;
 						else cout << dye::grey(" 1) Advance and Attack!") << endl;
@@ -715,7 +799,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 						{
 							float advanceMovement = 0 - player->speed / 20;
 
-							if (numEnemiesInRangeBackward > 0)
+							if (numEnemiesInRangeForward > 0)
 							{
 								//get enemies in range of a spell if they move forward and attack and check if player has fatiuge to cast spell
 								spellsInRange = 0;
@@ -728,51 +812,52 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								}
 								for (int i = 0; i < livingEnemiesPointers.size(); i++)
 								{
+
 									//in range of both weapons and at least one spell
-									if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach &&
-										livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach &&
+									if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= getWeaponReach(mainHand) &&
+										livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= getWeaponReach(offHand) &&
 										spellsInRange > 0)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< ", and " << offHand->name << ", and attuned spell(s)" << endl;
 									}
 									//in range of both weapons and no spells
-									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach &&
-										livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach &&
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= getWeaponReach(mainHand) &&
+										livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= getWeaponReach(offHand) &&
 										spellsInRange == 0)
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< ", and " << offHand->name << endl;
 									}
 									//in range of mainhand and at least one spell
-									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach &&
-										spellsInRange > 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > offHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= getWeaponReach(mainHand) &&
+										spellsInRange > 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > getWeaponReach(offHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< ", and attuned spell(s)" << endl;
 									}
 									//in range of mainhand and no spells
-									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= mainHand->reach &&
-										spellsInRange == 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > offHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= getWeaponReach(mainHand) &&
+										spellsInRange == 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > getWeaponReach(offHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name << endl;
 									}
 									//in range of offhand and at least one spell
-									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach &&
-										spellsInRange > 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > mainHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= getWeaponReach(offHand) &&
+										spellsInRange > 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > getWeaponReach(mainHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name
 											<< ", and attuned spell(s)" << endl;
 									}
 									//in range of offhand and no spells
-									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= offHand->reach &&
-										spellsInRange == 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > mainHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled <= getWeaponReach(offHand) &&
+										spellsInRange == 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > getWeaponReach(mainHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name << endl;
 									}
 									//in range of at least one spell
-									else if (spellsInRange > 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > offHand->reach
-										&& livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > mainHand->reach)
+									else if (spellsInRange > 0 && livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > getWeaponReach(offHand)
+										&& livingEnemiesPointers[i]->position[player->getId()] - distanceTraveled > getWeaponReach(mainHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of attuned spell(s)" << endl;
 									}
@@ -785,8 +870,8 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								advanceChoice = validateInput(1, livingEnemiesPointers.size());
 
 								//check if the player is in range of the enemy they selected
-								if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled > mainHand->reach
-									&& livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled > offHand->reach
+								if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled > getWeaponReach(mainHand)
+									&& livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled > getWeaponReach(offHand)
 									&& spellsInRange == 0)
 								{
 									//They're not in range of choice, go back
@@ -796,7 +881,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								else // they're in range and chose a target, ask which weapon to hit them with
 								{
 									//if they have two weapons to attack with, ask which one they want to use
-									if (mainHand->hasBeenInitialized && offHand->hasBeenInitialized)
+									if (mainHand && offHand)
 									{
 										cout << "Which weapon would you like to attack with?" << endl;
 										cout << dye::light_yellow(" 1) " + mainHand->name) << endl;
@@ -879,7 +964,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled <= mainHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled <= getWeaponReach(mainHand))
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = mainHand;
@@ -962,7 +1047,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled <= mainHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled <= getWeaponReach(mainHand))
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = offHand;
@@ -989,7 +1074,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 									}
 									//if only mainhand is available
-									else if (mainHand->hasBeenInitialized && !offHand->hasBeenInitialized)
+									else if (mainHand && !offHand)
 									{
 										//CAST SPELL
 										std::cout << "\n=--->\n" << std::endl;
@@ -1056,7 +1141,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 										else
 										{
-											if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled <= mainHand->reach)
+											if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] - distanceTraveled <= getWeaponReach(mainHand))
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
@@ -1072,7 +1157,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 									}
 									//if only offhand is available
-									else if (offHand->hasBeenInitialized && !mainHand->hasBeenInitialized)
+									else if (offHand && !mainHand)
 									{
 										//CAST SPELL
 										std::cout << "\n=--->\n" << std::endl;
@@ -1146,7 +1231,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
 											}
 											int meleeAttackChoice = validateInput(1, livingEnemiesPointers.size());
-											if (livingEnemiesPointers[meleeAttackChoice - 1]->position[player->getId()] - distanceTraveled <= offHand->reach)
+											if (livingEnemiesPointers[meleeAttackChoice - 1]->position[player->getId()] - distanceTraveled <= getWeaponReach(offHand))
 											{
 												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
 												inputChosen = true;
@@ -1172,28 +1257,28 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 							}
 							else
 							{
-								cout << "No enemies are in range of your retreating attack..." << endl;
+								cout << "No enemies are in range of your advancing attack..." << endl;
 								break;
 							}
 						}
 						case 2: // STAND YOUR GROUND AND ATTACK
 						{
 							float standMovement = 0;
-							if (numEnemiesInRangeBackward > 0)
+							if (numEnemiesInRange > 0)
 							{
 								for (int i = 0; i < livingEnemiesPointers.size(); i++)
 								{
-									if (livingEnemiesPointers[i]->position[player->getId()] <= mainHand->reach &&
-										livingEnemiesPointers[i]->position[player->getId()] <= offHand->reach)
+									if (livingEnemiesPointers[i]->position[player->getId()] <= getWeaponReach(mainHand) &&
+										livingEnemiesPointers[i]->position[player->getId()] <= getWeaponReach(offHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< " and " << offHand->name << endl;
 									}
-									else if (livingEnemiesPointers[i]->position[player->getId()] <= offHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] <= getWeaponReach(offHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name << endl;
 									}
-									else if (livingEnemiesPointers[i]->position[player->getId()] <= mainHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] <= getWeaponReach(mainHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name << endl;
 									}
@@ -1206,8 +1291,8 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								advanceChoice = validateInput(1, livingEnemiesPointers.size());
 
 								//check if the player is in range of the enemy they selected
-								if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] > mainHand->reach
-									&& livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] > offHand->reach)
+								if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] > getWeaponReach(mainHand)
+									&& livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] > getWeaponReach(offHand))
 								{
 									//They're not in range of choice, go back
 									cout << "You are not in range of that enemy!" << endl;
@@ -1216,7 +1301,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								else // they're in range and chose a target, ask which weapon to hit them with
 								{
 									//if they have two weapons to attack with, ask which one they want to use
-									if (mainHand->hasBeenInitialized && offHand->hasBeenInitialized)
+									if (mainHand && offHand)
 									{
 										cout << "Which weapon would you like to attack with?" << endl;
 										cout << dye::light_yellow(" 1) " + mainHand->name) << endl;
@@ -1292,7 +1377,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] <= mainHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] <= getWeaponReach(mainHand))
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = mainHand;
@@ -1302,7 +1387,6 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 												}
 												else
 												{
-													cout << "HERE" << endl;
 													cout << "You are not in range of that enemy!" << endl;
 													break;
 												}
@@ -1376,7 +1460,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] <= offHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] <= getWeaponReach(offHand))
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = offHand;
@@ -1403,7 +1487,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 									}
 									//if only mainhand is available
-									else if (mainHand->hasBeenInitialized && !offHand->hasBeenInitialized)
+									else if (mainHand && !offHand)
 									{
 										//CAST SPELL
 										std::cout << "\n=--->\n" << std::endl;
@@ -1470,7 +1554,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 										else
 										{
-											if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] <= mainHand->reach)
+											if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] <= getWeaponReach(mainHand))
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
@@ -1486,7 +1570,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 									}
 									//if only offhand is available
-									else if (offHand->hasBeenInitialized && !mainHand->hasBeenInitialized)
+									else if (offHand && !mainHand)
 									{
 										//CAST SPELL
 										std::cout << "\n=--->\n" << std::endl;
@@ -1560,7 +1644,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
 											}
 											int meleeAttackChoice = validateInput(1, livingEnemiesPointers.size());
-											if (livingEnemiesPointers[meleeAttackChoice - 1]->position[player->getId()] <= offHand->reach)
+											if (livingEnemiesPointers[meleeAttackChoice - 1]->position[player->getId()] <= getWeaponReach(offHand))
 											{
 												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
 												weaponChoice = mainHand;
@@ -1586,7 +1670,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 							}
 							else
 							{
-								cout << "No enemies are in range of your retreating attack..." << endl;
+								cout << "No enemies are in range of your standing attack..." << endl;
 								break;
 							}
 						}
@@ -1597,17 +1681,17 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 							{
 								for (int i = 0; i < livingEnemiesPointers.size(); i++)
 								{
-									if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= mainHand->reach &&
-										livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= offHand->reach)
+									if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= getWeaponReach(mainHand) &&
+										livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= getWeaponReach(offHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name
 											<< " and " << offHand->name << endl;
 									}
-									else if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= offHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= getWeaponReach(offHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << offHand->name << endl;
 									}
-									else if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= mainHand->reach)
+									else if (livingEnemiesPointers[i]->position[player->getId()] + distanceTraveled <= getWeaponReach(mainHand))
 									{
 										cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingEnemiesPointers[i]->name) << " in range of " << mainHand->name << endl;
 									}
@@ -1620,8 +1704,8 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								advanceChoice = validateInput(1, livingEnemiesPointers.size());
 
 								//check if the player is in range of the enemy they selected
-								if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled > mainHand->reach
-									&& livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled > offHand->reach)
+								if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled > getWeaponReach(mainHand)
+									&& livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled > getWeaponReach(offHand))
 								{
 									//They're not in range of choice, go back
 									cout << "You are not in range of that enemy!" << endl;
@@ -1630,7 +1714,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								else // they're in range and chose a target, ask which weapon to hit them with
 								{
 									//if they have two weapons to attack with, ask which one they want to use
-									if (mainHand->hasBeenInitialized && offHand->hasBeenInitialized)
+									if (mainHand && offHand)
 									{
 										cout << "Which weapon would you like to attack with?" << endl;
 										cout << dye::light_yellow(" 1) " + mainHand->name) << endl;
@@ -1706,7 +1790,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled <= mainHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled <= getWeaponReach(mainHand))
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													inputChosen = true;
@@ -1788,7 +1872,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 											}
 											else
 											{
-												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled <= offHand->reach)
+												if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled <= getWeaponReach(offHand))
 												{
 													targetChoice = livingEnemiesPointers[advanceChoice - 1];
 													weaponChoice = offHand;
@@ -1815,7 +1899,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 									}
 									//if only mainhand is available
-									else if (mainHand->hasBeenInitialized && !offHand->hasBeenInitialized)
+									else if (mainHand && !offHand)
 									{
 										//CAST SPELL
 										std::cout << "\n=--->\n" << std::endl;
@@ -1881,7 +1965,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 										else
 										{
-											if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled <= mainHand->reach)
+											if (livingEnemiesPointers[advanceChoice - 1]->position[player->getId()] + distanceTraveled <= getWeaponReach(mainHand))
 											{
 												targetChoice = livingEnemiesPointers[advanceChoice - 1];
 												weaponChoice = mainHand;
@@ -1897,7 +1981,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 										}
 									}
 									//if only offhand is available
-									else if (offHand->hasBeenInitialized && !mainHand->hasBeenInitialized)
+									else if (offHand && !mainHand)
 									{
 										//CAST SPELL
 										std::cout << "\n=--->\n" << std::endl;
@@ -1970,7 +2054,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 												cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
 											}
 											int meleeAttackChoice = validateInput(1, livingEnemiesPointers.size());
-											if (livingEnemiesPointers[meleeAttackChoice - 1]->position[player->getId()] + distanceTraveled <= offHand->reach)
+											if (livingEnemiesPointers[meleeAttackChoice - 1]->position[player->getId()] + distanceTraveled <= getWeaponReach(offHand))
 											{
 												targetChoice = livingEnemiesPointers[meleeAttackChoice - 1];
 												weaponChoice = mainHand;
@@ -2024,10 +2108,11 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								{
 									targetChoice = livingEnemiesPointers[advanceNoAttackChoice - 1];
 									playerMovement = advanceMovement;
+									onlyMove = true;
 									inputChosen = true;
 									break;
 								}
-								
+
 								break;
 							}
 							case 2: //RETREAT
@@ -2044,6 +2129,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								{
 									targetChoice = livingEnemiesPointers[advanceNoAttackChoice - 1];
 									playerMovement = retreatMovement;
+									onlyMove = true;
 									inputChosen = true;
 									break;
 								}
@@ -2445,26 +2531,26 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 					// Process turns
 					for (int i = 0; i < combatants.size(); i++)
 					{
-						if (combatants[i]->isAlive)
+						if (combatants[i]->isAlive && player->isAlive)
 						{
 							if (shared_ptr<Creature> creature = std::dynamic_pointer_cast<Creature>(combatants[i]))
 							{
-									if (creature->isAlly)
-									{
-										cout << "CREATURE ALLY TURN" << endl;
-									}
-									else
-									{
-										// Enemy Turn
-										cout << "CREATURE ENEMY TURN" << endl;
-									}
+								if (creature->isAlly)
+								{
+									cout << "CREATURE ALLY TURN" << endl;
+								}
+								else
+								{
+									// Enemy Turn
+									cout << "CREATURE ENEMY TURN" << endl;
+								}
 							}
 
 							else if (shared_ptr<Human> human = dynamic_pointer_cast<Human>(combatants[i]); human && human->isPlayer)
 							{
 								// Player Turn
-								playerTurn(human, weaponChoice, ammoChoice, spellChoice, targetChoice, thrownConsumableChoice, consumableChoice, playerMovement);
-								
+								playerTurn(human, weaponChoice, ammoChoice, spellChoice, targetChoice, thrownConsumableChoice, consumableChoice, playerMovement, onlyMove);
+
 								//If player summoned an ally, add it to the living allies vector
 								if (spellChoice)
 								{
@@ -2483,11 +2569,10 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 							}
 							else
 							{
-								
-								
+
+
 								// Enemy Turn
 								cout << "ENEMY TURN" << endl;
-								cout << combatants[i]->name << " DISTANCE: " << combatants[i]->position[player->getId()] << endl;
 							}
 						}
 					}
@@ -2495,11 +2580,20 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 					//refresh effects at the end of each round (Pokemon rules baby)
 					for (shared_ptr<Character> combatant : combatants)
 					{
-						effect->refreshEffects(combatant);
-						if (combatant->healthPoints <= 0)
+						if (combatant)
 						{
-							combatant->killCharacter();
-							break;
+							for (shared_ptr<Effect> effect : combatant->effects)
+							{
+								if (effect)
+								{
+									effect->tick(combatant);
+									if (combatant->healthPoints <= 0)
+									{
+										combatant->killCharacter();
+										break;
+									}
+								}
+							}
 						}
 					}
 					// Remove dead combatants 
@@ -2510,15 +2604,13 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 					removeDead(livingEnemiesPointers);
 					removeDead(livingAlliesPointers);
 				}
-				if (livingEnemiesPointers.size() == 0)
+				if (livingEnemiesPointers.size() == 0 || player->isAlive == false)
 				{
 					exitCombat = true;
 				}
 
 			} while (exitCombat == false);
 		}
-
-
 		//input 1: attack target
 		// -> present option to attack forward, attack in place, attack in retreat, or go back
 		// -> 1) Advance and Attack!
@@ -2620,7 +2712,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 	} while (exitFight == false);
 }
 void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, std::shared_ptr<Ammunition> ammoChoice, shared_ptr<Spell> spellChoice, shared_ptr<Character> targetChoice, std::shared_ptr<ThrownConsumable> thrownConsumableChoice,
-	std::shared_ptr<Consumable> consumableChoice, float playerMovement)
+	std::shared_ptr<Consumable> consumableChoice, float playerMovement, bool onlyMove)
 {
 	//Check if player object is null
 	if (!player)
@@ -2629,12 +2721,12 @@ void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, 
 		return;
 	}
 	//Target is a human
-	if (dynamic_pointer_cast<std::shared_ptr<Human>>(targetChoice))
+	if (dynamic_pointer_cast<Human>(targetChoice))
 	{
 		std::shared_ptr<Human> humanTarget = dynamic_pointer_cast<Human>(targetChoice);
 
 		//move player
-		
+
 		if (playerMovement < 0) cout << "You advance by " << abs(playerMovement) << " units!" << endl;
 		else if (playerMovement > 0) cout << "You retreat by " << abs(playerMovement) << " units!" << endl;
 		else cout << "You stand your ground!" << endl;
@@ -2649,7 +2741,7 @@ void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, 
 		}
 
 		//Stop the turn if the player only chose to move
-		if (playerMovement && !weaponChoice && !spellChoice && !thrownConsumableChoice && !consumableChoice)
+		if (playerMovement && onlyMove)
 		{
 			return;
 		}
@@ -2666,29 +2758,6 @@ void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, 
 					{
 						//enchant->applyPassiveEffect(enchant, player);
 					}
-				}
-			}
-		}
-		//Player chose to cast a spell
-		if (spellChoice)
-		{
-			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
-				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
-				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
-			{
-				cout << "ERROR: weapon is not a casting tool!" << endl;
-				return;
-			}
-			else
-			{
-				if (weaponChoice)
-				{
-					player->castSpell(*spellChoice, humanTarget, playerMovement);
-				}
-				else
-				{
-					cout << "ERROR: no weapon initialized!" << endl;
-					return;
 				}
 			}
 		}
@@ -2715,30 +2784,70 @@ void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, 
 				}
 			}
 		}
-		//Player chose to attack an enemy with a melee weapon
-		if (weaponChoice && !spellChoice)
+		//Player chose to cast a spell on anything but an ally
+		//range check because there is a dummy spellChoice created initially so this will always be true, though the dummy spell has a negative range 
+		// which isn't normally possible so this will not fire if they haven't selected a spell
+		else if (spellChoice && spellChoice->range >= 0)
 		{
-			player->attackWithMelee(weaponChoice, humanTarget);
+			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
+				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
+				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
+			{
+				cout << "ERROR: weapon is not a casting tool!" << endl;
+				return;
+			}
+			else
+			{
+				if (weaponChoice)
+				{
+					player->castSpell(*spellChoice, humanTarget, playerMovement);
+				}
+				else
+				{
+					cout << "ERROR: no weapon initialized!" << endl;
+					return;
+				}
+			}
+		}
+		//Player chose to attack an enemy with a melee weapon
+		else if (weaponChoice && spellChoice->range < 0)
+		{
+			for (int i = 0; i < 99;)
+			{
+				if (player->isAlive)
+				{
+					player->attackWithMelee(weaponChoice, humanTarget);
+					i += abs(weaponChoice->attackSpeed - 100);
+				}	
+				else
+				{
+					return;
+				}
+			}
 		}
 		//Player chose to attack an enemy with a ranged weapon
-		if (weaponChoice && ammoChoice)
+		else if (weaponChoice && ammoChoice)
 		{
 			player->fireRangedWeapon(humanTarget, weaponChoice, ammoChoice);
 		}
 		//Player chose to attack an enemy with a thrown weapon
-		if (thrownConsumableChoice)
+		else if (thrownConsumableChoice)
 		{
 			player->throwThrownConsumable(thrownConsumableChoice, humanTarget);
 		}
 		//Player chose to share a consumable with an ally
-		if (consumableChoice && humanTarget->isAlly)
+		else if (consumableChoice && humanTarget->isAlly)
 		{
 
 		}
 		//Player chose to consume a consumable
-		if (consumableChoice)
+		else if (consumableChoice)
 		{
 
+		}
+		else
+		{
+			cout << "ERROR: NO VALID CHOICE WAS SENT TO PLAYERTURN" << endl;
 		}
 	}
 	//Target is a creature

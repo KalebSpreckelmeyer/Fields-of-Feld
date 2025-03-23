@@ -44,13 +44,16 @@ class RestoreHealthEffect : public Effect
 public:
     RestoreHealthEffect(float mangitude);
 
-    void apply(Character& target) override;
-    void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
     nlohmann::json toJson() const override;
     static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
     std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class RestoreFatigueEffect : public Effect
@@ -58,27 +61,33 @@ class RestoreFatigueEffect : public Effect
 public:
 	RestoreFatigueEffect(float magnitude);
 
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class MaxHealthEffect : public Effect
 {
 public:
-	MaxHealthEffect(float magnitude);
+	MaxHealthEffect(float magnitude, float duration);
 
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class MaxFatigueEffect : public Effect
@@ -86,13 +95,16 @@ class MaxFatigueEffect : public Effect
 public:
 	MaxFatigueEffect(float magnitude);
 
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class HealthRegenEffect : public TimedEffect
@@ -100,13 +112,16 @@ class HealthRegenEffect : public TimedEffect
 public:
 	HealthRegenEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class FatigueRegenEffect : public TimedEffect
@@ -114,13 +129,16 @@ class FatigueRegenEffect : public TimedEffect
 public:
 	FatigueRegenEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class AttackSpeedEffect : public TimedEffect
@@ -128,13 +146,16 @@ class AttackSpeedEffect : public TimedEffect
 public:
 	AttackSpeedEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	
-	void apply(Character& target) override;
-	void tick(Character& target) override;
-	
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 	
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class CastSpeedEffect : public TimedEffect
@@ -142,13 +163,16 @@ class CastSpeedEffect : public TimedEffect
 public:
 	CastSpeedEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	
-	void apply(Character& target) override;
-	void tick(Character& target) override;
-	
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 	
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class SpeedEffect : public TimedEffect
@@ -156,13 +180,16 @@ class SpeedEffect : public TimedEffect
 public:
 	SpeedEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class BlockChanceEffect : public TimedEffect
@@ -170,13 +197,16 @@ class BlockChanceEffect : public TimedEffect
 public:
 	BlockChanceEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	
-	void apply(Character& target) override;
-	void tick(Character& target) override;
-	
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 	
 	std::string getType() const override;
+	
+	bool isExpired() const override;
 };
 
 class DodgeChanceEffect : public TimedEffect
@@ -184,13 +214,16 @@ class DodgeChanceEffect : public TimedEffect
 public:
 	DodgeChanceEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	
-	void apply(Character& target) override;
-	void tick(Character& target) override;
-	
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 	
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class CritChanceEffect : public TimedEffect
@@ -198,13 +231,16 @@ class CritChanceEffect : public TimedEffect
 public:
 	CritChanceEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class ResistanceEffect : public TimedEffect
@@ -232,13 +268,16 @@ public:
 	ResistanceType resistance;
 	ResistanceEffect(ResistanceType resistance, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	
-	void apply(Character& target) override;
-	void tick(Character& target) override;
-	
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 	
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class EscapeEffect : public TimedEffect
@@ -246,13 +285,16 @@ class EscapeEffect : public TimedEffect
 public:
 	EscapeEffect(int duration);
 	
-	void apply(Character& target) override;
-	void tick(Character& target) override;
-	
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 	
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class ResurrectEffect : public Effect
@@ -260,13 +302,16 @@ class ResurrectEffect : public Effect
 public:
 	ResurrectEffect();
 
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class AttributeEffect : public TimedEffect
@@ -286,13 +331,16 @@ public:
 	Attribute attribute;
 	AttributeEffect(Attribute attribute, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	
-	void apply(Character& target) override;
-	void tick(Character& target) override;
-	
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 	
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };
 
 class RandomEffect : public TimedEffect
@@ -300,11 +348,14 @@ class RandomEffect : public TimedEffect
 public:
 	RandomEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	
-	void apply(Character& target) override;
-	void tick(Character& target) override;
-	
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 	
 	std::string getType() const override;
+
+	bool isExpired() const override;
 };

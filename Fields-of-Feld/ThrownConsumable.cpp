@@ -42,7 +42,7 @@ std::shared_ptr<Item> ThrownConsumable::fromJson(const nlohmann::json& j)
 float ThrownConsumable::getThrownConsumableDamage(std::shared_ptr<Character> target, ThrownConsumable consumable)
 {
 	//Target is human
-	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
+	if (std::dynamic_pointer_cast<Human>(target))
 	{
 		std::shared_ptr<Human> human = std::dynamic_pointer_cast<Human>(target);
 		//GET ARMOR RESISTANCES

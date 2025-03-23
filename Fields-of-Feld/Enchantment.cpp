@@ -27,19 +27,29 @@ Enchantment::Enchantment(std::string name, std::string description, bool areaOfE
 
 }
 
+Enchantment::~Enchantment()
+{
+}
+
 nlohmann::json Enchantment::toJson() const
 {
 	nlohmann::json j;
 	j["type"] = "Enchantment";
-	j["doesDamage"] = doesDamage;
-	j["applied"] = applied;
 	j["name"] = name;
 	j["description"] = description;
+	j["areaOfEffect"] = areaOfEffect;
+	j["summon"] = summon;
+	j["doesDamage"] = doesDamage;
+	j["healing"] = healing;
+	j["useOnAlly"] = useOnAlly;
+	j["useOnSelf"] = useOnSelf;
+	j["buff"] = buff;
 	j["duration"] = duration;
+	j["magnitude"] = magnitude;
+	j["applied"] = applied;
 	j["stackable"] = stackable;
 	j["stacks"] = stacks;
 	j["maxStacks"] = maxStacks;
-	j["areaOfEffect"] = areaOfEffect;
 	for (const auto& effect : effects)
 	{
 		j["effects"].push_back(effect->toJson());
@@ -50,15 +60,21 @@ nlohmann::json Enchantment::toJson() const
 std::shared_ptr<Enchantment> Enchantment::fromJson(const nlohmann::json& j)
 {
 	auto ench = std::make_shared<Enchantment>(
-		j.at("doesDamage").get<bool>(), 
-		j.at("applied").get<bool>(), 
-		j.at("name").get<std::string>(),
-		j.at("description").get<std::string>(), 
-		j.at("duration").get<float>(), 
-		j.at("stackable").get<bool>(), 
-		j.at("stacks").get<int>(),
-		j.at("maxStacks").get<int>(), 
-		j.at("areaOfEffect").get<bool>());
+		j.at("name"),
+		j.at("description"),
+		j.at("areaOfEffect"),
+		j.at("summon"),
+		j.at("doesDamage"),
+		j.at("healing"),
+		j.at("useOnAlly"),
+		j.at("useOnSelf"),
+		j.at("buff"),
+		j.at("duration"),
+		j.at("magnitude"),
+		j.at("applied"),
+		j.at("stackable"),
+		j.at("stacks"),
+		j.at("maxStacks"));
 	for (const auto& effect : j.at("effects"))
 	{
 		ench->effects.push_back(Effect::fromJson(effect));
@@ -86,102 +102,102 @@ float Enchantment::getMagicDamage(MagicDamageType magType)
 }
 
 //WEAPONS
-std::shared_ptr<Enchantment> Enchantment::getMagicWeaponEffect(Character& wielder)
-{
-	float statInvestment = wielder.getIntelligence();
-	float damage = 50 + (statInvestment * 1.75) * (statInvestment / (statInvestment + 50));
-	std::shared_ptr<Enchantment> magicWeapon = std::make_shared<Enchantment>(true, false, "Magic Weapon", "Magical energy surrounds the weapon granting it additional damage and armor penetration", 1, false, 1, 1, false);
-
-	std::shared_ptr<Effect> magicDamage = std::make_shared<Effect>(true, false, "Magic Damage", "Turbulent Magical Energy Tears at its Target", 0.0f, 0.0f, damage, false, 1, 1, false);
-	magicDamage->setMagicDamage(MagicDamageType::MAGIC, damage);
-
-	std::shared_ptr<Effect> magicCleave = std::make_shared<Effect>(false, false, "Armor Penetration", "Magical energy cuts through steel and scale like butter bypassing defenses", 0.0f, 1, damage * 0.3f, false, 1, 1, false);
-
-	magicWeapon->effects.push_back(magicCleave);
-	magicWeapon->effects.push_back(magicDamage);
-	return magicWeapon;
-}
-
-//ARMOR
-std::shared_ptr<Enchantment> Enchantment::getMagicArmorEffect(Character& wielder)
-{
-	float statInvestment = wielder.getIntelligence();
-	float speed = 50.0f + (statInvestment * 1.0f) * (statInvestment / (statInvestment + 50.0f));
-	std::shared_ptr<Enchantment> magicArmor = std::make_shared<Enchantment>(false, false, "Magic Armor", "Magical energy imbues the armor, increasing the wielder's cast speed", 1, false, 1, 1, false);
-	std::shared_ptr<Effect> castSpeed = std::make_shared<Effect>(false, false, "Cast Speed", "The wearer's cast speed is increased", 0.0f, 0.0f, speed, true, 1, 4, false);
-	magicArmor->effects.push_back(castSpeed);
-	return magicArmor;
-}
-std::shared_ptr<Enchantment> Enchantment::getLightningArmorEffect(Character& wielder)
-{
-	float statInvestment = wielder.getIntelligence();
-	float damage = 50.0f + (statInvestment * 0.5f) * (statInvestment / (statInvestment + 50.0f));
-	std::shared_ptr<Enchantment> lightningArmor = std::make_shared<Enchantment>(true, false, "Lightning Armor", 
-		"The armor crackles with electricity, damaging those in melee range", 1, false, 1, 1, false);
-	std::shared_ptr<Effect> shockDamage = std::make_shared<Effect>(true, false, "Shocking Thorns", "The target is shocked by the armor", 
-		 10.0f, 1.0f, damage, false, 1, 1, true);
-	shockDamage->setMagicDamage(MagicDamageType::SHOCK, damage);
-	lightningArmor->effects.push_back(shockDamage);
-	return lightningArmor;
-}
-std::shared_ptr<Enchantment> Enchantment::getBloodArmorEffect(Character& wielder)
-{
-	float statInvestment = wielder.getArcane();
-	float damage = 50.0f + (statInvestment * 0.5f) * (statInvestment / (statInvestment + 50.0f));
-	std::shared_ptr<Enchantment> bloodArmor = std::make_shared<Enchantment>(true, false, "Blood Armor",
-		"Accursed blood pours out from the cracks in the armor, coating enemies that strike it!", 
-		1, false, 1, 1, false);
-	std::shared_ptr<Effect> bleed = std::make_shared<Effect>(true, true, "Blood Splash", "Cursed blood splashes from the attacked armor, coating the attacker!",
-		0.0f, 1, damage, false, 1, 1, false);
-	bleed->setMagicDamage(MagicDamageType::BLEED, damage);
-	bloodArmor->effects.push_back(bleed);
-	return bloodArmor;
-}
-std::shared_ptr<Enchantment> Enchantment::getFrostArmorEffect(Character& wielder)
-{
-	float statInvestment = wielder.getIntelligence();
-	float damage = 50.0f + (statInvestment * 0.5f) * (statInvestment / (statInvestment + 50.0f));
-	std::shared_ptr<Enchantment> iceArmor = std::make_shared<Enchantment>(true, false, "Frost Armor", "Frigid air surrounds the armor, dealing frost burst buildup and slowing down enemies in melee range",
-		1.0f, false, 1, 1, true);
-	std::shared_ptr<Effect> frostDamage = std::make_shared<Effect>(true, false, "Frost Armor", "The target is affected by the frigid air seeping off of the armor", 
-		 10.0f, 1.0f, damage, false, 1, 1, true);
-	frostDamage->setMagicDamage(MagicDamageType::FROST, damage);
-	iceArmor->effects.push_back(frostDamage);
-	return iceArmor;
-}
-std::shared_ptr<Enchantment> Enchantment::getFireArmorEffect(Character& wielder)
-{
-
-}
-std::shared_ptr<Enchantment> Enchantment::getPoisonArmorEffect(Character& wielder)
-{
-
-}
-std::shared_ptr<Enchantment> Enchantment::getWindArmorEffect(Character& wielder)
-{
-
-}
-std::shared_ptr<Enchantment> Enchantment::getEarthenArmorEffect(Character& wielder)
-{
-
-}
-std::shared_ptr<Enchantment> Enchantment::getSleepArmorEffect(Character& wielder)
-{
-
-}
-std::shared_ptr<Enchantment> Enchantment::getHolyArmorEffect(Character& wielder)
-{
-
-}
-std::shared_ptr<Enchantment> Enchantment::getDarkArmorEffect(Character& wielder)
-{
-
-}
+//std::shared_ptr<Enchantment> Enchantment::getMagicWeaponEffect(Character& wielder)
+//{
+//	float statInvestment = wielder.getIntelligence();
+//	float damage = 50 + (statInvestment * 1.75) * (statInvestment / (statInvestment + 50));
+//	std::shared_ptr<Enchantment> magicWeapon = std::make_shared<Enchantment>(true, false, "Magic Weapon", "Magical energy surrounds the weapon granting it additional damage and armor penetration", 1, false, 1, 1, false);
+//
+//	std::shared_ptr<Effect> magicDamage = std::make_shared<Effect>(true, false, "Magic Damage", "Turbulent Magical Energy Tears at its Target", 0.0f, 0.0f, damage, false, 1, 1, false);
+//	magicDamage->setMagicDamage(MagicDamageType::MAGIC, damage);
+//
+//	std::shared_ptr<Effect> magicCleave = std::make_shared<Effect>(false, false, "Armor Penetration", "Magical energy cuts through steel and scale like butter bypassing defenses", 0.0f, 1, damage * 0.3f, false, 1, 1, false);
+//
+//	magicWeapon->effects.push_back(magicCleave);
+//	magicWeapon->effects.push_back(magicDamage);
+//	return magicWeapon;
+//}
+//
+////ARMOR
+//std::shared_ptr<Enchantment> Enchantment::getMagicArmorEffect(Character& wielder)
+//{
+//	float statInvestment = wielder.getIntelligence();
+//	float speed = 50.0f + (statInvestment * 1.0f) * (statInvestment / (statInvestment + 50.0f));
+//	std::shared_ptr<Enchantment> magicArmor = std::make_shared<Enchantment>(false, false, "Magic Armor", "Magical energy imbues the armor, increasing the wielder's cast speed", 1, false, 1, 1, false);
+//	std::shared_ptr<Effect> castSpeed = std::make_shared<Effect>(false, false, "Cast Speed", "The wearer's cast speed is increased", 0.0f, 0.0f, speed, true, 1, 4, false);
+//	magicArmor->effects.push_back(castSpeed);
+//	return magicArmor;
+//}
+//std::shared_ptr<Enchantment> Enchantment::getLightningArmorEffect(Character& wielder)
+//{
+//	float statInvestment = wielder.getIntelligence();
+//	float damage = 50.0f + (statInvestment * 0.5f) * (statInvestment / (statInvestment + 50.0f));
+//	std::shared_ptr<Enchantment> lightningArmor = std::make_shared<Enchantment>(true, false, "Lightning Armor", 
+//		"The armor crackles with electricity, damaging those in melee range", 1, false, 1, 1, false);
+//	std::shared_ptr<Effect> shockDamage = std::make_shared<Effect>(true, false, "Shocking Thorns", "The target is shocked by the armor", 
+//		 10.0f, 1.0f, damage, false, 1, 1, true);
+//	shockDamage->setMagicDamage(MagicDamageType::SHOCK, damage);
+//	lightningArmor->effects.push_back(shockDamage);
+//	return lightningArmor;
+//}
+//std::shared_ptr<Enchantment> Enchantment::getBloodArmorEffect(Character& wielder)
+//{
+//	float statInvestment = wielder.getArcane();
+//	float damage = 50.0f + (statInvestment * 0.5f) * (statInvestment / (statInvestment + 50.0f));
+//	std::shared_ptr<Enchantment> bloodArmor = std::make_shared<Enchantment>(true, false, "Blood Armor",
+//		"Accursed blood pours out from the cracks in the armor, coating enemies that strike it!", 
+//		1, false, 1, 1, false);
+//	std::shared_ptr<Effect> bleed = std::make_shared<Effect>(true, true, "Blood Splash", "Cursed blood splashes from the attacked armor, coating the attacker!",
+//		0.0f, 1, damage, false, 1, 1, false);
+//	bleed->setMagicDamage(MagicDamageType::BLEED, damage);
+//	bloodArmor->effects.push_back(bleed);
+//	return bloodArmor;
+//}
+//std::shared_ptr<Enchantment> Enchantment::getFrostArmorEffect(Character& wielder)
+//{
+//	float statInvestment = wielder.getIntelligence();
+//	float damage = 50.0f + (statInvestment * 0.5f) * (statInvestment / (statInvestment + 50.0f));
+//	std::shared_ptr<Enchantment> iceArmor = std::make_shared<Enchantment>(true, false, "Frost Armor", "Frigid air surrounds the armor, dealing frost burst buildup and slowing down enemies in melee range",
+//		1.0f, false, 1, 1, true);
+//	std::shared_ptr<Effect> frostDamage = std::make_shared<Effect>(true, false, "Frost Armor", "The target is affected by the frigid air seeping off of the armor", 
+//		 10.0f, 1.0f, damage, false, 1, 1, true);
+//	frostDamage->setMagicDamage(MagicDamageType::FROST, damage);
+//	iceArmor->effects.push_back(frostDamage);
+//	return iceArmor;
+//}
+//std::shared_ptr<Enchantment> Enchantment::getFireArmorEffect(Character& wielder)
+//{
+//
+//}
+//std::shared_ptr<Enchantment> Enchantment::getPoisonArmorEffect(Character& wielder)
+//{
+//
+//}
+//std::shared_ptr<Enchantment> Enchantment::getWindArmorEffect(Character& wielder)
+//{
+//
+//}
+//std::shared_ptr<Enchantment> Enchantment::getEarthenArmorEffect(Character& wielder)
+//{
+//
+//}
+//std::shared_ptr<Enchantment> Enchantment::getSleepArmorEffect(Character& wielder)
+//{
+//
+//}
+//std::shared_ptr<Enchantment> Enchantment::getHolyArmorEffect(Character& wielder)
+//{
+//
+//}
+//std::shared_ptr<Enchantment> Enchantment::getDarkArmorEffect(Character& wielder)
+//{
+//
+//}
 
 float Enchantment::getEnchantmentDamage(std::shared_ptr<Character> target, Enchantment Enchantment)
 {
 	//Target is human
-	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
+	if (std::dynamic_pointer_cast<Human>(target))
 	{
 		std::shared_ptr<Human> human = std::dynamic_pointer_cast<Human>(target);
 		//GET ARMOR RESISTANCES
@@ -285,74 +301,74 @@ float Enchantment::getEnchantmentDamage(std::shared_ptr<Character> target, Encha
 	}
 }
 
-void Enchantment::applyPassiveEnchantment(std::shared_ptr<Character> wielder)
-{
-	for (std::shared_ptr<Effect> effect : this->effects)
-	{
-		effect->applyPassiveEffect(effect, wielder);
-	}
-}
-void Enchantment::applyDefensiveEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Character> attacker)
-{
-	for (std::shared_ptr<Effect> effect : this->effects)
-	{
-		effect->applyDefensiveEffect(effect, wielder, attacker);
-	}
-}
-void Enchantment::applyOffensiveEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
-{
-	for (std::shared_ptr<Effect> effect : this->effects)
-	{
-		effect->applyOffensiveEffect(effect, wielder, target);
-	}
-	//WEAPONS -------------------------------------------------------------------------------------
-
-	//magic causes bonus magical damage which penetrates physical armor and tough scales
-
-	//Lightning does bonus damage and slows enemy movement speed
-
-	//Bleeding does damage over time. 
-
-	//Frost does bonus damage and slows movement speed and attack speed
-
-	//Fire does damage over time and has a chance to cause low hp enemies to panic
-
-	//Poison does damage over time and it can stack with itself.
-
-	//Wind pushes enemies back a tiny bit each strike
-
-	//Earthen coats the sword in jagged rocks that does bonus physical damage  
-
-	//Sleep slows enemy movement and attack speed and drains mama
-
-	//Holy does bonus damage to undead and demons
-
-	//Dark does bonus damage to living creatures and drains confidence, but reduced damage to undead demons 
-
-	//ARMOR ----------------------------------------------------------------------------------------
-
-	//magic increases the cast speed of the wearer
-
-	//Lightning causes arcs of electricity to strike enemies that hit the armor
-
-	//Blood causes a splash of blood to coat enemies that hit the armor
-
-	//Frost slows enemy movement speed and attack speed near the wearer
-
-	//Fire increases the wearer's strength
-
-	//Poison causes a splash of venom when enemies hit the wearer
-
-	//Wind increases the wearer's agility
-
-	//Earthen gives a tiny passive health regen and increases physical defense 
-
-	//Sleep increases the wearer's fatigue 
-
-	//Holy gives a small passive health regeneration
-
-	//Dark increases all defenses besides physical
-}
+//void Enchantment::applyPassiveEnchantment(std::shared_ptr<Character> wielder)
+//{
+//	for (std::shared_ptr<Effect> effect : this->effects)
+//	{
+//		effect->applyPassiveEffect(effect, wielder);
+//	}
+//}
+//void Enchantment::applyDefensiveEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Character> attacker)
+//{
+//	for (std::shared_ptr<Effect> effect : this->effects)
+//	{
+//		effect->applyDefensiveEffect(effect, wielder, attacker);
+//	}
+//}
+//void Enchantment::applyOffensiveEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+//{
+//	for (std::shared_ptr<Effect> effect : this->effects)
+//	{
+//		effect->applyOffensiveEffect(effect, wielder, target);
+//	}
+//	//WEAPONS -------------------------------------------------------------------------------------
+//
+//	//magic causes bonus magical damage which penetrates physical armor and tough scales
+//
+//	//Lightning does bonus damage and slows enemy movement speed
+//
+//	//Bleeding does damage over time. 
+//
+//	//Frost does bonus damage and slows movement speed and attack speed
+//
+//	//Fire does damage over time and has a chance to cause low hp enemies to panic
+//
+//	//Poison does damage over time and it can stack with itself.
+//
+//	//Wind pushes enemies back a tiny bit each strike
+//
+//	//Earthen coats the sword in jagged rocks that does bonus physical damage  
+//
+//	//Sleep slows enemy movement and attack speed and drains mama
+//
+//	//Holy does bonus damage to undead and demons
+//
+//	//Dark does bonus damage to living creatures and drains confidence, but reduced damage to undead demons 
+//
+//	//ARMOR ----------------------------------------------------------------------------------------
+//
+//	//magic increases the cast speed of the wearer
+//
+//	//Lightning causes arcs of electricity to strike enemies that hit the armor
+//
+//	//Blood causes a splash of blood to coat enemies that hit the armor
+//
+//	//Frost slows enemy movement speed and attack speed near the wearer
+//
+//	//Fire increases the wearer's strength
+//
+//	//Poison causes a splash of venom when enemies hit the wearer
+//
+//	//Wind increases the wearer's agility
+//
+//	//Earthen gives a tiny passive health regen and increases physical defense 
+//
+//	//Sleep increases the wearer's fatigue 
+//
+//	//Holy gives a small passive health regeneration
+//
+//	//Dark increases all defenses besides physical
+//}
 
 void Enchantment::removeEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Enchantment> enchant)
 {

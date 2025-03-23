@@ -12,7 +12,7 @@
 #include "Enchantment.h"
 
 Human::Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality personality, float health, float fatigue, float strength, float agility, float charisma,
-	float intelligence, float arcane, float faith, float luck, float weightBurden, float castSpeed, float maxWeightBurden,
+	float intelligence, float arcane, float faith, float luck, float weightBurden, float maxWeightBurden, float castSpeed,
 	double experience, double experienceToNextLevel,
 	int gold)
 	: Character(isAlly, namedCharacter, true, true, false,
@@ -21,8 +21,8 @@ Human::Human(bool isPlayer, bool isAlly, CharacterClass classChoice, Personality
 		1.0f, CombatFlags::NEUTRAL),
 	isPlayer(isPlayer), classChoice(classChoice), health(health), fatigue(fatigue),
 	strength(strength), agility(agility), charisma(charisma), intelligence(intelligence), 
-	arcane(arcane), faith(faith), luck(luck), weightBurden(weightBurden), castSpeed(castSpeed),
-	maxWeightBurden(maxWeightBurden), experience(experience), experienceToNextLevel(experienceToNextLevel),
+	arcane(arcane), faith(faith), luck(luck), weightBurden(weightBurden), maxWeightBurden(maxWeightBurden), 
+	castSpeed(castSpeed), experience(experience), experienceToNextLevel(experienceToNextLevel),
 	gold(gold)
 {
 	setInitialHumanStats();
@@ -131,38 +131,75 @@ std::shared_ptr<Character> Human::fromJson(const nlohmann::json& j) {
 	c->inventory.fromJson(j["inventory"]);
 
 	// Known and attuned spells
-	for (const auto& spell : j["attunedSpells"]) {
-		auto s = std::dynamic_pointer_cast<Spell>(Effect::fromJson(spell));
-		if (s) c->attunedSpells.push_back(s);
+	if (j.contains("attunedSpells") && j["attunedSpells"].is_array()) {
+		for (const auto& spell : j["attunedSpells"]) {
+			auto s = std::dynamic_pointer_cast<Spell>(Effect::fromJson(spell));
+			if (s) c->attunedSpells.push_back(s);
+		}
 	}
-
-	for (const auto& spell : j["knownSpells"]) {
-		auto s = std::dynamic_pointer_cast<Spell>(Effect::fromJson(spell));
-		if (s) c->knownSpells.push_back(s);
+	else {
+		std::cerr << "[WARN] attunedSpells missing or not array!" << std::endl;
+	}
+	if (j.contains("knownSpells") && j["knownSpells"].is_array()) {
+		for (const auto& spell : j["knownSpells"]) {
+			auto s = std::dynamic_pointer_cast<Spell>(Effect::fromJson(spell));
+			if (s) c->knownSpells.push_back(s);
+		}
+	}
+	else {
+		std::cerr << "[WARN] knownSpells is not an array or missing." << std::endl;
 	}
 
 	// Allies
-	for (const auto& ally : j["allies"]) {
-		c->allies.push_back(Character::fromJson(ally));
+	if (j.contains("allies") && j["allies"].is_array()) {
+		for (const auto& ally : j["allies"]) {
+			auto s = std::dynamic_pointer_cast<Character>(Character::fromJson(ally));
+			if (s) c->allies.push_back(s);
+		}
+	}
+	else {
+		std::cerr << "[WARN] allies missing or not array!" << std::endl;
 	}
 
 	// Tags
-	for (const auto& tag : j["tags"]) {
-		c->tags.push_back(std::make_shared<std::string>(tag.get<std::string>()));
+	if (j.contains("tags") && j["tags"].is_array()) {
+		for (const auto& tag : j["tags"]) {
+			c->tags.push_back(std::make_shared<std::string>(tag.get<std::string>()));
+		}
 	}
-
+	else {
+		std::cerr << "[WARN] tags missing or not array!" << std::endl;
+	}
 	// Combat flags
-	for (const auto& flag : j["combatFlags"]) {
-		c->combatFlags.push_back(static_cast<CombatFlags>(flag.get<int>()));
+	if (j.contains("combatFlags") && j["combatFlags"].is_array()) {
+		for (const auto& flag : j["combatFlags"]) {
+			c->combatFlags.push_back(static_cast<CombatFlags>(flag.get<int>()));
+		}
 	}
-
+	else {
+		std::cerr << "[WARN] combatFlag missing or not array!" << std::endl;
+	}
 	// Active effects
-	for (const auto& eff : j["effects"]) {
-		c->effects.push_back(Effect::fromJson(eff));
+	if (j.contains("effects") && j["effects"].is_array()) {
+		for (const auto& eff : j["effects"]) {
+			c->effects.push_back(Effect::fromJson(eff));
+		}
 	}
-
+	else {
+		std::cerr << "[WARN] effects missing or not array!" << std::endl;
+	}
 	// Resistances
-	c->defenseValues = j.at("defenseValues");
+	if (j.contains("defenseValues") && j["defenseValues"].is_object()) {
+		for (auto it = j["defenseValues"].begin(); it != j["defenseValues"].end(); ++it) {
+			std::string key = it.key();
+			float value = it.value();
+
+			if (key == "blunt") c->defenseValues[Defense::BLUNT] = value;
+			else if (key == "pierce") c->defenseValues[Defense::PIERCE] = value;
+			else if (key == "fire") c->defenseValues[Defense::FIRE] = value;
+			// Add more types as needed...
+		}
+	}
 
 	return c;
 }

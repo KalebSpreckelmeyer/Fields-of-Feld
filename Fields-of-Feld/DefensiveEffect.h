@@ -1,19 +1,18 @@
 #pragma once
 #include "Effect.h"
 #include "TimedEffect.h"
-class DefensiveEffect :
-    public Effect
-{
-};
+#include "MagicDamageType.h"
 
 class ThornsEffect : public TimedEffect
 {
 public:
 	float range;
-	ThornsEffect(float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
+	MagicDamageType damageType;
+	ThornsEffect(MagicDamageType damageType, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
 
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
@@ -25,10 +24,14 @@ class AuraEffect : public TimedEffect
 {
 public:
 	float range;
-	AuraEffect(float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(Character& target) override;
-	void tick(Character& target) override;
+	
+	AuraEffect(MagicDamageType magicDamage, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
+	
 	std::string getType() const;
 };

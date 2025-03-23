@@ -55,7 +55,7 @@ std::shared_ptr<Item> Weapon::fromJson(const nlohmann::json& j)
 float Weapon::getWeaponDamage(std::shared_ptr<Character> target, Weapon weapon)
 {
 	//Target is human
-	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
+	if (std::dynamic_pointer_cast<Human>(target))
 	{
 		std::shared_ptr<Human> human = std::dynamic_pointer_cast<Human>(target);
 		//GET ARMOR RESISTANCES
@@ -162,7 +162,7 @@ float Weapon::getWeaponDamage(std::shared_ptr<Character> target, Weapon weapon)
 float Weapon::getWeaponDefense(std::shared_ptr<Character> target)
 {
 	//Target is human
-	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
+	if (std::dynamic_pointer_cast<Human>(target))
 	{
 		std::shared_ptr<Human> human = std::dynamic_pointer_cast<Human>(target);
 		//GET ARMOR RESISTANCES

@@ -35,7 +35,7 @@ public:
 
 	Enchantment() = default;
 
-	virtual ~Enchantment();
+	~Enchantment();
 
 	Enchantment(std::string name, std::string description, bool areaOfEffect, bool summon, bool doesDamage, 
 		bool healing, bool useOnAlly, bool useOnSelf, bool buff, float duration, float magnitude, bool applied, bool stackable,
@@ -51,30 +51,30 @@ public:
 
 	float getEnchantmentDamage(std::shared_ptr<Character> target, Enchantment Enchantment);
 
-	void applyOffensiveEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target);
+	//void applyOffensiveEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target);
 
-	void applyDefensiveEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Character> attacker);
+	//void applyDefensiveEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Character> attacker);
 
-	void applyPassiveEnchantment(std::shared_ptr<Character> wielder);
+	//void applyPassiveEnchantment(std::shared_ptr<Character> wielder);
 
 	void removeEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Enchantment> enchant);
 
 	void interactWith(Enchantment& otherEnchantment);
 
-	//WEAPON ENCHANTMENTS
-	std::shared_ptr<Enchantment> getMagicWeaponEffect(Character& wielder);
-	//ARMOR ENCHANTMENTS
-	std::shared_ptr<Enchantment> getMagicArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getLightningArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getBloodArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getFrostArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getFireArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getPoisonArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getWindArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getEarthenArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getSleepArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getHolyArmorEffect(Character& wielder);
-	std::shared_ptr<Enchantment> getDarkArmorEffect(Character& wielder);
+	////WEAPON ENCHANTMENTS
+	//std::shared_ptr<Enchantment> getMagicWeaponEffect(Character& wielder);
+	////ARMOR ENCHANTMENTS
+	//std::shared_ptr<Enchantment> getMagicArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getLightningArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getBloodArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getFrostArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getFireArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getPoisonArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getWindArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getEarthenArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getSleepArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getHolyArmorEffect(Character& wielder);
+	//std::shared_ptr<Enchantment> getDarkArmorEffect(Character& wielder);
 	//TRINKET ENCHANTMENTS
 };
 

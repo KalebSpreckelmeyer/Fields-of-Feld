@@ -5,6 +5,9 @@ Book::Book(std::string name, std::string description, float magnitude, float wei
 {
 }
 
+void Book::use()
+{
+}
 nlohmann::json Book::toJson() const
 {
 	return{

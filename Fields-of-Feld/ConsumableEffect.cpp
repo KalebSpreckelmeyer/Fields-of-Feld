@@ -7,12 +7,20 @@ RestoreHealthEffect::RestoreHealthEffect(float magnitude)
 		maxStacks, areaOfEffect){
 }
 
-void RestoreHealthEffect::apply(Character& target) {
+void RestoreHealthEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void RestoreHealthEffect::tick(Character& target) {
+void RestoreHealthEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void RestoreHealthEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool RestoreHealthEffect::isExpired() const {
+	return true;
 }
 
 nlohmann::json RestoreHealthEffect::toJson() const {
@@ -39,12 +47,20 @@ RestoreFatigueEffect::RestoreFatigueEffect(float magnitude)
 		maxStacks, areaOfEffect) {
 }
 
-void RestoreFatigueEffect::apply(Character& target) {
+void RestoreFatigueEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void RestoreFatigueEffect::tick(Character& target) {
+void RestoreFatigueEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void RestoreFatigueEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool RestoreFatigueEffect::isExpired() const {
+	return true;
 }
 
 nlohmann::json RestoreFatigueEffect::toJson() const {
@@ -65,30 +81,40 @@ std::string RestoreFatigueEffect::getType() const {
 
 // -------------------------- MAX HEALTH EFFECT -------------------------- //
 
-MaxHealthEffect::MaxHealthEffect(float magnitude)
+MaxHealthEffect::MaxHealthEffect(float magnitude, float duration)
 	: Effect(doesDamage, applied, name, description,
 		range, duration, magnitude, stackable, stacks,
 		maxStacks, areaOfEffect) {
 }
 
-void MaxHealthEffect::apply(Character& target) {
+void MaxHealthEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void MaxHealthEffect::tick(Character& target) {
+void MaxHealthEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void MaxHealthEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool MaxHealthEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json MaxHealthEffect::toJson() const {
 	return{
 		{"type", getType()},
-		{"magnitude", magnitude}
+		{"magnitude", magnitude},
+		{ "duration", duration } 
 	};
 }
 
 std::shared_ptr<Effect> MaxHealthEffect::fromJson(const nlohmann::json& j) {
 	float magnitude = j.at("magnitude");
-	return std::make_shared<MaxHealthEffect>(magnitude);
+	float duration = j.at("duration");
+	return std::make_shared<MaxHealthEffect>(magnitude, duration);
 }
 
 std::string MaxHealthEffect::getType() const {
@@ -103,12 +129,20 @@ MaxFatigueEffect::MaxFatigueEffect(float magnitude)
 		maxStacks, areaOfEffect) {
 }
 
-void MaxFatigueEffect::apply(Character& target) {
+void MaxFatigueEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void MaxFatigueEffect::tick(Character& target) {
+void MaxFatigueEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void MaxFatigueEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool MaxFatigueEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json MaxFatigueEffect::toJson() const {
@@ -133,12 +167,20 @@ HealthRegenEffect::HealthRegenEffect(int duration, float magnitude, bool stackab
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void HealthRegenEffect::apply(Character& target) {
+void HealthRegenEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void HealthRegenEffect::tick(Character& target) {
+void HealthRegenEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void HealthRegenEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool HealthRegenEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json HealthRegenEffect::toJson() const {
@@ -171,12 +213,20 @@ FatigueRegenEffect::FatigueRegenEffect(int duration, float magnitude, bool stack
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void FatigueRegenEffect::apply(Character& target) {
+void FatigueRegenEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void FatigueRegenEffect::tick(Character& target) {
+void FatigueRegenEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void FatigueRegenEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool FatigueRegenEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json FatigueRegenEffect::toJson() const {
@@ -209,12 +259,20 @@ AttackSpeedEffect::AttackSpeedEffect(int duration, float magnitude, bool stackab
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void AttackSpeedEffect::apply(Character& target) {
+void AttackSpeedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void AttackSpeedEffect::tick(Character& target) {
+void AttackSpeedEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void AttackSpeedEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool AttackSpeedEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json AttackSpeedEffect::toJson() const {
@@ -247,12 +305,20 @@ CastSpeedEffect::CastSpeedEffect(int duration, float magnitude, bool stackable, 
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void CastSpeedEffect::apply(Character& target) {
+void CastSpeedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void CastSpeedEffect::tick(Character& target) {
+void CastSpeedEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void CastSpeedEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool CastSpeedEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json CastSpeedEffect::toJson() const {
@@ -285,12 +351,20 @@ SpeedEffect::SpeedEffect(int duration, float magnitude, bool stackable, int stac
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void SpeedEffect::apply(Character& target) {
+void SpeedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void SpeedEffect::tick(Character& target) {
+void SpeedEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void SpeedEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool SpeedEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json SpeedEffect::toJson() const {
@@ -323,12 +397,20 @@ BlockChanceEffect::BlockChanceEffect(int duration, float magnitude, bool stackab
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void BlockChanceEffect::apply(Character& target) {
+void BlockChanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void BlockChanceEffect::tick(Character& target) {
+void BlockChanceEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void BlockChanceEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool BlockChanceEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json BlockChanceEffect::toJson() const {
@@ -361,12 +443,20 @@ DodgeChanceEffect::DodgeChanceEffect(int duration, float magnitude, bool stackab
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void DodgeChanceEffect::apply(Character& target) {
+void DodgeChanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void DodgeChanceEffect::tick(Character& target) {
+void DodgeChanceEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void DodgeChanceEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool DodgeChanceEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json DodgeChanceEffect::toJson() const {
@@ -399,12 +489,20 @@ CritChanceEffect::CritChanceEffect(int duration, float magnitude, bool stackable
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void CritChanceEffect::apply(Character& target) {
+void CritChanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void CritChanceEffect::tick(Character& target) {
+void CritChanceEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void CritChanceEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool CritChanceEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json CritChanceEffect::toJson() const {
@@ -437,12 +535,20 @@ ResistanceEffect::ResistanceEffect(ResistanceType type, int duration, float magn
 	TimedEffect(duration, magnitude, stackable, stacks, maxStacks), resistance(resistance) {
 }
 
-void ResistanceEffect::apply(Character& target) {
+void ResistanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void ResistanceEffect::tick(Character& target) {
+void ResistanceEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+bool ResistanceEffect::isExpired() const {
+	return duration <= 0.0f;
+}
+
+void ResistanceEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
 }
 
 nlohmann::json ResistanceEffect::toJson() const {
@@ -476,12 +582,20 @@ std::string ResistanceEffect::getType() const {
 EscapeEffect::EscapeEffect(int duration) : TimedEffect(duration, 0, false, 0, 0) {
 }
 
-void EscapeEffect::apply(Character& target) {
+void EscapeEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void EscapeEffect::tick(Character& target) {
+void EscapeEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+bool EscapeEffect::isExpired() const {
+	return duration <= 0.0f;
+}
+
+void EscapeEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
 }
 
 nlohmann::json EscapeEffect::toJson() const {
@@ -507,12 +621,20 @@ ResurrectEffect::ResurrectEffect() : Effect(doesDamage, applied, name, descripti
 	maxStacks, areaOfEffect) {
 }
 
-void ResurrectEffect::apply(Character& target) {
+void ResurrectEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void ResurrectEffect::tick(Character& target) {
+void ResurrectEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void ResurrectEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool ResurrectEffect::isExpired() const {
+	return true;
 }
 
 nlohmann::json ResurrectEffect::toJson() const {
@@ -535,12 +657,20 @@ AttributeEffect::AttributeEffect(Attribute attribute, int duration, float magnit
 	TimedEffect(duration, magnitude, stackable, stacks, maxStacks), attribute(attribute){
 }
 
-void AttributeEffect::apply(Character& target) {
+void AttributeEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void AttributeEffect::tick(Character& target) {
+void AttributeEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void AttributeEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool AttributeEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json AttributeEffect::toJson() const {
@@ -575,12 +705,20 @@ RandomEffect::RandomEffect(int duration, float magnitude, bool stackable, int st
 	TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void RandomEffect::apply(Character& target) {
+void RandomEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
 	// Implement the apply method
 }
 
-void RandomEffect::tick(Character& target) {
+void RandomEffect::tick(std::shared_ptr<Character> wielder) {
 	// Implement the tick method
+}
+
+void RandomEffect::burst(std::shared_ptr<Character> target) {
+	// Default implementation does nothing
+}
+
+bool RandomEffect::isExpired() const {
+	return duration <= 0.0f;
 }
 
 nlohmann::json RandomEffect::toJson() const {

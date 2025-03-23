@@ -37,6 +37,11 @@ int Character::getId() const {
 	return id;
 }
 
+void Character::addCombatFlag(Character::CombatFlags flag) {
+	if (std::find(combatFlags.begin(), combatFlags.end(), flag) == combatFlags.end())
+		combatFlags.push_back(flag);
+}
+
 std::shared_ptr<Character> Character::fromJson(const nlohmann::json& j) {
 	std::string type = j.at("type");
 	if (type == "Human") return Human::fromJson(j);
@@ -60,6 +65,46 @@ void Character::setDefenseValue(Defense stat, float defenseValue)
 	defenseValues[stat] = defenseValue;
 }
 
+void Character::decayStatusEffects(std::shared_ptr<Character> target)
+{
+	float bleedDecay = target->maxBleedPoints * 0.05f;
+	float burnDecay = target->maxBurnPoints * 0.05f;
+	float poisonDecay = target->maxPoisonPoints * 0.05f;
+	float frostDecay = target->maxFrostPoints * 0.05f;
+	float shockDecay = target->maxShockPoints * 0.05f;
+	float sleepDecay = target->maxSleepPoints * 0.05f;
+
+	if (target->bleedPoints > 0)
+	{
+		target->bleedPoints -= bleedDecay;
+		if (target->bleedPoints < 0) target->bleedPoints = 0;
+	}
+	if (target->burnPoints > 0)
+	{
+		target->burnPoints -= burnDecay;
+		if (target->burnPoints < 0) target->burnPoints = 0;
+	}
+	if (target->poisonPoints > 0)
+	{
+		target->poisonPoints -= poisonDecay;
+		if (target->poisonPoints < 0) target->poisonPoints = 0;
+	}
+	if (target->frostPoints > 0)
+	{
+		target->frostPoints -= frostDecay;
+		if (target->frostPoints < 0) target->frostPoints = 0;
+	}
+	if (target->shockPoints > 0)
+	{
+		target->shockPoints -= shockDecay;
+		if (target->shockPoints < 0) target->shockPoints = 0;
+	}
+	if (target->sleepPoints > 0)
+	{
+		target->sleepPoints -= sleepDecay;
+		if (target->sleepPoints < 0) target->sleepPoints = 0;
+	}
+}
 //this doesnt need to have ammo passed to it 
 bool Character::chooseAmmunition(std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target, std::shared_ptr<Ammunition> ammo)
 {
@@ -149,7 +194,7 @@ bool Character::chooseAmmunition(std::shared_ptr<Weapon> weapon, std::shared_ptr
 void Character::fireRangedWeapon(std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon, std::shared_ptr<Ammunition> ammo)
 {
 	//target is a human
-	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
+	if (std::dynamic_pointer_cast<Human>(target))
 	{
 		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
 		std::shared_ptr<Human> humanTarget = std::dynamic_pointer_cast<Human>(target);
@@ -164,7 +209,7 @@ void Character::fireRangedWeapon(std::shared_ptr<Character> target, std::shared_
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyDefensiveEffect(effect, target, humanAttacker);
+						effect->apply(target, shared_from_this());
 					}
 				}
 		}
@@ -242,7 +287,7 @@ void Character::fireRangedWeapon(std::shared_ptr<Character> target, std::shared_
 					{
 						for (std::shared_ptr<Effect> effect : enchantment->effects)
 						{
-							effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
+							effect->apply(shared_from_this(), target);
 						}
 					}
 					target->healthPoints -= critDamageTaken;
@@ -260,7 +305,7 @@ void Character::fireRangedWeapon(std::shared_ptr<Character> target, std::shared_
 					{
 						for (std::shared_ptr<Effect> effect : enchantment->effects)
 						{
-							effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
+							effect->apply(shared_from_this(), target);
 						}
 					}
 					target->healthPoints -= critDamageTaken;
@@ -282,7 +327,7 @@ void Character::fireRangedWeapon(std::shared_ptr<Character> target, std::shared_
 					{
 						for (std::shared_ptr<Effect> effect : enchantment->effects)
 						{
-							effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
+							effect->apply(shared_from_this(), target);
 						}
 					}
 					target->healthPoints -= damageTaken;
@@ -299,7 +344,7 @@ void Character::fireRangedWeapon(std::shared_ptr<Character> target, std::shared_
 					{
 						for (std::shared_ptr<Effect> effect : enchantment->effects)
 						{
-							effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
+							effect->apply(shared_from_this(), target);
 						}
 					}
 					target->healthPoints -= damageTaken;
@@ -351,7 +396,7 @@ void Character::consumeAmmo(std::shared_ptr<Ammunition> ammo)
 void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumable, std::shared_ptr<Character> target)
 {
 	//target is a human
-	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
+	if (std::dynamic_pointer_cast<Human>(target))
 	{
 
 		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
@@ -366,7 +411,7 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyDefensiveEffect(effect, target, humanAttacker);
+						effect->apply(target, shared_from_this());
 					}
 				}
 		}
@@ -446,7 +491,7 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
+						effect->apply(shared_from_this(), target);
 					}
 				}
 				target->healthPoints -= critDamageTaken;
@@ -464,7 +509,7 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
+						effect->apply(shared_from_this(), target);
 					}
 				}
 				target->healthPoints -= critDamageTaken;
@@ -486,7 +531,7 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
+						effect->apply(shared_from_this(), target);
 					}
 				}
 				target->healthPoints -= damageTaken;
@@ -503,7 +548,7 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
+						effect->apply(shared_from_this(), target);
 					}
 				}
 				target->healthPoints -= damageTaken;
@@ -558,7 +603,7 @@ void Character::killCharacter()
 }
 
 //SPELLS
-bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, std::shared_ptr<Spell> spell)
+bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, std::shared_ptr<Spell>& spell)
 {
 	//checks if they're using an appropriate casting tool
 	if (weapon.weaponType == Weapon::WeaponType::WAND || weapon.weaponType == Weapon::WeaponType::STAFF ||
@@ -666,9 +711,11 @@ bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, s
 				break;
 			}
 			//Spell is out of ransge
-			if (this->attunedSpells[choice - 1]->range < target->position[this->id])
+			if (this->attunedSpells[choice - 1]->range < target->position[this->getId()])
 			{
 				std::cout << " You are not in range of that target with " << this->attunedSpells[choice - 1]->name << std::endl;
+				return false;
+				break;
 			}
 			else
 			{
@@ -750,7 +797,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 	std::shared_ptr<Character> character = (shared_from_this());
 	
 
-	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
+	if (std::dynamic_pointer_cast<Human>(target))
 	{
 		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
 		
@@ -765,7 +812,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->applyDefensiveEffect(effect, target, humanAttacker);
+						effect->apply(target, shared_from_this());
 					}
 				}
 			}
@@ -780,10 +827,10 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 			this->fatiguePoints -= spell.fatigueCost;
 
 			//adds summoning cooldown to caster
-			this->effects.push_back(std::make_shared<Effect>(false, false, "Summon Cooldown", "Cooldown for summoning another creature", 0.0f, 10, 1, false, 1, 1, false));
 			for (std::shared_ptr<Effect> effect : spell.effects)
 			{
-				effect->applyPassiveEffect(effect, character);
+				effect->apply(character, character);
+				return;
 			}
 		}
 		//CAPTIVE SUN SPECIFIC LOGIC
@@ -805,7 +852,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 					{
 						if (!effect->areaOfEffect)
 						{
-							effect->applyOffensiveEffect(effect, character, target);
+							effect->apply(shared_from_this(), target);
 						}
 					}
 				}
@@ -820,7 +867,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 							{
 
 								ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
-								effect->applyOffensiveEffect(effect, character, ally);
+								effect->apply(shared_from_this(), ally);
 
 							}
 						}
@@ -843,7 +890,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 				//apply effects to target
 				for (std::shared_ptr<Effect> effect : spell.effects)
 				{
-					effect->applyOffensiveEffect(effect, character, target);
+					effect->apply(character, target);
 				}
 				//apply effects to all allies
 				for (std::shared_ptr<Character> ally : target->allies)
@@ -861,7 +908,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 									ally->killCharacter();
 									break;
 								}
-								effect->applyOffensiveEffect(effect, character, ally);
+								effect->apply(shared_from_this(), ally);
 
 							}
 						}
@@ -880,7 +927,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 				if (!this->namedCharacter) std::cout << " The " << dye::light_yellow(this->name) << " has a buff applied to them!" << std::endl;
 				for (std::shared_ptr<Effect> effect : spell.effects)
 				{
-					effect->applyPassiveEffect(effect, character);
+					effect->apply(shared_from_this(), shared_from_this());
 				}
 			
 		}
@@ -894,7 +941,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 				//apply effects to target
 				for (std::shared_ptr<Effect> effect : spell.effects)
 				{
-					effect->applyPassiveEffect(effect, character);
+					effect->apply(shared_from_this(), shared_from_this());
 				}
 				//apply effects to all allies
 				for (std::shared_ptr<Character> ally : target->allies)
@@ -904,14 +951,14 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 						ally->healthPoints -= spell.calculateSpellDamage(ally, spell);
 						for (std::shared_ptr<Effect> effect : spell.effects)
 						{
-							effect->applyOffensiveEffect(effect, character, ally);
+							effect->apply(shared_from_this(), ally);
 						}
 					}
 				}
 			
 		}
 		//SINGLE TARGET DAMAGE
-		else if (spell.range >= target->position[this->id] - playerMovement)
+		else if (spell.range >= target->position[this->getId()])
 		{
 			//SUBTRACT FATIGUE
 			this->fatiguePoints -= spell.fatigueCost;
@@ -924,13 +971,13 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 					target->killCharacter();
 					break;
 				}
-				if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
-				if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				if (target->namedCharacter && spell.calculateSpellDamage(target, spell) > 0) std::cout << dye::light_yellow(" " + target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
+				if (!target->namedCharacter && spell.calculateSpellDamage(target, spell) > 0) std::cout << " The " << dye::light_yellow(target->name) << " takes " << spell.calculateSpellDamage(target, spell) << " points of damage!" << std::endl;
 				i += abs(spell.attackSpeed - 100);
 				//apply effects to target
 				for (std::shared_ptr<Effect> effect : spell.effects)
 				{
-					effect->applyOffensiveEffect(effect, character, target);
+					effect->apply(character, target);
 				}
 			}
 		}
@@ -943,7 +990,7 @@ void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float
 
 void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target)
 {
-	if (std::dynamic_pointer_cast<std::shared_ptr<Human>>(target))
+	if (std::dynamic_pointer_cast<Human>(target))
 	{
 		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
 		std::shared_ptr<Human> humanTarget = std::dynamic_pointer_cast<Human>(target);
@@ -953,7 +1000,7 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 		{
 			for (std::shared_ptr<Effect> effect : enchantment->effects)
 			{
-				effect->applyOffensiveEffect(effect, humanAttacker, humanTarget);
+				effect->apply(shared_from_this(), target);
 			}
 		}
 
@@ -1007,14 +1054,14 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 				//get enchantments of target
 				for (std::shared_ptr<Item> item : target->inventory.equippedItems)
 				{
-					if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+					if (std::dynamic_pointer_cast<Armor>(item))
 					{
 						std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
 						for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
 						{
 							for (std::shared_ptr<Effect> effect : enchantment->effects)
 							{
-								effect->applyDefensiveEffect(effect, target, humanAttacker);
+								if(humanAttacker->isAlive) effect->apply(target, shared_from_this());
 							}
 						}
 					}
@@ -1031,14 +1078,14 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 				//get enchantments of target
 				for (std::shared_ptr<Item> item : target->inventory.equippedItems)
 				{
-					if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+					if (std::dynamic_pointer_cast<Armor>(item))
 					{
 						std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
 						for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
 						{
 							for (std::shared_ptr<Effect> effect : enchantment->effects)
 							{
-								effect->applyDefensiveEffect(effect, target, humanAttacker);
+								if (humanAttacker->isAlive) effect->apply(target, shared_from_this());
 							}
 						}
 					}
@@ -1059,14 +1106,14 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 				//get enchantments of target
 				for (std::shared_ptr<Item> item : target->inventory.equippedItems)
 				{
-					if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+					if (std::dynamic_pointer_cast<Armor>(item))
 					{
 						std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
 						for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
 						{
 							for (std::shared_ptr<Effect> effect : enchantment->effects)
 							{
-								effect->applyDefensiveEffect(effect, target, humanAttacker);
+								if (humanAttacker->isAlive) effect->apply(target, shared_from_this());
 							}
 						}
 					}
@@ -1083,14 +1130,14 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 				//get enchantments of target
 				for (std::shared_ptr<Item> item : target->inventory.equippedItems)
 				{
-					if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+					if (std::dynamic_pointer_cast<Armor>(item))
 					{
 						std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
 						for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
 						{
 							for (std::shared_ptr<Effect> effect : enchantment->effects)
 							{
-								effect->applyDefensiveEffect(effect, target, humanAttacker);
+								if (humanAttacker->isAlive) effect->apply(target, shared_from_this());
 							}
 						}
 					}

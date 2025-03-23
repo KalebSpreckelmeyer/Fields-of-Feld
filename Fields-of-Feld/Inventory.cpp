@@ -45,63 +45,72 @@ void Inventory::getEquippedItems(std::shared_ptr<Weapon>& mainHand, std::shared_
 		//cast the shared pointer into a weapon
 		auto weapon = std::dynamic_pointer_cast<Weapon>(equippedItems[i]);
 		
-		//check the slot of the weapon
-		switch (weapon->slot)
+		if (weapon)
 		{
-		case Item::EquipSlots::MAINHAND:
-			mainHand = weapon;
-			break;
-		case Item::EquipSlots::OFFHAND:
-			offHand = weapon;
-			break;
-		case Item::EquipSlots::RESERVE1:
-			reserve1 = weapon;
-			break;
-		case Item::EquipSlots::RESERVE2:
-			reserve2 = weapon;
-			break;
+			//check the slot of the weapon
+			switch (weapon->slot)
+			{
+			case Item::EquipSlots::MAINHAND:
+				mainHand = weapon;
+				break;
+			case Item::EquipSlots::OFFHAND:
+				offHand = weapon;
+				break;
+			case Item::EquipSlots::RESERVE1:
+				reserve1 = weapon;
+				break;
+			case Item::EquipSlots::RESERVE2:
+				reserve2 = weapon;
+				break;
+			}
 		}
 
 		//cast the shared pointer into an armor
 		auto armor = std::dynamic_pointer_cast<Armor>(equippedItems[i]);
 
-		//check the slot of the armor
-		switch (armor->slot)
+		if (armor)
 		{
-		case Item::EquipSlots::HEAD:
-			head = armor;
-			break;
-		case Item::EquipSlots::CHEST:
-			chest = armor;
-			break;
-		case Item::EquipSlots::LEGS:
-			legs = armor;
-			break;
-		case Item::EquipSlots::ARMS:
-			arms = armor;
-			break;
+			//check the slot of the armor
+			switch (armor->slot)
+			{
+			case Item::EquipSlots::HEAD:
+				head = armor;
+				break;
+			case Item::EquipSlots::CHEST:
+				chest = armor;
+				break;
+			case Item::EquipSlots::LEGS:
+				legs = armor;
+				break;
+			case Item::EquipSlots::ARMS:
+				arms = armor;
+				break;
+			}
 		}
+		
 
 		//cast the shared pointer into a trinket
 		auto trinket = std::dynamic_pointer_cast<Trinket>(equippedItems[i]);
 
-		//check the slot of the trinket
-		switch (trinket->slot)
+		if (trinket)
 		{
-		case Item::EquipSlots::AMULET:
-			amulet = trinket;
-			break;
-		case Item::EquipSlots::RING1:
-			ring1 = trinket;
-			break;
-		case Item::EquipSlots::RING2:
-			ring2 = trinket;
-			break;
-		case Item::EquipSlots::MISC:
-			misc = trinket;
-			break;
+			//check the slot of the trinket
+			switch (trinket->slot)
+			{
+			case Item::EquipSlots::AMULET:
+				amulet = trinket;
+				break;
+			case Item::EquipSlots::RING1:
+				ring1 = trinket;
+				break;
+			case Item::EquipSlots::RING2:
+				ring2 = trinket;
+				break;
+			case Item::EquipSlots::MISC:
+				misc = trinket;
+				break;
+			}
 		}
-
 	}
 }
 

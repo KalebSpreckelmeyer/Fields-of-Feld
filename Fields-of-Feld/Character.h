@@ -78,7 +78,8 @@ public:
 		HEALING, 
 		ENHANCEDARMOR, 
 		CANESCAPE,
-		RESURRECTED
+		RESURRECTED,
+		STUNNED
 	};
 	CombatFlags combatFlag = CombatFlags::NEUTRAL;
 	std::vector<CombatFlags> combatFlags;
@@ -144,6 +145,9 @@ public:
 	//Deconstructor
 	virtual ~Character() = default;
 
+	void addCombatFlag(Character::CombatFlags flag);
+
+	void decayStatusEffects(std::shared_ptr<Character> target);
 
 	//DESC: Chooses the ammunition to be used with a ranged weapon, sets it to ammo. Taraget is used to calculate damage
 	//PRE: The character must have a ranged weapon equipped	
@@ -189,7 +193,7 @@ public:
 	// and a valid target should be passed 
 	//POST: TakeDamage will be called with all relevant parameters to cast a spell and
 	// apply its effects
-	bool chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, std::shared_ptr<Spell> spell);
+	bool chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, std::shared_ptr<Spell>& spell);
 
 	void viewSpells();
 

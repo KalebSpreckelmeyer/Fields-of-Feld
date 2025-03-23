@@ -5,6 +5,9 @@ Drink::Drink(std::string name, std::string description, float magnitude, float w
 {
 }
 
+void Drink::use()
+{
+}
 nlohmann::json Drink::toJson() const
 {
 	return{

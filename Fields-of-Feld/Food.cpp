@@ -5,6 +5,10 @@ Food::Food(std::string name, std::string description, float magnitude, float wei
 {
 }
 
+void Food::use()
+{
+
+}
 nlohmann::json Food::toJson() const
 {
 	return{

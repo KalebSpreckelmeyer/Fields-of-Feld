@@ -41,7 +41,7 @@ public:
 	
 
 	Spell() = default;
-	Spell(bool areaOfEffect, bool summon, bool doesDamage, bool healing, bool useOnAlly, bool useOnSelf, bool buff, int duration,
+	Spell(std::string name, std::string description, bool areaOfEffect, bool summon, bool doesDamage, bool healing, bool useOnAlly, bool useOnSelf, bool buff, int duration,
 		float magnitude, bool stackable, int stacks, int maxStacks, float intelligenceScaling, float faithScaling, float arcaneScaline,
 		float luckScaling, float charismaScaling, float fatigueCost, float attackSpeed, float range);
 	~Spell() = default;

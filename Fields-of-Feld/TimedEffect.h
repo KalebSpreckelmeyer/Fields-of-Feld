@@ -1,17 +1,21 @@
 #pragma once
 #include "Effect.h"
 class TimedEffect : public Effect {
-protected:
-    int duration; // in turns
-	float magnitude;
-	bool stackable;
-	int stacks;
-	int maxStacks;
+  
 public:
+    int duration; // in turns
+    float magnitude;
+    bool stackable;
+    int stacks;
+    int maxStacks;
+
     TimedEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
     virtual ~TimedEffect() override = default;
 
-    void tick(Character& target) override;
+    virtual void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) = 0;
+    void tick(std::shared_ptr<Character> wielder) override;
+	void burst(std::shared_ptr<Character> target) override;
+
     bool isExpired() const override;
 
     int getDuration() const;
