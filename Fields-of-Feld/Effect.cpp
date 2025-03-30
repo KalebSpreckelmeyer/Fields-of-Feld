@@ -11,7 +11,7 @@
 #include <algorithm>
 #include "Armor.h"
 #include "Weapon.h"
-#include "MagicDamageType.h"
+#include "DamageTypes.h"
 #include "PhysicalDamageType.h"
 #include "Defense.h"
 #include "Spell.h"
@@ -24,26 +24,32 @@
 
 Effect::Effect(bool doesDamage, bool applied, std::string name, std::string description, float range, float duration,
 	float magnitude, bool stackable, int stacks, int maxStacks, bool areaOfEffect)
-	: name(name), description(description), duration(duration), magnitude(magnitude), stackable(stackable),
+	: id(IDManager::getNextId()), name(name), description(description), duration(duration), magnitude(magnitude), stackable(stackable),
 	stacks(stacks), maxStacks(maxStacks), areaOfEffect(areaOfEffect), range(range), doesDamage(doesDamage), applied(applied)
 {
 }
 
 std::shared_ptr<Effect> Effect::fromJson(const nlohmann::json& j) {
-	std::string type = j.at("type");
-
+	std::string type = j.at("type").get<std::string>();
 	//Offensive effects 
+	if (type == "Damage") return DamageEffect::fromJson(j);
 	if (type == "Bleed") return BleedEffect::fromJson(j);
 	if (type == "Burn") return BurnEffect::fromJson(j);
+	if (type == "BurnDamage") return BurnDamageEffect::fromJson(j);
 	if (type == "Poison") return PoisonEffect::fromJson(j);
+	if (type == "PoisonDamage") return PoisonDamageEffect::fromJson(j);
 	if (type == "FrostBurst") return FrostBurstEffect::fromJson(j);
 	if (type == "Shock") return ShockEffect::fromJson(j);
+	if (type == "LightningArc") return LightningArcEffect::fromJson(j);
 	if (type == "Sleep") return SleepEffect::fromJson(j);
 	if (type == "Stun") return StunEffect::fromJson(j);
+	if (type == "Freeze") return FreezeEffect::fromJson(j);
 	if (type == "Knockback") return KnockbackEffect::fromJson(j);
 	if (type == "Fear") return FearEffect::fromJson(j);
 	if (type == "ArmorPenetration") return ArmorPenetrationEffect::fromJson(j);
 	if (type == "Explosion") return ExplosionEffect::fromJson(j);
+	if (type == "Slow") return SlowEffect::fromJson(j);
+	if (type == "FieryExplosion") return FieryExplosionEffect::fromJson(j);
 	//Passive Effects
 	if (type == "FatigueBuff") return FatigueBuff::fromJson(j);
 	if (type == "HealthBuff") return HealthBuff::fromJson(j);
@@ -51,6 +57,9 @@ std::shared_ptr<Effect> Effect::fromJson(const nlohmann::json& j) {
 	if (type == "Summon") return Summon::fromJson(j);
 	if (type == "ArmorBuff") return ArmorBuff::fromJson(j);
 	if (type == "Healing") return Healing::fromJson(j);
+	if (type == "AreaOfEffectHealing") return AreaOfEffectHealing::fromJson(j);
+	if (type == "FatigueRestore") return FatigueRestore::fromJson(j);
+	if (type == "ArmamentBuff") return ArmamentBuff::fromJson(j);
 	//Consumable Effects
 	if (type == "RestoreHealth") return RestoreHealthEffect::fromJson(j);
 	if (type == "RestoreFatigue") return RestoreFatigueEffect::fromJson(j);
@@ -73,27 +82,18 @@ std::shared_ptr<Effect> Effect::fromJson(const nlohmann::json& j) {
 	if (type == "Thorns") return ThornsEffect::fromJson(j);
 	if (type == "Aura") return AuraEffect::fromJson(j);
 
-	throw std::runtime_error("Unknown effect type: " + type);
+	std::cerr << "[ERROR] Unknown effect type in JSON: " << type << std::endl;
+	return nullptr;
 }
 
-void Effect::setPhysicalDamage(PhysicalDamageType physType, float physDamage)
+void Effect::setDamage(DamageTypes damageType, float damage)
 {
-	physicalDamage[physType] = physDamage;
+	damageValues[damageType] = damage;
 }
 
-void Effect::setMagicDamage(MagicDamageType magType, float magDamage)
+float Effect::getDamage(DamageTypes damageType)
 {
-	magicDamage[magType] = magDamage;
-}
-
-float Effect::getPhysicalDamage(PhysicalDamageType physType)
-{
-	return physicalDamage[physType];
-}
-
-float Effect::getMagicDamage(MagicDamageType magType)
-{
-	return magicDamage[magType];
+	return damageValues[damageType];
 }
 
 float Effect::getEffectDamage(std::shared_ptr<Character> target, std::shared_ptr<Effect> effect)
@@ -123,20 +123,20 @@ float Effect::getEffectDamage(std::shared_ptr<Character> target, std::shared_ptr
 		{
 			if (std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item))
 			{
-				cumulativeSlashResist += armor->getPhysicalResistance(PhysicalDamageType::SLASH);
-				cumulativePierceResist += armor->getPhysicalResistance(PhysicalDamageType::PIERCE);
-				cumulativeBluntResist += armor->getPhysicalResistance(PhysicalDamageType::BLUNT);
-				cumulativeChopResist += armor->getPhysicalResistance(PhysicalDamageType::CHOP);
-				cumulativeMagicResist += armor->getMagicResistance(MagicDamageType::MAGIC);
-				cumulativeFireResist += armor->getMagicResistance(MagicDamageType::FIRE);
-				cumulativeIceResist += armor->getMagicResistance(MagicDamageType::FROST);
-				cumulativeShockResist += armor->getMagicResistance(MagicDamageType::SHOCK);
-				cumulativeWindResist += armor->getMagicResistance(MagicDamageType::WIND);
-				cumulativePoisonResist += armor->getMagicResistance(MagicDamageType::POISON);
-				cumulativeBleedResist += armor->getMagicResistance(MagicDamageType::BLEED);
-				cumulativeSleepResist += armor->getMagicResistance(MagicDamageType::SLEEP);
-				cumulativeDarkResist += armor->getMagicResistance(MagicDamageType::DARK);
-				cumulativeHolyResist += armor->getMagicResistance(MagicDamageType::HOLY);
+				cumulativeSlashResist += armor->getDefenses(Defense::SLASH);
+				cumulativePierceResist += armor->getDefenses(Defense::PIERCE);
+				cumulativeBluntResist += armor->getDefenses(Defense::BLUNT);
+				cumulativeChopResist += armor->getDefenses(Defense::CHOP);
+				cumulativeMagicResist += armor->getDefenses(Defense::MAGIC);
+				cumulativeFireResist += armor->getDefenses(Defense::FIRE);
+				cumulativeIceResist += armor->getDefenses(Defense::FROST);
+				cumulativeShockResist += armor->getDefenses(Defense::SHOCK);
+				cumulativeWindResist += armor->getDefenses(Defense::WIND);
+				cumulativePoisonResist += armor->getDefenses(Defense::POISON);
+				cumulativeBleedResist += armor->getDefenses(Defense::BLEED);
+				cumulativeSleepResist += armor->getDefenses(Defense::SLEEP);
+				cumulativeDarkResist += armor->getDefenses(Defense::DARK);
+				cumulativeHolyResist += armor->getDefenses(Defense::HOLY);
 			}
 		}
 
@@ -157,34 +157,34 @@ float Effect::getEffectDamage(std::shared_ptr<Character> target, std::shared_ptr
 		cumulativeWindResist = max(cumulativeWindResist, 0.0f);
 
 		//damage = damage - (damage * (resistance / 500)) - max won't let it go below 0
-		float cumulativeSlashDamage = effect->getPhysicalDamage(PhysicalDamageType::SLASH) - (effect->getPhysicalDamage(PhysicalDamageType::SLASH) * (cumulativeSlashResist / 500));
+		float cumulativeSlashDamage = effect->getDamage(DamageTypes::SLASH) - (effect->getDamage(DamageTypes::SLASH) * (cumulativeSlashResist / 500));
 		cumulativeSlashDamage = max(cumulativeSlashDamage, 0.0f);
-		float cumulativePierceDamage = effect->getPhysicalDamage(PhysicalDamageType::PIERCE) - (effect->getPhysicalDamage(PhysicalDamageType::PIERCE) * (cumulativePierceResist / 500));
+		float cumulativePierceDamage = effect->getDamage(DamageTypes::PIERCE) - (effect->getDamage(DamageTypes::PIERCE) * (cumulativePierceResist / 500));
 		cumulativePierceDamage = max(cumulativePierceDamage, 0.0f);
-		float cumulativeBluntDamage = effect->getPhysicalDamage(PhysicalDamageType::BLUNT) - (effect->getPhysicalDamage(PhysicalDamageType::BLUNT) * (cumulativeBluntResist / 500));
+		float cumulativeBluntDamage = effect->getDamage(DamageTypes::BLUNT) - (effect->getDamage(DamageTypes::BLUNT) * (cumulativeBluntResist / 500));
 		cumulativeBluntDamage = max(cumulativeBluntDamage, 0.0f);
-		float cumulativeChopDamage = effect->getPhysicalDamage(PhysicalDamageType::CHOP) - (effect->getPhysicalDamage(PhysicalDamageType::CHOP) * (cumulativeChopResist / 500));
+		float cumulativeChopDamage = effect->getDamage(DamageTypes::CHOP) - (effect->getDamage(DamageTypes::CHOP) * (cumulativeChopResist / 500));
 		cumulativeChopDamage = max(cumulativeChopDamage, 0.0f);
 
-		float cumulativeMagicDamage = effect->getMagicDamage(MagicDamageType::MAGIC) - (effect->getMagicDamage(MagicDamageType::MAGIC) * (cumulativeMagicResist / 500));
+		float cumulativeMagicDamage = effect->getDamage(DamageTypes::MAGIC) - (effect->getDamage(DamageTypes::MAGIC) * (cumulativeMagicResist / 500));
 		cumulativeMagicDamage = max(cumulativeMagicDamage, 0.0f);
-		float cumulativeFireDamage = effect->getMagicDamage(MagicDamageType::FIRE) - (effect->getMagicDamage(MagicDamageType::FIRE) * (cumulativeFireResist / 500));
+		float cumulativeFireDamage = effect->getDamage(DamageTypes::FIRE) - (effect->getDamage(DamageTypes::FIRE) * (cumulativeFireResist / 500));
 		cumulativeFireDamage = max(cumulativeFireDamage, 0.0f);
-		float cumulativeIceDamage = effect->getMagicDamage(MagicDamageType::FROST) - (effect->getMagicDamage(MagicDamageType::FROST) * (cumulativeIceResist / 500));
+		float cumulativeIceDamage = effect->getDamage(DamageTypes::FROST) - (effect->getDamage(DamageTypes::FROST) * (cumulativeIceResist / 500));
 		cumulativeIceDamage = max(cumulativeIceDamage, 0.0f);
-		float cumulativeShockDamage = effect->getMagicDamage(MagicDamageType::SHOCK) - (effect->getMagicDamage(MagicDamageType::SHOCK) * (cumulativeShockResist / 500));
+		float cumulativeShockDamage = effect->getDamage(DamageTypes::SHOCK) - (effect->getDamage(DamageTypes::SHOCK) * (cumulativeShockResist / 500));
 		cumulativeShockDamage = max(cumulativeShockDamage, 0.0f);
-		float cumulativePoisonDamage = effect->getMagicDamage(MagicDamageType::POISON) - (effect->getMagicDamage(MagicDamageType::POISON) * (cumulativePoisonResist / 500));
+		float cumulativePoisonDamage = effect->getDamage(DamageTypes::POISON) - (effect->getDamage(DamageTypes::POISON) * (cumulativePoisonResist / 500));
 		cumulativePoisonDamage = max(cumulativePoisonDamage, 0.0f);
-		float cumulativeBleedDamage = effect->getMagicDamage(MagicDamageType::BLEED) - (effect->getMagicDamage(MagicDamageType::BLEED) * (cumulativeBleedResist / 500));
+		float cumulativeBleedDamage = effect->getDamage(DamageTypes::BLEED) - (effect->getDamage(DamageTypes::BLEED) * (cumulativeBleedResist / 500));
 		cumulativeBleedDamage = max(cumulativeBleedDamage, 0.0f);
-		float cumulativeSleepDamage = effect->getMagicDamage(MagicDamageType::SLEEP) - (effect->getMagicDamage(MagicDamageType::SLEEP) * (cumulativeSleepResist / 500));
+		float cumulativeSleepDamage = effect->getDamage(DamageTypes::SLEEP) - (effect->getDamage(DamageTypes::SLEEP) * (cumulativeSleepResist / 500));
 		cumulativeSleepDamage = max(cumulativeSleepDamage, 0.0f);
-		float cumulativeDarkDamage = effect->getMagicDamage(MagicDamageType::DARK) - (effect->getMagicDamage(MagicDamageType::DARK) * (cumulativeDarkResist / 500));
+		float cumulativeDarkDamage = effect->getDamage(DamageTypes::DARK) - (effect->getDamage(DamageTypes::DARK) * (cumulativeDarkResist / 500));
 		cumulativeDarkDamage = max(cumulativeDarkDamage, 0.0f);
-		float cumulativeHolyDamage = effect->getMagicDamage(MagicDamageType::HOLY) - (effect->getMagicDamage(MagicDamageType::HOLY) * (cumulativeHolyResist / 500));
+		float cumulativeHolyDamage = effect->getDamage(DamageTypes::HOLY) - (effect->getDamage(DamageTypes::HOLY) * (cumulativeHolyResist / 500));
 		cumulativeHolyDamage = max(cumulativeHolyDamage, 0.0f);
-		float cumulativeWindDamage = effect->getMagicDamage(MagicDamageType::WIND) - (effect->getMagicDamage(MagicDamageType::WIND) * (cumulativeWindResist / 500));
+		float cumulativeWindDamage = effect->getDamage(DamageTypes::WIND) - (effect->getDamage(DamageTypes::WIND) * (cumulativeWindResist / 500));
 		cumulativeWindDamage = max(cumulativeWindDamage, 0.0f);
 
 		//DAMAGE AFTER RESISTANCES = damage of all damages after resistances applied added together	
@@ -1092,7 +1092,7 @@ bool hasEffect(const std::shared_ptr<Character> target, const std::string& effec
 //				attacker->combatFlags.push_back(Character::CombatFlags::BLEEDING);
 //				std::shared_ptr<Effect> bleed = std::make_shared<Effect>(true, true, "Blood Loss", "The attacker is bleeding profusely, losing a percentage of their maximum health!",
 //					0.0f, 1, attacker->maxHealthPoints * 0.1, false, 1, 1, false);
-//				bleed->setMagicDamage(MagicDamageType::BLEED, attacker->maxHealthPoints * 0.1);
+//				bleed->setDamage(DamageTypes::BLEED, attacker->maxHealthPoints * 0.1);
 //				attacker->effects.push_back(bleed);
 //			}
 //		}
@@ -1119,7 +1119,7 @@ bool hasEffect(const std::shared_ptr<Character> target, const std::string& effec
 //					0.0f, 1, attacker->maxHealthPoints * 0.2, false, 1, 1, false);
 //				std::shared_ptr<Effect> slowdown = std::make_shared<Effect>(true, false, "Slowdown", "The target is slowed by the frost accumulating on them", 
 //					0.0f, 3, effect->magnitude / 2.0f, false, 1, 1, false);
-//				frostBite->setMagicDamage(MagicDamageType::FROST, attacker->maxHealthPoints * 0.2);
+//				frostBite->setDamage(DamageTypes::FROST, attacker->maxHealthPoints * 0.2);
 //				attacker->effects.push_back(frostBite);
 //				attacker->effects.push_back(slowdown);
 //			}
@@ -1137,7 +1137,7 @@ bool hasEffect(const std::shared_ptr<Character> target, const std::string& effec
 //		if (!hasEffect(target, "Burn")) {
 //			std::shared_ptr<Effect> burn = std::make_shared<Effect>(true, true, "Burn", "The target is engulfed in flames causing damage each turn", 
 //				0.0f, 3, target->maxHealthPoints * 0.05f, false, 1, 1, false);
-//			burn->setMagicDamage(MagicDamageType::FIRE, target->maxHealthPoints * 0.05);
+//			burn->setDamage(DamageTypes::FIRE, target->maxHealthPoints * 0.05);
 //			target->combatFlags.push_back(Character::CombatFlags::BURNING);
 //			target->effects.push_back(burn);
 //		}
@@ -1178,7 +1178,7 @@ bool hasEffect(const std::shared_ptr<Character> target, const std::string& effec
 //
 //			std::shared_ptr<Effect> poison = std::make_shared<Effect>(true, true, "Poison", "Putrid venom courses through their veins", 0.0f, 5, 0, true, 1, 5, false);
 //			bool poisonApplied = false;
-//			poison->setMagicDamage(MagicDamageType::POISON, target->maxHealthPoints * 0.05);
+//			poison->setDamage(DamageTypes::POISON, target->maxHealthPoints * 0.05);
 //			for (std::shared_ptr<Effect> effect : target->effects)
 //			{
 //				if (effect->name == "Poison")
@@ -1205,7 +1205,7 @@ bool hasEffect(const std::shared_ptr<Character> target, const std::string& effec
 //			target->combatFlags.push_back(Character::CombatFlags::FROSTBITTEN);
 //			std::shared_ptr<Effect> frostBite = std::make_shared<Effect>(true, true, "Frost Burst", "The ice accumulating on the target explodes in a burst of frost!", 
 //				0.0f, 1, target->maxHealthPoints * 0.2, false, 1, 1, false);
-//			frostBite->setMagicDamage(MagicDamageType::FROST, target->maxHealthPoints * 0.2);
+//			frostBite->setDamage(DamageTypes::FROST, target->maxHealthPoints * 0.2);
 //			target->effects.push_back(frostBite);
 //		}
 //		return;
@@ -1220,7 +1220,7 @@ bool hasEffect(const std::shared_ptr<Character> target, const std::string& effec
 //			target->combatFlags.push_back(Character::CombatFlags::SHOCKED);
 //			std::shared_ptr<Effect> shock = std::make_shared<Effect>(true, true, "Shock", "The target is paralyzed by the electrical current, slowing their movements!", 
 //				0.0f, 1, effect->getEffectDamage(target, effect), false, 1, 1, false);
-//			shock->setMagicDamage(MagicDamageType::SHOCK, 0);
+//			shock->setDamage(DamageTypes::SHOCK, 0);
 //			target->effects.push_back(shock);
 //		}
 //		return;
@@ -1235,7 +1235,7 @@ bool hasEffect(const std::shared_ptr<Character> target, const std::string& effec
 //			target->combatFlags.push_back(Character::CombatFlags::BLEEDING);
 //			std::shared_ptr<Effect> bleed = std::make_shared<Effect>(true, true, "Blood Loss", "The target is bleeding profusely, losing a percentage of their maximum health!", 
 //				0.0f, 1, target->maxHealthPoints * 0.1, false, 1, 1, false);
-//			bleed->setMagicDamage(MagicDamageType::BLEED, target->maxHealthPoints * 0.1);
+//			bleed->setDamage(DamageTypes::BLEED, target->maxHealthPoints * 0.1);
 //			target->effects.push_back(bleed);
 //		}
 //		return;
@@ -1250,14 +1250,14 @@ bool hasEffect(const std::shared_ptr<Character> target, const std::string& effec
 //			target->combatFlags.push_back(Character::CombatFlags::SLEEPY);
 //			std::shared_ptr<Effect> sleep = std::make_shared<Effect>(true, true, "Sleep", "The target has dozen off, unable to attack for one turn!",
 //				0.0f, 1, 1, false, 1, 1, false);
-//			sleep->setMagicDamage(MagicDamageType::SLEEP, 0);
+//			sleep->setDamage(DamageTypes::SLEEP, 0);
 //			target->effects.push_back(sleep);
 //		}
 //		return;
 //	}
 //	else if (effect->name == "Fiery Explosion")
 //	{
-//		effect->setMagicDamage(MagicDamageType::FIRE, 25 + attacker->getFaith() * 0.5);
+//		effect->setDamage(DamageTypes::FIRE, 25 + attacker->getFaith() * 0.5);
 //		effect->removeEffect(target, *effect);
 //		if (target->isAlive)
 //		{

@@ -1,0 +1,769 @@
+{
+  "passages": [
+    {
+      "text": "{Narrator-Player-null-false-1-null}\nThe forest surrounds you, blotting out most details of the surroundings, though you can make out the shape of some tower to the south. Thankfully, there are several paths cutting through the forest you can take from here. The cabin in front of you seems occupied with smoke rising from its chimney and animal skins left out to dry in a shed besides the main structure. Approach the cabin or move on?\n\n[[Approach Cabin]] \n[[Leave]] ",
+      "links": [
+        {
+          "name": "Approach Cabin",
+          "link": "Approach Cabin",
+          "pid": "2"
+        },
+        {
+          "name": "Leave",
+          "link": "Leave",
+          "pid": "3"
+        }
+      ],
+      "name": "Inspect Surroundings",
+      "pid": "1",
+      "position": {
+        "x": "2600",
+        "y": "875"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-false-1-null}\nThe door to the cabin seems sturdy enough at a glance and you can hear movement inside. Breaking in would be difficult and surely agitate whoever dwells within. What will you do?\n\n[[Try Knocking]]\n[[Knock Again]]\n[[Break In]]\n[[Leave]]",
+      "links": [
+        {
+          "name": "Try Knocking",
+          "link": "Try Knocking",
+          "pid": "43"
+        },
+        {
+          "name": "Knock Again",
+          "link": "Knock Again",
+          "pid": "11"
+        },
+        {
+          "name": "Break In",
+          "link": "Break In",
+          "pid": "5"
+        },
+        {
+          "name": "Leave",
+          "link": "Leave",
+          "pid": "3"
+        }
+      ],
+      "name": "Approach Cabin",
+      "pid": "2",
+      "position": {
+        "x": "2600",
+        "y": "1000"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-false-1-null}\nYou've seen enough. Where will you go next? \n\n=-North-> A path leads deep into the forest\n=-East--> Signage along this path indicates that it leads to Mt. Spartan.\n=-South-> A path winds its way towards a lone tower in the distance.\n=-West--> A path leads deep into the forest\n\n[[North]]\n[[East]]\n[[South]]\n[[West]]",
+      "links": [
+        {
+          "name": "North",
+          "link": "North",
+          "pid": "21"
+        },
+        {
+          "name": "East",
+          "link": "East",
+          "pid": "18"
+        },
+        {
+          "name": "South",
+          "link": "South",
+          "pid": "19"
+        },
+        {
+          "name": "West",
+          "link": "West",
+          "pid": "20"
+        }
+      ],
+      "name": "Leave",
+      "pid": "3",
+      "position": {
+        "x": "2800",
+        "y": "825"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-null-true-1-null}\nI thought I told ya'll that I have no meat left to spare! I can barely keep myself fed let alone make a living like this!\n\n[[Food?]]\n[[What do you mean?]] \n[[Threaten Success]] \n[[Threaten Failure]] \n",
+      "links": [
+        {
+          "name": "Food?",
+          "link": "Food?",
+          "pid": "7"
+        },
+        {
+          "name": "What do you mean?",
+          "link": "What do you mean?",
+          "pid": "6"
+        },
+        {
+          "name": "Threaten Success",
+          "link": "Threaten Success",
+          "pid": "8"
+        },
+        {
+          "name": "Threaten Failure",
+          "link": "Threaten Failure",
+          "pid": "9"
+        }
+      ],
+      "name": "Knock",
+      "pid": "4",
+      "position": {
+        "x": "2600",
+        "y": "1375"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-false-1-null}\nYou get ready to break the door down, no matter what is inside. What will you use to accomplish this?\n\n[[Destroy with Thunderbolt]]\n[[Destroy with FireBolt]]\n[[Destroy with ForceBurst]]\n[[Destroy with Chop Weapon]]\n[[Tear it off its Hinges]]\n[[Try to tear it off its Hinges]]\n[[Change your Mind]]",
+      "links": [
+        {
+          "name": "Destroy with Thunderbolt",
+          "link": "Destroy with Thunderbolt",
+          "pid": "16"
+        },
+        {
+          "name": "Destroy with FireBolt",
+          "link": "Destroy with FireBolt",
+          "pid": "12"
+        },
+        {
+          "name": "Destroy with ForceBurst",
+          "link": "Destroy with ForceBurst",
+          "pid": "15"
+        },
+        {
+          "name": "Destroy with Chop Weapon",
+          "link": "Destroy with Chop Weapon",
+          "pid": "13"
+        },
+        {
+          "name": "Tear it off its Hinges",
+          "link": "Tear it off its Hinges",
+          "pid": "14"
+        },
+        {
+          "name": "Try to tear it off its Hinges",
+          "link": "Try to tear it off its Hinges",
+          "pid": "42"
+        },
+        {
+          "name": "Change your Mind",
+          "link": "Change your Mind",
+          "pid": "17"
+        }
+      ],
+      "name": "Break In",
+      "pid": "5",
+      "position": {
+        "x": "2800",
+        "y": "1125"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-null-true-1-null}\nWhat do you mean? \n\n[[You aren't with Them]]",
+      "links": [
+        {
+          "name": "You aren't with Them",
+          "link": "You aren't with Them",
+          "pid": "26"
+        }
+      ],
+      "name": "What do you mean?",
+      "pid": "6",
+      "position": {
+        "x": "2375",
+        "y": "1275"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-intelligence <= 4-true-1-null}\nMeat? I'm hungry and I want meat. Every time I try to catch an animal it runs away. Can I have some of yours? \n\n[[Have you tried shooting it?]]",
+      "links": [
+        {
+          "name": "Have you tried shooting it?",
+          "link": "Have you tried shooting it?",
+          "pid": "10"
+        }
+      ],
+      "name": "Food?",
+      "pid": "7",
+      "position": {
+        "x": "2375",
+        "y": "1150"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-charisma >= 6-true-1-null}\nAnd we’ve got a lot of people to feed over there. Either you give us what we need or things could happen to someone. \n\n\n[[Don't Hurt Me]] ",
+      "links": [
+        {
+          "name": "Don't Hurt Me",
+          "link": "Don't Hurt Me",
+          "pid": "33"
+        }
+      ],
+      "name": "Threaten Success",
+      "pid": "8",
+      "position": {
+        "x": "2275",
+        "y": "1600"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man- charisma < 6-true-1-null}\nAnd we’re… uh… very hungry and want food. Give us the food or we will… hurt you!\n\n[[How about no]]",
+      "links": [
+        {
+          "name": "How about no",
+          "link": "How about no",
+          "pid": "32"
+        }
+      ],
+      "name": "Threaten Failure",
+      "pid": "9",
+      "position": {
+        "x": "2375",
+        "y": "1400"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-null-true-1-null}\nWell kid, have you tried shooting at them? You know, using something with range? That's typically how hunting works.\n\n[[Haven't Shot at Them]]\n[[Tried to Shoot at Them]]",
+      "links": [
+        {
+          "name": "Haven't Shot at Them",
+          "link": "Haven't Shot at Them",
+          "pid": "22"
+        },
+        {
+          "name": "Tried to Shoot at Them",
+          "link": "Tried to Shoot at Them",
+          "pid": "23"
+        }
+      ],
+      "name": "Have you tried shooting it?",
+      "pid": "10",
+      "position": {
+        "x": "2250",
+        "y": "1150"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-false-1-null}\nThere is no response from the door when you knock. \n\n[[Leave]]",
+      "links": [
+        {
+          "name": "Leave",
+          "link": "Leave",
+          "pid": "3"
+        }
+      ],
+      "name": "Knock Again",
+      "pid": "11",
+      "position": {
+        "x": "2775",
+        "y": "1275"
+      }
+    },
+    {
+      "text": "{Narrator-Player-hasFireBoltSpell-true-1-fightRuggedHunter}\nWood is meant to be burned, right? With a modicum of concentration, flames erupt from your open palm. Concentrating the fire down into a small orb, you stand back and lob the projectile at the door. The fireball explodes on impact, creating a small hole in the wood that smoulders with latent embers. \n\nYou can easily reach the other side of the doorknob now. You reach in, unlocking the door and swing it open to reveal its terrified occupant. He readies a knife he had holstered on his hip and takes a step forward. You ready yourself for combat.",
+      "name": "Destroy with FireBolt",
+      "pid": "12",
+      "position": {
+        "x": "3025",
+        "y": "1000"
+      }
+    },
+    {
+      "text": "{Narrator-Player-hasChopWeapon-true-1-fightRuggedHunter}\nYou look down at your weapon and smile. It has just the right edge for chopping and would make short work of the door. \n\nYour weapon makes contact with the wood with a boom that sends nearby birds flying from their nests. You hear movement from inside, best not to stop now. Another chop sends splinters flying into the dirt. One more, and you can see inside. A final hit, and the wood surrounding the doorknob is hacked clean off, leaving the door to slide lazily on its hinges.\n\nThe man inside draws a knife from his belt and gets ready for combat. With a grin, you do the same. ",
+      "name": "Destroy with Chop Weapon",
+      "pid": "13",
+      "position": {
+        "x": "3025",
+        "y": "1100"
+      }
+    },
+    {
+      "text": "{Narrator-Player-strength >= 8-true-1-fightRuggedHunter}\nYou assume an agressive stance and charge at the door, slamming into it with the might of a bull. It rocks on its hinges once, twice, then gives way to its terrified occupant.\n\nHe draws a short knife from his waist and gets ready for combat. With no other option left, you join him.",
+      "name": "Tear it off its Hinges",
+      "pid": "14",
+      "position": {
+        "x": "3025",
+        "y": "1200"
+      }
+    },
+    {
+      "text": "{Narrator-Player-hasForceBurstSpell-true-1-fightRuggedHunter}\nThe door is sturdy enough, but with an adequate amount of force one can break down any door, and you happen to have quite the forceful spell memorized. You chant a quiet prayer under your breath, and gather the winds of Beltyr. All at once you release the pent up energy in a massive burst, sending the door flying off of its hinges and into the cabin. \n\nThe man inside draws a knife from his waist and readies himself for combat. You do the same. ",
+      "name": "Destroy with ForceBurst",
+      "pid": "15",
+      "position": {
+        "x": "3025",
+        "y": "900"
+      }
+    },
+    {
+      "text": "{Narrator-Player-hasThunderBoltSpell-true-1-fightRuggedHunter}\nAn image springs to your mind as you gaze upon the door, one of a tree cleaved clean in half by a bolt of lightning. You smile, and begin to charge up electricity in your fingertips. Pointing them at your target, you release a bolt of lightning at the door causing the very fibers of the material to explode in a thousand directions. The smell of ozone is in the air.\n\nThe man inside hastily draws a knife from his waist and readies himself for combat. You do the same. ",
+      "name": "Destroy with Thunderbolt",
+      "pid": "16",
+      "position": {
+        "x": "3025",
+        "y": "800"
+      }
+    },
+    {
+      "text": "{Narrator-Player Man-null-false-1-null}\nOn second thought, breaking and entering isn't what you would like to do today.\n\n[[Leave]]\n[[Try Knocking]] ",
+      "links": [
+        {
+          "name": "Leave",
+          "link": "Leave",
+          "pid": "3"
+        },
+        {
+          "name": "Try Knocking",
+          "link": "Try Knocking",
+          "pid": "43"
+        }
+      ],
+      "name": "Change your Mind",
+      "pid": "17",
+      "position": {
+        "x": "2800",
+        "y": "975"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-false-1-travelSherpaHut}\nYou follow the direction the signage points to. If nothing else, the elevation of the mountain will make naviation easier. ",
+      "name": "East",
+      "pid": "18",
+      "position": {
+        "x": "2750",
+        "y": "675"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-false-1-travelRuinedCastle}\nThat tower in the distance intrigues you. What could it contain, and what else is around it?",
+      "name": "South",
+      "pid": "19",
+      "position": {
+        "x": "2850",
+        "y": "675"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-false-1-travelIngredientsBetweenHunterBandit}\nYou trudge along the barely visible path deeper into the forest.",
+      "name": "West",
+      "pid": "20",
+      "position": {
+        "x": "2950",
+        "y": "675"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-false-1-travelIngredientsBetweenHunterFarm}\nYou trudge along the barely visible path deeper into the forest.",
+      "name": "North",
+      "pid": "21",
+      "position": {
+        "x": "2650",
+        "y": "675"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-intelligence <= 4-true-1-null}\nYea but they move too quick. It's not fair, they should stand still like the straw targets do.\n\n[[Please go Away]]",
+      "links": [
+        {
+          "name": "Please go Away",
+          "link": "Please go Away",
+          "pid": "24"
+        }
+      ],
+      "name": "Haven't Shot at Them",
+      "pid": "22",
+      "position": {
+        "x": "2125",
+        "y": "1175"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-intelligence <= 4-true-1-null}\nNo, bows hurt my arm and crossbows are too hard to load.\n\n[[Please go Away]]",
+      "links": [
+        {
+          "name": "Please go Away",
+          "link": "Please go Away",
+          "pid": "24"
+        }
+      ],
+      "name": "Tried to Shoot at Them",
+      "pid": "23",
+      "position": {
+        "x": "2125",
+        "y": "1075"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-null-true-1-null}\nBy the 7... Look kid. How about this, I give you some food, some nice tasty meat, and you go along and have a good time out in the nice forest far away from me. Would you do that?\n\n[[Yay food]]",
+      "links": [
+        {
+          "name": "Yay food",
+          "link": "Yay food",
+          "pid": "25"
+        }
+      ],
+      "name": "Please go Away",
+      "pid": "24",
+      "position": {
+        "x": "1975",
+        "y": "1125"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-intelligence <= 4-true-1-null}\nOk!\n\n[[Leave]] ",
+      "links": [
+        {
+          "name": "Leave",
+          "link": "Leave",
+          "pid": "3"
+        }
+      ],
+      "name": "Yay food",
+      "pid": "25",
+      "position": {
+        "x": "1975",
+        "y": "925"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-null-true-1-null}\nYou aren't with them, are you? Those conniving, back-stabbing, chunks of horse excrement!\n\n[[Who?]]",
+      "links": [
+        {
+          "name": "Who?",
+          "link": "Who?",
+          "pid": "27"
+        }
+      ],
+      "name": "You aren't with Them",
+      "pid": "26",
+      "position": {
+        "x": "2225",
+        "y": "1325"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-null-true-1-null}\nWho are you talking about?\n\n[[The Bandits]]",
+      "links": [
+        {
+          "name": "The Bandits",
+          "link": "The Bandits",
+          "pid": "28"
+        }
+      ],
+      "name": "Who?",
+      "pid": "27",
+      "position": {
+        "x": "2100",
+        "y": "1325"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-null-true-1-null}\nWho else would I be referring to stone-brain? I'm talking about that bandit gang to the west. They've been bleeding me dry of any game I kill to the point I'm having trouble feeding myself, let alone enough to make a living. \n\n[[Where are the Bandits]]\n[[How many are there]]\n[[Give me whatever you have]]\n[[I want your stuff]]",
+      "links": [
+        {
+          "name": "Where are the Bandits",
+          "link": "Where are the Bandits",
+          "pid": "29"
+        },
+        {
+          "name": "How many are there",
+          "link": "How many are there",
+          "pid": "30"
+        },
+        {
+          "name": "Give me whatever you have",
+          "link": "Give me whatever you have",
+          "pid": "31"
+        },
+        {
+          "name": "I want your stuff",
+          "link": "I want your stuff",
+          "pid": "36"
+        }
+      ],
+      "name": "The Bandits",
+      "pid": "28",
+      "position": {
+        "x": "1975",
+        "y": "1325"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-null-true-1-null}\nWhere are these bandits located?\n\n[[Where they are]]",
+      "links": [
+        {
+          "name": "Where they are",
+          "link": "Where they are",
+          "pid": "38"
+        }
+      ],
+      "name": "Where are the Bandits",
+      "pid": "29",
+      "position": {
+        "x": "1825",
+        "y": "1175"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-null-true-1-null}\nHow many of them do you think there are?\n\n[[How Many]]",
+      "links": [
+        {
+          "name": "How Many",
+          "link": "How Many",
+          "pid": "37"
+        }
+      ],
+      "name": "How many are there",
+      "pid": "30",
+      "position": {
+        "x": "1825",
+        "y": "1275"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-strength >= 6-true-1-null}\nBut you're still breathing, which means you still have something left to live for. Hand it over.\n\n[[Don't Hurt Me]]",
+      "links": [
+        {
+          "name": "Don't Hurt Me",
+          "link": "Don't Hurt Me",
+          "pid": "33"
+        }
+      ],
+      "name": "Give me whatever you have",
+      "pid": "31",
+      "position": {
+        "x": "1825",
+        "y": "1375"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-null-true-1-null}\nOr, hypothetically, I could instead do this:\n\n[[He does This]]",
+      "links": [
+        {
+          "name": "He does This",
+          "link": "He does This",
+          "pid": "34"
+        }
+      ],
+      "name": "How about no",
+      "pid": "32",
+      "position": {
+        "x": "2100",
+        "y": "1450"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-charisma >= 6-true-1-null}\nWait, there's no need to be hasty! I've got a few things lying around that I don't really need... that much... Here, take this bundle of furs I've been saving. They should fetch a good price!\n\n[[Take the Furs]]",
+      "links": [
+        {
+          "name": "Take the Furs",
+          "link": "Take the Furs",
+          "pid": "35"
+        }
+      ],
+      "name": "Don't Hurt Me",
+      "pid": "33",
+      "position": {
+        "x": "2100",
+        "y": "1600"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-true-1-null}\nThe man slams the door in your face so hard it rocks on its hinges and you can hear the faint clunk of the lock engaging once again.\n\n[[Knock Again]] \n[[Leave]] ",
+      "links": [
+        {
+          "name": "Knock Again",
+          "link": "Knock Again",
+          "pid": "11"
+        },
+        {
+          "name": "Leave",
+          "link": "Leave",
+          "pid": "3"
+        }
+      ],
+      "name": "He does This",
+      "pid": "34",
+      "position": {
+        "x": "2475",
+        "y": "1550"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-true-1-null}\nYou grab the bundle of furs from the man, running your hands over them in the process. They're of some kind of small game animal and are as soft as silk. Before you can appreciate the many more however, the man shoves you out of the doorframe and back outside. The door slams shut before you can react.\n\n[[Knock Again]] \n[[Break In]] \n[[Leave]] ",
+      "links": [
+        {
+          "name": "Knock Again",
+          "link": "Knock Again",
+          "pid": "11"
+        },
+        {
+          "name": "Break In",
+          "link": "Break In",
+          "pid": "5"
+        },
+        {
+          "name": "Leave",
+          "link": "Leave",
+          "pid": "3"
+        }
+      ],
+      "name": "Take the Furs",
+      "pid": "35",
+      "position": {
+        "x": "2100",
+        "y": "1750"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man- strength < 6-true-1-null}\nOh yea, well I want your stuff and I'm gonna take it if you don't give it to me!\n\n[[How about no]] ",
+      "links": [
+        {
+          "name": "How about no",
+          "link": "How about no",
+          "pid": "32"
+        }
+      ],
+      "name": "I want your stuff",
+      "pid": "36",
+      "position": {
+        "x": "1825",
+        "y": "1475"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-null-true-1-null}\nI haven't ever been to their camp myself to see, but they always send at least five men over every time they want to extort me. And given how they've burned so many homes and an entire town to the ground, I would say that there's a sizable amount of them\n\n[[Where are the Bandits]] \n[[I'll take them out for you]] ",
+      "links": [
+        {
+          "name": "Where are the Bandits",
+          "link": "Where are the Bandits",
+          "pid": "29"
+        },
+        {
+          "name": "I'll take them out for you",
+          "link": "I'll take them out for you",
+          "pid": "39"
+        }
+      ],
+      "name": "How Many",
+      "pid": "37",
+      "position": {
+        "x": "1700",
+        "y": "1275"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-null-true-1-null}\nThey're held up in the ruins of old Lamba, a small town they overrun and destroyed. It's to the west, just past the ruins of Fort Randal. \n\n[[How many are there]] \n[[I'll take them out for you]]",
+      "links": [
+        {
+          "name": "How many are there",
+          "link": "How many are there",
+          "pid": "30"
+        },
+        {
+          "name": "I'll take them out for you",
+          "link": "I'll take them out for you",
+          "pid": "39"
+        }
+      ],
+      "name": "Where they are",
+      "pid": "38",
+      "position": {
+        "x": "1700",
+        "y": "1175"
+      }
+    },
+    {
+      "text": "{Player-Rugged Man-null-true-1-null}\nThose bandits need to go. I'll take them out for you, don't worry.\n\n[[Good Luck]]",
+      "links": [
+        {
+          "name": "Good Luck",
+          "link": "Good Luck",
+          "pid": "40"
+        }
+      ],
+      "name": "I'll take them out for you",
+      "pid": "39",
+      "position": {
+        "x": "1575",
+        "y": "1225"
+      }
+    },
+    {
+      "text": "{Rugged Man-Player-null-true-1-null}\nThat's a good joke lad. Now, I've done enough talking for the day. You best be on your way. \n[[Now Leave]]",
+      "links": [
+        {
+          "name": "Now Leave",
+          "link": "Now Leave",
+          "pid": "41"
+        }
+      ],
+      "name": "Good Luck",
+      "pid": "40",
+      "position": {
+        "x": "1425",
+        "y": "1225"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-true-1-null}\nYou step back outside of the doorframe and he closes the door behind you. You hear the lock clunk into place as you step away.\n[[Knock Again]] \n[[Leave]] ",
+      "links": [
+        {
+          "name": "Knock Again",
+          "link": "Knock Again",
+          "pid": "11"
+        },
+        {
+          "name": "Leave",
+          "link": "Leave",
+          "pid": "3"
+        }
+      ],
+      "name": "Now Leave",
+      "pid": "41",
+      "position": {
+        "x": "1300",
+        "y": "1225"
+      }
+    },
+    {
+      "text": "{Narrator-Player-strength < 8-true-1-fightRuggedHunter}\nTry as you might, the door just won't seem to budge. Worse still, the noise you made seems to have alerted the occupant of the cabin. You hear another bolt click into place as another lock on the door latches shut. Whatever hope you had of breaking down the door before is gone now.\n\n[[Leave]] ",
+      "links": [
+        {
+          "name": "Leave",
+          "link": "Leave",
+          "pid": "3"
+        }
+      ],
+      "name": "Try to tear it off its Hinges",
+      "pid": "42",
+      "position": {
+        "x": "3025",
+        "y": "1300"
+      }
+    },
+    {
+      "text": "{Narrator-Player-null-true-1-null}\nYou knock on the door. After a moment of silence the door swings open to reveal a rugged man of middle age. Before you can take in any more details he barks out:\n\n[[Knock]] ",
+      "links": [
+        {
+          "name": "Knock",
+          "link": "Knock",
+          "pid": "4"
+        }
+      ],
+      "name": "Try Knocking",
+      "pid": "43",
+      "position": {
+        "x": "2600",
+        "y": "1125"
+      }
+    }
+  ],
+  "name": "FoF Dialogue Trial",
+  "startnode": "1",
+  "creator": "Twine",
+  "creator-version": "2.10.0",
+  "ifid": "18E5C026-ED35-4B95-81DB-E60E9EC5C9E5"
+}

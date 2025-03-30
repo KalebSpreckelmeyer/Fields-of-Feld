@@ -4,6 +4,8 @@
 #include <iostream>
 #include "Spell.h"
 #include "Human.h"
+#include "OffensiveEffect.h"
+#include "HelperFunctions.h"
 
 FatigueBuff::FatigueBuff(int duration, float magnitude, bool stackable, int stacks, int maxStacks) :
 	TimedEffect(duration, magnitude, stackable, stacks, maxStacks)
@@ -41,9 +43,8 @@ void FatigueBuff::burst(std::shared_ptr<Character> target)
 	// Default implementation does nothing
 }
 
-nlohmann::json FatigueBuff::toJson() const
-{
-	return{
+nlohmann::json FatigueBuff::toJson() const {
+	return {
 		{"type", getType()},
 		{"duration", duration},
 		{"magnitude", magnitude},
@@ -53,15 +54,22 @@ nlohmann::json FatigueBuff::toJson() const
 	};
 }
 
-std::shared_ptr<Effect> FatigueBuff::fromJson(const nlohmann::json& j)
-{
-	int duration = j.at("duration");
-	float magnitude = j.at("magnitude");
-	bool stackable = j.at("stackable");
-	int stacks = j.at("stacks");
-	int maxStacks = j.at("maxStacks");
-	return std::make_shared<FatigueBuff>(duration, magnitude, stackable, stacks, maxStacks);
+std::shared_ptr<Effect> FatigueBuff::fromJson(const nlohmann::json& j) {
+	try {
+		return std::make_shared<FatigueBuff>(
+			j.at("duration"),
+			j.at("magnitude"),
+			j.at("stackable"),
+			j.at("stacks"),
+			j.at("maxStacks")
+		);
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to deserialize FatigueBuff: " << e.what() << std::endl;
+		return nullptr;
+	}
 }
+
 
 // ------------------------------------------ HEALTH BUFF ------------------------------------------ //
 
@@ -101,9 +109,8 @@ void HealthBuff::burst(std::shared_ptr<Character> target)
 	// Default implementation does nothing
 }
 
-nlohmann::json HealthBuff::toJson() const
-{
-	return{
+nlohmann::json HealthBuff::toJson() const {
+	return {
 		{"type", getType()},
 		{"duration", duration},
 		{"magnitude", magnitude},
@@ -113,14 +120,20 @@ nlohmann::json HealthBuff::toJson() const
 	};
 }
 
-std::shared_ptr<Effect> HealthBuff::fromJson(const nlohmann::json& j)
-{
-	int duration = j.at("duration");
-	float magnitude = j.at("magnitude");
-	bool stackable = j.at("stackable");
-	int stacks = j.at("stacks");
-	int maxStacks = j.at("maxStacks");
-	return std::make_shared<HealthBuff>(duration, magnitude, stackable, stacks, maxStacks);
+std::shared_ptr<Effect> HealthBuff::fromJson(const nlohmann::json& j) {
+	try {
+		return std::make_shared<HealthBuff>(
+			j.at("duration"),
+			j.at("magnitude"),
+			j.at("stackable"),
+			j.at("stacks"),
+			j.at("maxStacks")
+		);
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to deserialize HealthBuff: " << e.what() << std::endl;
+		return nullptr;
+	}
 }
 
 // ------------------------------------------ CAST SPEED ------------------------------------------ //
@@ -170,9 +183,8 @@ void CastSpeed::burst(std::shared_ptr<Character> target)
 	// Default implementation does nothing
 }
 
-nlohmann::json CastSpeed::toJson() const
-{
-	return{
+nlohmann::json CastSpeed::toJson() const {
+	return {
 		{"type", getType()},
 		{"duration", duration},
 		{"magnitude", magnitude},
@@ -182,14 +194,20 @@ nlohmann::json CastSpeed::toJson() const
 	};
 }
 
-std::shared_ptr<Effect> CastSpeed::fromJson(const nlohmann::json& j)
-{
-	int duration = j.at("duration");
-	float magnitude = j.at("magnitude");
-	bool stackable = j.at("stackable");
-	int stacks = j.at("stacks");
-	int maxStacks = j.at("maxStacks");
-	return std::make_shared<CastSpeed>(duration, magnitude, stackable, stacks, maxStacks);
+std::shared_ptr<Effect> CastSpeed::fromJson(const nlohmann::json& j) {
+	try {
+		return std::make_shared<CastSpeed>(
+			j.at("duration"),
+			j.at("magnitude"),
+			j.at("stackable"),
+			j.at("stacks"),
+			j.at("maxStacks")
+		);
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to deserialize CastSpeed: " << e.what() << std::endl;
+		return nullptr;
+	}
 }
 
 // ------------------------------------------ SUMMON ------------------------------------------ //
@@ -230,9 +248,8 @@ void Summon::burst(std::shared_ptr<Character> target)
 	// Default implementation does nothing
 }
 
-nlohmann::json Summon::toJson() const
-{
-	return{
+nlohmann::json Summon::toJson() const {
+	return {
 		{"type", getType()},
 		{"summon", summon->toJson()},
 		{"duration", duration},
@@ -243,16 +260,22 @@ nlohmann::json Summon::toJson() const
 	};
 }
 
-std::shared_ptr<Effect> Summon::fromJson(const nlohmann::json& j)
-{
-	std::shared_ptr<Character> summon = Character::fromJson(j.at("summon"));
-	int duration = j.at("duration");
-	float magnitude = j.at("magnitude");
-	bool stackable = j.at("stackable");
-	int stacks = j.at("stacks");
-	int maxStacks = j.at("maxStacks");
-	return std::make_shared<Summon>(summon, duration, magnitude, stackable, stacks, maxStacks);
-
+std::shared_ptr<Effect> Summon::fromJson(const nlohmann::json& j) {
+	try {
+		auto summoned = Character::fromJson(j.at("summon"));
+		return std::make_shared<Summon>(
+			summoned,
+			j.at("duration"),
+			j.at("magnitude"),
+			j.at("stackable"),
+			j.at("stacks"),
+			j.at("maxStacks")
+		);
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to deserialize Summon: " << e.what() << std::endl;
+		return nullptr;
+	}
 }
 
 // ------------------------------------------ ARMOR BUFF ------------------------------------------ //
@@ -293,11 +316,10 @@ void ArmorBuff::burst(std::shared_ptr<Character> target)
 	// Default implementation does nothing
 }
 
-nlohmann::json ArmorBuff::toJson() const
-{
-	return{
+nlohmann::json ArmorBuff::toJson() const {
+	return {
 		{"type", getType()},
-		{"defense", static_cast<int>(defense)},
+		{"defense", defenseToString(defense)},
 		{"duration", duration},
 		{"magnitude", magnitude},
 		{"stackable", stackable},
@@ -306,15 +328,21 @@ nlohmann::json ArmorBuff::toJson() const
 	};
 }
 
-std::shared_ptr<Effect> ArmorBuff::fromJson(const nlohmann::json& j)
-{
-	Defense defense = static_cast<Defense>(j.at("defense").get<int>());
-	int duration = j.at("duration");
-	float magnitude = j.at("magnitude");
-	bool stackable = j.at("stackable");
-	int stacks = j.at("stacks");
-	int maxStacks = j.at("maxStacks");
-	return std::make_shared<ArmorBuff>(defense, duration, magnitude, stackable, stacks, maxStacks);
+std::shared_ptr<Effect> ArmorBuff::fromJson(const nlohmann::json& j) {
+	try {
+		return std::make_shared<ArmorBuff>(
+			stringToDefense(j.at("defense")),
+			j.at("duration"),
+			j.at("magnitude"),
+			j.at("stackable"),
+			j.at("stacks"),
+			j.at("maxStacks")
+		);
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to deserialize ArmorBuff: " << e.what() << std::endl;
+		return nullptr;
+	}
 }
 
 // ------------------------------------------ HEALING ------------------------------------------ //
@@ -355,9 +383,8 @@ void Healing::burst(std::shared_ptr<Character> target)
 	// Default implementation does nothing
 }
 
-nlohmann::json Healing::toJson() const
-{
-	return{
+nlohmann::json Healing::toJson() const {
+	return {
 		{"type", getType()},
 		{"duration", duration},
 		{"magnitude", magnitude},
@@ -367,14 +394,111 @@ nlohmann::json Healing::toJson() const
 	};
 }
 
-std::shared_ptr<Effect> Healing::fromJson(const nlohmann::json& j)
+std::shared_ptr<Effect> Healing::fromJson(const nlohmann::json& j) {
+	try {
+		return std::make_shared<Healing>(
+			j.at("duration"),
+			j.at("magnitude"),
+			j.at("stackable"),
+			j.at("stacks"),
+			j.at("maxStacks")
+		);
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to deserialize Healing: " << e.what() << std::endl;
+		return nullptr;
+	}
+}
+// ------------------------------------------ AOE HEALING RESTORE ------------------------------------------ //
+
+AreaOfEffectHealing::AreaOfEffectHealing(float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks) :
+	TimedEffect(duration, magnitude, stackable, stacks, maxStacks), range(range)
 {
-	int duration = j.at("duration");
-	float magnitude = j.at("magnitude");
-	bool stackable = j.at("stackable");
-	int stacks = j.at("stacks");
-	int maxStacks = j.at("maxStacks");
-	return std::make_shared<Healing>(duration, magnitude, stackable, stacks, maxStacks);
+}
+
+std::string AreaOfEffectHealing::getType() const
+{
+	return "AreaOfEffectHealing";
+}
+
+void AreaOfEffectHealing::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+{
+	target->effects.push_back(shared_from_this());
+	target->healthPoints += magnitude;
+	if (target->healthPoints > target->maxHealthPoints) target->healthPoints = target->maxHealthPoints;
+	if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " restores " << magnitude << " points of health!" << std::endl;
+	if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << " restores " << magnitude << " points of health!" << std::endl;
+
+	for (auto& ally : target->allies)
+	{
+		if (target->position[ally->getId()] <= range)
+		{
+			ally->healthPoints += magnitude;
+			if (ally->healthPoints > ally->maxHealthPoints) ally->healthPoints = ally->maxHealthPoints;
+			if (ally->namedCharacter) std::cout << dye::light_yellow(" " + ally->name) << " restores " << magnitude << " points of health!" << std::endl;
+			if (!ally->namedCharacter) std::cout << " The " << dye::light_yellow(ally->name) << " restores " << magnitude << " points of health!" << std::endl;
+		}
+	}
+}
+
+void AreaOfEffectHealing::tick(std::shared_ptr<Character> wielder)
+{
+	if (duration > 0)
+	{
+		wielder->healthPoints += magnitude;
+		if (wielder->healthPoints > wielder->maxHealthPoints) wielder->healthPoints = wielder->maxHealthPoints;
+		if (wielder->namedCharacter) std::cout << dye::light_yellow(" " + wielder->name) << " restores " << magnitude << " points of health!" << std::endl;
+		if (!wielder->namedCharacter) std::cout << " The " << dye::light_yellow(wielder->name) << " restores " << magnitude << " points of health!" << std::endl;
+		for (auto& ally : wielder->allies)
+		{
+			if (wielder->position[ally->getId()] <= range)
+			{
+				ally->healthPoints += magnitude;
+				if (ally->healthPoints > ally->maxHealthPoints) ally->healthPoints = ally->maxHealthPoints;
+				if (ally->namedCharacter) std::cout << dye::light_yellow(" " + ally->name) << " restores " << magnitude << " points of health!" << std::endl;
+				if (!ally->namedCharacter) std::cout << " The " << dye::light_yellow(ally->name) << " restores " << magnitude << " points of health!" << std::endl;
+			}
+		}
+	}
+	if (duration <= 0)
+	{
+		wielder->effects.erase(std::remove(wielder->effects.begin(), wielder->effects.end(), shared_from_this()), wielder->effects.end());
+	}
+	duration -= 1;
+}
+
+void AreaOfEffectHealing::burst(std::shared_ptr<Character> target)
+{
+	// Default implementation does nothing
+}
+
+nlohmann::json AreaOfEffectHealing::toJson() const {
+	return {
+		{"type", getType()},
+		{"range", range},
+		{"duration", duration},
+		{"magnitude", magnitude},
+		{"stackable", stackable},
+		{"stacks", stacks},
+		{"maxStacks", maxStacks}
+	};
+}
+
+std::shared_ptr<Effect> AreaOfEffectHealing::fromJson(const nlohmann::json& j) {
+	try {
+		return std::make_shared<AreaOfEffectHealing>(
+			j.at("range"),
+			j.at("duration"),
+			j.at("magnitude"),
+			j.at("stackable"),
+			j.at("stacks"),
+			j.at("maxStacks")
+		);
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to deserialize AreaOfEffectHealing: " << e.what() << std::endl;
+		return nullptr;
+	}
 }
 
 // ------------------------------------------ FATIGUE RESTORE ------------------------------------------ //
@@ -407,9 +531,8 @@ void FatigueRestore::burst(std::shared_ptr<Character> target)
 	// Default implementation does nothing
 }
 
-nlohmann::json FatigueRestore::toJson() const
-{
-	return{
+nlohmann::json FatigueRestore::toJson() const {
+	return {
 		{"type", getType()},
 		{"duration", duration},
 		{"magnitude", magnitude},
@@ -419,12 +542,108 @@ nlohmann::json FatigueRestore::toJson() const
 	};
 }
 
-std::shared_ptr<Effect> FatigueRestore::fromJson(const nlohmann::json& j)
-{
-	int duration = j.at("duration");
-	float magnitude = j.at("magnitude");
-	bool stackable = j.at("stackable");
-	int stacks = j.at("stacks");
-	int maxStacks = j.at("maxStacks");
-	return std::make_shared<FatigueRestore>(duration, magnitude, stackable, stacks, maxStacks);
+std::shared_ptr<Effect> FatigueRestore::fromJson(const nlohmann::json& j) {
+	try {
+		return std::make_shared<FatigueRestore>(
+			j.at("duration"),
+			j.at("magnitude"),
+			j.at("stackable"),
+			j.at("stacks"),
+			j.at("maxStacks")
+		);
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to deserialize FatigueRestore: " << e.what() << std::endl;
+		return nullptr;
+	}
 }
+
+// ------------------------------------------ ARMAMENT BUFF ------------------------------------------ //
+
+ArmamentBuff::ArmamentBuff(DamageTypes damageType, int duration, float magnitude, bool stackable, int stacks, int maxStacks) :
+	TimedEffect(duration, magnitude, stackable, stacks, maxStacks), damageType(damageType)
+{
+	this->setDamage(damageType, magnitude);
+}
+
+std::string ArmamentBuff::getType() const
+{
+	return "ArmamentBuff";
+}
+
+void ArmamentBuff::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+{
+	std::string DamageTypess[]{ "None", "Magic", "Fire", "Frost", "Shock", "Wind", "Poison", "Bleed", "Sleep", "Dark", "Holy" };
+	// add incoming effect
+	target->effects.push_back(shared_from_this());
+
+	// Get equipped weapons
+	std::shared_ptr<Weapon> mainHand, offHand, reserve1, reserve2;
+	target->inventory.getEquippedWeapons(mainHand, offHand, reserve1, reserve2);
+
+	//return if mainhand is empty
+	if (!mainHand) return;
+	//add magic damage to weapon
+	mainHand->setDamage(damageType, mainHand->getDamage(damageType) + magnitude);
+	if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << "'s " << mainHand->name << " gains " << magnitude << " points of " << DamageTypess[static_cast<int>(damageType)] << " damage!" << std::endl;
+	if (!target->namedCharacter) std::cout << " The " << dye::light_yellow(target->name) << "'s " << mainHand->name << " gains " << magnitude << " points of " << DamageTypess[static_cast<int>(damageType)] << " damage!" << std::endl;
+}
+
+void ArmamentBuff::tick(std::shared_ptr<Character> wielder)
+{
+	std::string DamageTypess[]{ "None", "Magic", "Fire", "Frost", "Shock", "Wind", "Poison", "Bleed", "Sleep", "Dark", "Holy" };
+	if (duration <= 0)
+	{
+		// Get equipped weapons
+		std::shared_ptr<Weapon> mainHand, offHand, reserve1, reserve2;
+		wielder->inventory.getEquippedWeapons(mainHand, offHand, reserve1, reserve2);
+
+		//return if mainhand is empty
+		if (!mainHand) return;
+
+		//remove magic damage from weapon
+		float current = mainHand->getDamage(damageType);
+		mainHand->setDamage(damageType, max(0.0f, current - magnitude));
+		wielder->effects.erase(std::remove(wielder->effects.begin(), wielder->effects.end(), shared_from_this()), wielder->effects.end());
+		if (wielder->namedCharacter) std::cout << dye::light_yellow(" " + wielder->name) << "'s " << mainHand->name << " loses " << magnitude << " points of " << DamageTypess[static_cast<int>(damageType)] << " damage!" << std::endl;
+		if (!wielder->namedCharacter) std::cout << " The " << dye::light_yellow(wielder->name) << "'s " << mainHand->name << " loses " << magnitude << " points of " << DamageTypess[static_cast<int>(damageType)] << " damage!" << std::endl;
+	}
+	if (duration > 0) duration -= 1;
+}
+
+void ArmamentBuff::burst(std::shared_ptr<Character> target)
+{
+	// Default implementation does nothing
+}
+
+nlohmann::json ArmamentBuff::toJson() const
+{
+	return {
+		{"type", getType()},
+		{"magicDamage", damageTypesToString(damageType)},
+		{"duration", duration},
+		{"magnitude", magnitude},
+		{"stackable", stackable},
+		{"stacks", stacks},
+		{"maxStacks", maxStacks}
+	};
+}
+
+std::shared_ptr<Effect> ArmamentBuff::fromJson(const nlohmann::json& j)
+{
+	try {
+		DamageTypes magicDamage = stringToDamageTypes(j.at("magicDamage").get<std::string>());
+		int duration = j.at("duration");
+		float magnitude = j.at("magnitude");
+		bool stackable = j.at("stackable");
+		int stacks = j.at("stacks");
+		int maxStacks = j.at("maxStacks");
+
+		return std::make_shared<ArmamentBuff>(magicDamage, duration, magnitude, stackable, stacks, maxStacks);
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to deserialize ArmamentBuff: " << e.what() << std::endl;
+		return nullptr;
+	}
+}
+

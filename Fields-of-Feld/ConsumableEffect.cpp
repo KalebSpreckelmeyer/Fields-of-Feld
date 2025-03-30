@@ -2,9 +2,9 @@
 // -------------------------- RESTORE HEALTH EFFECT -------------------------- //
 
 RestoreHealthEffect::RestoreHealthEffect(float magnitude)
-	: Effect(doesDamage, applied, name, description, 
-		range, duration, magnitude, stackable, stacks, 
-		maxStacks, areaOfEffect){
+	: Effect(false, false, "Restore Health", "Instantly restores health to the target",
+		0.0f, 0.0f, magnitude, false, 1, 
+		1, false){
 }
 
 void RestoreHealthEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
@@ -42,9 +42,9 @@ std::string RestoreHealthEffect::getType() const {
 // -------------------------- RESTORE FATIGUE EFFECT -------------------------- //
 
 RestoreFatigueEffect::RestoreFatigueEffect(float magnitude)
-	: Effect(doesDamage, applied, name, description,
-		range, duration, magnitude, stackable, stacks,
-		maxStacks, areaOfEffect) {
+	: Effect(false, false, "Restore Fatigue", "Instantly restores fatigue of the target",
+		0.0f, 0.9f, magnitude, false, 1,
+		1, false) {
 }
 
 void RestoreFatigueEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
@@ -82,9 +82,9 @@ std::string RestoreFatigueEffect::getType() const {
 // -------------------------- MAX HEALTH EFFECT -------------------------- //
 
 MaxHealthEffect::MaxHealthEffect(float magnitude, float duration)
-	: Effect(doesDamage, applied, name, description,
-		range, duration, magnitude, stackable, stacks,
-		maxStacks, areaOfEffect) {
+	: Effect(false, false, "Max Health", "Instantly increases the maximum health of the target",
+		0.0f, duration, magnitude, false, 1,
+		1, false) {
 }
 
 void MaxHealthEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
@@ -123,10 +123,10 @@ std::string MaxHealthEffect::getType() const {
 
 // -------------------------- MAX FATIUGE EFFECT -------------------------- //
 
-MaxFatigueEffect::MaxFatigueEffect(float magnitude)
-	: Effect(doesDamage, applied, name, description,
-		range, duration, magnitude, stackable, stacks,
-		maxStacks, areaOfEffect) {
+MaxFatigueEffect::MaxFatigueEffect(float magnitude, float duration)
+	: Effect(false, false, "Max Fatigue", "Instantly increases the maximum fatiuge of the target",
+		0.0f, duration, magnitude, false, 1,
+		1, false) {
 }
 
 void MaxFatigueEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
@@ -148,13 +148,15 @@ bool MaxFatigueEffect::isExpired() const {
 nlohmann::json MaxFatigueEffect::toJson() const {
 	return{
 		{"type", getType()},
-		{"magnitude", magnitude}
+		{"magnitude", magnitude},
+		{ "duration", duration }
 	};
 }
 
 std::shared_ptr<Effect> MaxFatigueEffect::fromJson(const nlohmann::json& j) {
 	float magnitude = j.at("magnitude");
-	return std::make_shared<MaxFatigueEffect>(magnitude);
+	float duration = j.at("duration");
+	return std::make_shared<MaxFatigueEffect>(magnitude, duration);
 }
 
 std::string MaxFatigueEffect::getType() const {
@@ -554,7 +556,7 @@ void ResistanceEffect::burst(std::shared_ptr<Character> target) {
 nlohmann::json ResistanceEffect::toJson() const {
 	return{
 		{"type", getType()},
-		{"resistance", resistance},
+		{"resistance", static_cast<int>(resistance)},
 		{"duration", duration},
 		{"magnitude", magnitude},
 		{"stackable", stackable},
@@ -616,9 +618,9 @@ std::string EscapeEffect::getType() const {
 
 // -------------------------- RESURRECT EFFECT -------------------------- //
 
-ResurrectEffect::ResurrectEffect() : Effect(doesDamage, applied, name, description,
-	range, duration, magnitude, stackable, stacks,
-	maxStacks, areaOfEffect) {
+ResurrectEffect::ResurrectEffect() : Effect(false, false, "Resurrection", "Brings the target back from the dead",
+	0.0f, 0.0f, 0.0f, false, 1,
+	1, false) {
 }
 
 void ResurrectEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
@@ -676,7 +678,7 @@ bool AttributeEffect::isExpired() const {
 nlohmann::json AttributeEffect::toJson() const {
 	return{
 		{"type", getType()},
-		{"attribute", attribute},
+		{"attribute", static_cast<int>(attribute)},
 		{"duration", duration},
 		{"magnitude", magnitude},
 		{"stackable", stackable},

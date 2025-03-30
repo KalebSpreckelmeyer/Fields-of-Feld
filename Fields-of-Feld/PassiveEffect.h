@@ -70,7 +70,8 @@ public:
 class ArmorBuff : public TimedEffect
 {
 public:
-	Defense defense = Defense::NONE;
+	Defense defense;
+	ArmorBuff() = default;
 	ArmorBuff(Defense defense, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
 	void tick(std::shared_ptr<Character> target) override;
@@ -96,6 +97,21 @@ public:
 	std::string getType() const;
 };
 
+class AreaOfEffectHealing : public TimedEffect
+{
+public:
+	float range = 0.0f;
+	AreaOfEffectHealing(float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
+
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+	
+	nlohmann::json toJson() const;
+	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
+	
+	std::string getType() const;
+};
 class FatigueRestore : public TimedEffect
 {
 public:
@@ -107,5 +123,20 @@ public:
 	nlohmann::json toJson() const;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 	
+	std::string getType() const;
+};
+
+class ArmamentBuff : public TimedEffect
+{
+public:
+	DamageTypes damageType = DamageTypes::NONE;
+	ArmamentBuff(DamageTypes damageType, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+
+	nlohmann::json toJson() const;
+	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
+
 	std::string getType() const;
 };

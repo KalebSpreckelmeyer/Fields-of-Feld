@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <list>
 #include <string>
 #include <sstream>
@@ -10,7 +10,6 @@
 #include "Character.h"
 #include "Creature.h"
 #include "optional"
-#include "Dialogue.h"
 #include "Weapon.h"
 #include "Armor.h"
 #include "Trinket.h"
@@ -27,207 +26,61 @@
 #include "ConsumableEffect.h"
 #include "PassiveEffect.h"
 #include <fstream>
+#include "Food.h"
+#include "Drink.h"
+#include "Book.h"
+#include "HelperFunctions.h"
+#include "LootItem.h"
+#include "DialogueManager.h"
+#include "GameState.h"
+#include "Tools.h"
 
 using namespace std;
 using json = nlohmann::json;
 
 #pragma region Function Declarations
-//DESC: Validates the user inputted a number within the specified range
-//PRE: Min and max values must be passed in
-//POST: Returns the validated input
-int validateInput(int min, int max);
+
+//DESC: Saves player information to file based on slot
+//PRE: Player should be a valid human object
+//POST: Player information will be saved to a file
+void savePlayerToSlot(shared_ptr<Human> player, int slot);
+//DESC: Loads a player from a file based on the slot provided
+//PRE: File should be checked with isSlotEmpty first before loading
+//POST: Returns the player loaded from the file
+shared_ptr<Human> loadPlayerFromSlot(int slot);
+//DESC: Checks a file to see if it is empty
+//PRE: File should exist
+//POST: Returns true if empty or corrupted, false if filled
+bool isSlotEmpty(const string& fileName);
 //DESC:
 //PRE:
 //POST:
 void openCombat(std::shared_ptr<Human> player, shared_ptr<Character> enemy);
-//DESC: Gets a random, context sensitive banter line from the sender to the reciever
-//PRE: Sender and reciever must be initialized
-//POST: Reciever will be insulted, results printed to console (enemy characters will have their confidence lowered)
-//void getCombatBanter(Character sender, Character& reciever);
-//DESC:
-//PRE:
-//POST:
-//void getGenericCombatBanter(Character sender);
+//DESC: Checks the passed save file to see if it is a valid save slot
+//PRE: None
+//POST: Returns true if slot is filled and valid, false if not
+bool isValidSaveSlot(const std::string& filename);
+//DESC: Main menu interface for the game
+//PRE: None
+//POST: None
+void mainMenu();
 //DESC:
 //PRE:
 //POST:
 void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, std::shared_ptr<Ammunition> ammoChoice, shared_ptr<Spell> spellChoice, shared_ptr<Character> targetChoice, std::shared_ptr<ThrownConsumable> thrownConsumableChoice,
 	std::shared_ptr<Consumable> consumableChoice, float playerMovement, bool onlyMove);
 #pragma endregion Function Declarations
-extern void setupDialogue(std::vector<Dialogue>& dialogues, shared_ptr<Character> player, shared_ptr<Character> npc);
-
 
 int main()
 {
-	/*std::cout << std::fixed << std::setprecision(2) << std::endl;
-	json example = { {"name", "BUNGUS"}, {"class", "WIZARD"} };
-	cout << "Character: " << example.dump(4) << endl;*/
-	/*vector<Dialogue> dialogues;
-	std::shared_ptr<Human> player = new Human;
-	player->setCharacterClass(Human::CharacterClass::WIZARD);
-	std::shared_ptr<Human> npc = new Human;
-	npc->setCharacterClass(Human::CharacterClass::KNIGHT);
-	npc->name = "Knight";
-	player->name = "BUNGUS";
-	setupDialogue(dialogues, player, npc);
-
-	dialogues[0].playConversation();
-
-	delete player;
-	delete npc;*/
-	//std::shared_ptr<Human> npc = new Human();
-	////npc->setCharacterClass(Human::CharacterClass::KNIGHT);
-	//npc->name = "Knight";
-	//npc->healthPoints = 500;
-	//npc->maxHealthPoints = 500;
-	//npc->distanceFromPlayer = 5;
-	//std::shared_ptr<Human> npc2 = new Human();
-	//npc->allies.push_back(npc2);
-	//std::shared_ptr<Human> player = new Human();
-	//player->name = "BUNGUS";
-
-
-	//do {
-	//	cout << "enemy health: " << npc->healthPoints << endl;
-	//	cout << "enemy distance: " << npc->distanceFromPlayer << endl;
-	//	player->chooseSpell(*staff, npc);
-	//	cout << "enemy health: " << npc->healthPoints << endl;
-	//	cout << "enemy distance: " << npc->distanceFromPlayer << endl;
-	//	std::shared_ptr<Effect> effect = new Effect();
-	//	effect->refreshEffects(npc);
-	//} while (npc->healthPoints > 0);
-
-
-	std::ifstream inFile("player.json");
-	if (!inFile) {
-		std::cerr << "Failed to open player.json" << std::endl;
-		return 0;
-	}
-
-	nlohmann::json j;
-
-	inFile >> j;
-
-	std::shared_ptr<Character> loadedChar = Character::fromJson(j);
-	std::shared_ptr<Human> player = std::dynamic_pointer_cast<Human>(loadedChar);
-
-	if (!player) {
-		std::cerr << "Failed to cast loaded character to Human." << std::endl;
-		return 0;
-	}
-
-	cout << fixed << setprecision(2) << endl;
-	auto ally1 = make_shared<Human>();
-	auto bandit1 = make_shared<Human>();
-	auto bandit2 = make_shared<Human>();
-	player->allies.push_back(ally1);
-	player->position[bandit1->getId()] = 10;
-	player->position[bandit2->getId()] = 20;
-	bandit1->allies.push_back(bandit2);
-	bandit2->allies.push_back(bandit1);
-	shared_ptr<Item> staff = std::make_shared<Weapon>(false, "Staff", "A simple wooden staff", 1, 200, 20, 1, 10, false, false, Weapon::WeaponType::STAFF, Item::EquipSlots::OFFHAND);
-	shared_ptr<Spell> force;
-	player->faith = 20;
-	force = force->getForceBurstEffect(*player);
-	bandit1->position[player->getId()] = 10;
-	bandit2->position[player->getId()] = 30;
-	shared_ptr<Weapon> sword = std::make_shared<Weapon>(false, "Sword", "A simple steel sword", 1, 10, 50, 1, 10, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
-	sword->setPhysicalDamage(PhysicalDamageType::SLASH, 30);
-	sword->setWeaponRequirementValue(StatScaling::STRENGTH, 1);
-	////cout << sword->getWeaponRequirementValue(StatScaling::STRENGTH) << endl;
-	player->inventory.equippedItems.push_back(sword);
-	player->inventory.equippedItems.push_back(staff);
-	bandit1->name = "Bandit 1";
-	bandit2->name = "Bandit 2";
-	bandit1->speed = 250;
-	bandit2->speed = 100;
-	ally1->speed = 50;
-	player->speed = 500;
-	player->name = "Player";
-	ally1->name = "ALLY 1";
-	//staff->hasBeenInitialized = true;
-	player->isPlayer = true;
-	ally1->isAlly = true;
-	player->fatiguePoints = 500;
-	player->maxFatiguePoints = 500;
-	bandit1->healthPoints = 5000;
-	bandit1->maxHealthPoints = 5000;
-	bandit2->healthPoints = 5000;
-	bandit2->maxHealthPoints = 5000;
-	bandit1->poisonPoints = 200;
-	bandit2->poisonPoints = 200;
-	bandit1->maxPoisonPoints = 200;
-	bandit2->maxPoisonPoints = 200;
-	bandit1->bleedPoints = 200;
-	bandit1->maxBleedPoints = 200;
-	bandit2->bleedPoints = 200;
-	bandit2->maxBleedPoints = 200;
-
-	player->arcane = 50;
-	player->intelligence = 50;
-	player->faith = 50;
-
-	shared_ptr<Enchantment> enchant;
-	enchant = make_shared<Enchantment>("Poison", "", false, false, false, false, false, false, false, 1, 1, 1, 1, 1, 1);
-	enchant->effects.push_back(make_shared<PoisonEffect>(5, 50, true, 1, 5));
-	sword->enchantments.push_back(enchant);
-	std::shared_ptr<Armor> armor = std::make_shared<Armor>("Steel Chestplate", "TEST", 40, 40, false, false, true, Armor::ArmorDescriptor::FULLPLATE);
-	armor->setPhysicalResistance(PhysicalDamageType::SLASH, 100);
-	armor->setPhysicalResistance(PhysicalDamageType::PIERCE, 100);
-	armor->setPhysicalResistance(PhysicalDamageType::BLUNT, 100);
-	armor->setPhysicalResistance(PhysicalDamageType::CHOP, 100);
-	shared_ptr<Enchantment> enchant2 = std::make_shared<Enchantment>("Thorms", "TEST", true, false, true, false, false, true, false, 1, 100, false, false, 1, 1);
-	enchant2->effects.push_back(std::make_shared<ThornsEffect>(MagicDamageType::SHOCK, 20, 1, 100, false, 1, 1));;
-	//shared_ptr<Effect> effect;
-	armor->enchantments.push_back(enchant2);
-	player->inventory.equippedItems.push_back(armor);
-	bandit1->inventory.equippedItems.push_back(armor);
-	std::shared_ptr<Spell> fireball;
-	fireball = fireball->getFireBallEffect(*player);
-
-	std::shared_ptr<Spell> oak;
-	oak = oak->getOakenArmorEffect(*player);
-
-	std::shared_ptr<Spell> summon;
-	summon = summon->getSummonAnimalAllyEffect(*player);
-
-	std::shared_ptr<Spell> bonetrousle;
-	bonetrousle = bonetrousle->getBonetrousleEffect(*player);
-
-	std::shared_ptr<Spell> grasp;
-	grasp = grasp->getEndothermicGraspEffect(*player);
-
-	std::shared_ptr<Spell> fruit;
-	fruit = fruit->getFruitOfTheEarthEffect(*player);
-	player->attunedSpells.push_back(fruit);
-	player->attunedSpells.push_back(grasp);
-	player->attunedSpells.push_back(bonetrousle);
-	player->attunedSpells.push_back(summon);
-	player->attunedSpells.push_back(oak);
-	player->attunedSpells.push_back(fireball);
-	player->attunedSpells.push_back(force);
-
-
-	openCombat(player, bandit1);
+	SetConsoleOutputCP(CP_UTF8);
+	std::unordered_map<int, std::shared_ptr<Item>> itemRegistry;
+	std::unordered_map<int, std::shared_ptr<Character>> characterRegistry;
+	std::unordered_map<int, std::shared_ptr<Spell>> spellRegistry;
+	std::unordered_map<int, std::shared_ptr<Effect>> effectRegistry;
+	std::unordered_map<int, std::shared_ptr<Enchantment>> enchantRegistry;
+	mainMenu();
 	return 0;
-}
-
-int validateInput(int min, int max)
-{
-	int choice;
-	do
-	{
-		cout << "\n=--->\n" << endl;
-		cout << ">> ";
-		cin >> choice;
-		if (cin.fail() || choice > max || choice < min)
-		{
-			cout << "Enter a number from " << min << " - " << max << endl;
-		}
-		cin.clear();
-		cin.ignore(10000, '\n');
-	} while (cin.fail() || choice > max || choice < min);
-	return choice;
 }
 
 //helper function to get weapon reach. If weapon is null, return 0
@@ -239,7 +92,7 @@ inline float getWeaponReach(std::shared_ptr<Weapon> weapon)
 	}
 	else
 	{
-		return 0;
+		return -1;
 	}
 }
 
@@ -272,6 +125,617 @@ string getConfidenceDescription(std::shared_ptr<Human> character)
 
 }
 
+bool isSlotEmpty(const string& fileName)
+{
+	//If infile fails or is empty, return true
+	ifstream inFile(fileName);
+	if (!inFile || inFile.peek() == ifstream::traits_type::eof()) {
+		return true;
+	}
+
+	//If the file is not empty, return false
+	nlohmann::json j;
+	try {
+		inFile >> j;
+		return j.empty();
+	}
+	//if there's an error parsing the information, return true
+	catch (nlohmann::json::parse_error& e) {
+		return true;
+	}
+}
+
+void savePlayerToSlot(shared_ptr<Human> player, int slot)
+{
+	//Reads the file name based on the slot
+	string fileName = "data/saves/playerSlot" + to_string(slot) + ".json";
+	nlohmann::json j = player->toJson();
+
+	//Writes the player information to the file
+	ofstream outFile(fileName);
+	outFile << j.dump(4);
+}
+
+shared_ptr<Human> loadPlayerFromSlot(int slot)
+{
+	string fileName = "data/saves/playerSlot" + to_string(slot) + ".json";
+	ifstream inFile(fileName);
+	//returns nullptr if file could not be found
+	if (!inFile) return nullptr;
+
+	nlohmann::json j;
+	inFile >> j;
+	std::shared_ptr<Human> character = dynamic_pointer_cast<Human>(Character::fromJson(j));
+	return character;
+
+}
+void mainMenu()
+{
+	//populate files with placeholder values if empty 
+	for (int i = 1; i <= 5; i++)
+	{
+		string fileName = "data/playerSlot" + to_string(i) + ".json";
+		ifstream inFile(fileName);
+
+		if (!inFile.good()) {
+			ofstream outFile(fileName);
+			outFile << "{}";
+		}
+	}
+
+	//Load items from file -----------------------------------<
+	std::vector<std::shared_ptr<Item>> allItems;
+
+	// Load books from file
+	std::ifstream bookFile("data/items/book.json");
+	if (!bookFile) {
+		std::cerr << "Failed to open book.json" << std::endl;
+	}
+
+	nlohmann::json bookJson;
+	bookFile >> bookJson;
+
+	// Check that the file contains an array
+	if (!bookJson.is_array()) {
+		std::cerr << "Expected an array of book in book.json" << std::endl;
+	}
+	else
+	{
+		// Parse each item and push into the vector
+		for (const auto& j : bookJson) {
+			shared_ptr<Book> item = std::dynamic_pointer_cast<Book>(Book::fromJson(j));
+			if (item) {
+				allItems.push_back(item);
+			}
+			else {
+				std::cerr << "Failed to parse item from JSON." << std::endl;
+			}
+		}
+	}
+
+	// Load drinks from file
+	std::ifstream drinkFile("data/items/drink.json");
+	if (!drinkFile) {
+		std::cerr << "Failed to open drink.json" << std::endl;
+	}
+
+	nlohmann::json drinkJson;
+	drinkFile >> drinkJson;
+
+	// Check that the file contains an array
+	if (!drinkJson.is_array()) {
+		std::cerr << "Expected an array of drink in drink.json" << std::endl;
+	}
+	else
+	{
+		// Parse each item and push into the vector
+		for (const auto& j : drinkJson) {
+			shared_ptr<Drink> item = std::dynamic_pointer_cast<Drink>(Drink::fromJson(j));
+			if (item) {
+				allItems.push_back(item);
+			}
+			else {
+				std::cerr << "Failed to parse item from JSON." << std::endl;
+			}
+		}
+	}
+
+	// Load food from file
+	std::ifstream foodFile("data/items/food.json");
+	if (!foodFile) {
+		std::cerr << "Failed to open food.json" << std::endl;
+	}
+
+	nlohmann::json foodJson;
+	foodFile >> foodJson;
+
+	// Check that the file contains an array
+	if (!foodJson.is_array()) {
+		std::cerr << "Expected an array of food in food.json" << std::endl;
+	}
+	else
+	{
+		// Parse each item and push into the vector
+		for (const auto& j : foodJson) {
+			shared_ptr<Food> item = std::dynamic_pointer_cast<Food>(Food::fromJson(j));
+			if (item) {
+				allItems.push_back(item);
+			}
+			else {
+				std::cerr << "Failed to parse food from JSON." << std::endl;
+			}
+		}
+	}
+
+	// Load potion from file
+	std::ifstream potionFile("data/items/potion.json");
+	if (!potionFile) {
+		std::cerr << "Failed to open potion.json" << std::endl;
+	}
+
+	nlohmann::json potionJson;
+	potionFile >> potionJson;
+
+	// Check that the file contains an array
+	if (!potionJson.is_array()) {
+		std::cerr << "Expected an array of potion in potion.json" << std::endl;
+	}
+	else
+	{
+		// Parse each item and push into the vector
+		for (const auto& j : potionJson) {
+			shared_ptr<Potion> item = std::dynamic_pointer_cast<Potion>(Potion::fromJson(j));
+			if (item) {
+				allItems.push_back(item);
+			}
+			else {
+				std::cerr << "Failed to parse potion from JSON." << std::endl;
+			}
+		}
+	}
+
+	// Load weapons from file
+	std::ifstream weaponFile("data/items/weapons.json");
+	if (!weaponFile) {
+		std::cerr << "Failed to open weapons.json" << std::endl;
+	}
+
+	nlohmann::json weaponJson;
+	weaponFile >> weaponJson;
+
+	// Check that the file contains an array
+	if (!weaponJson.is_array()) {
+		std::cerr << "Expected an array of weapon in weapons.json" << std::endl;
+	}
+	else
+	{
+		// Parse each item and push into the vector
+		for (const auto& j : weaponJson) {
+			shared_ptr<Weapon> item = std::dynamic_pointer_cast<Weapon>(Weapon::fromJson(j));
+			if (item) {
+				allItems.push_back(item);
+			}
+			else {
+				std::cerr << "Failed to parse potion from JSON." << std::endl;
+			}
+		}
+	}
+
+	// Load armor from file
+	std::ifstream armorFile("data/items/armor.json");
+	if (!armorFile) {
+		std::cerr << "Failed to open armor.json" << std::endl;
+	}
+
+	nlohmann::json armorJson;
+	armorFile >> armorJson;
+
+	// Check that the file contains an array
+	if (!armorJson.is_array()) {
+		std::cerr << "Expected an array of armor in armor.json" << std::endl;
+	}
+	else
+	{
+		// Parse each item and push into the vector
+		for (const auto& j : armorJson) {
+			shared_ptr<Armor> item = std::dynamic_pointer_cast<Armor>(Armor::fromJson(j));
+			if (item) {
+				allItems.push_back(item);
+			}
+			else {
+				std::cerr << "Failed to parse armor from JSON." << std::endl;
+			}
+		}
+	}
+
+	//Load spells from file ----------------------------------<
+	vector<shared_ptr<Spell>> allSpells;
+
+	std::ifstream spellFile("data/spells/spells.json");
+	if (!spellFile) {
+		std::cerr << "Failed to open spells.json" << std::endl;
+	}
+
+	nlohmann::json spellJson;
+
+	spellFile >> spellJson;
+	if (!spellJson.is_array()) {
+		std::cerr << "Expected an array of items in spells.json" << std::endl;
+	}
+	else
+	{
+		// Parse each spell and push into the vector
+		for (const auto& j : spellJson)
+		{
+			shared_ptr<Spell> spell = Spell::fromJson(j);
+			if (spell) allSpells.push_back(spell);
+			else (std::cerr << "Failed to load spells from json" << std::endl);
+		}
+	}
+	//Load enchantments from file ----------------------------<
+	vector<shared_ptr<Enchantment>> allEnchants;
+	std::ifstream enchantFile("data/enchantments/enchantments.json");
+	if (!enchantFile) {
+		std::cerr << "Failed to open enchantments.json" << std::endl;
+	}
+
+	nlohmann::json en;
+
+	enchantFile >> en;
+	if (!en.is_array()) std::cerr << "Expected an array of items in enchantments.json" << std::endl;
+	else
+	{
+		for (const auto& j : en)
+		{
+			auto enchant = Enchantment::fromJson(j);
+			if (enchant) allEnchants.push_back(enchant);
+			else (std::cerr << "Failed to load enchantments from json" << std::endl);
+		}
+	}
+	//Load effects from file --------------------------------<
+	vector<shared_ptr<Effect>> allEffects;
+	std::ifstream effectFile("data/effects/effects.json");
+	if (!effectFile) {
+		std::cerr << "Failed to open effects.json" << std::endl;
+	}
+
+	nlohmann::json ef;
+
+	effectFile >> ef;
+	if (!ef.is_array()) std::cerr << "Expected an array of items in effects.json" << std::endl;
+	else
+	{
+		for (const auto& j : ef)
+		{
+			auto effect = Effect::fromJson(j);
+			if (effect) allEffects.push_back(effect);
+			else (std::cerr << "Failed to load effect from json" << std::endl);
+		}
+	}
+
+	//Main menu loop
+	bool exitGame = false;
+	bool playerLoaded = false;
+	shared_ptr<Human> player = make_shared<Human>();
+	do
+	{
+
+		cout << "\n=--->\n";
+		//check if any slots are filled
+		int numSlots = 0;
+		for (int i = 0; i < 4; i++)
+		{
+			if (!isSlotEmpty("data/saves/playerSlot" + to_string(i) + ".json")) numSlots++;
+		}
+		if (numSlots > 0) cout << dye::light_yellow(" 1) Load Game") << endl;
+		if (numSlots == 0) cout << dye::grey(" 1) Load Game (No Save File Found)") << endl;
+		cout << dye::light_yellow(" 2) New Game") << endl;
+		if (playerLoaded) cout << dye::light_yellow(" 3) Save Game") << endl;
+		if (!playerLoaded) cout << dye::grey(" 3) Save Game (No Save File Found)") << endl;
+		if (playerLoaded) cout << dye::light_yellow(" 4) View Character") << endl;
+		if (!playerLoaded) cout << dye::grey(" 4) View Character (No Save File Found)") << endl;
+		if (playerLoaded) cout << dye::light_yellow(" 5) View Inventory") << endl;
+		if (!playerLoaded) cout << dye::grey(" 5) View Inventory (No Save File Found)") << endl;
+		if (playerLoaded) cout << dye::light_yellow(" 6) View Spells") << endl;
+		if (!playerLoaded) cout << dye::grey(" 6) View Spells (No Save File Found)") << endl;
+		if (playerLoaded) cout << dye::light_yellow(" 7) View Party") << endl;
+		if (!playerLoaded) cout << dye::grey(" 7) View Party (No Save File Found)") << endl;
+		cout << dye::light_yellow(" 8) Debug Menu") << endl;
+		cout << dye::light_yellow(" 9) Quit Game") << endl;
+
+		int choice = validateInput(1, 9);
+
+		switch (choice)
+		{
+		case 1: // LOAD GAME
+		{
+			//Load characters from file
+			vector<shared_ptr<Human>> characters;
+			//load all characters so their names can be printed in the menu
+			for (int i = 1; i <= 5; i++)
+			{
+				if (!isSlotEmpty("data/saves/playerSlot" + to_string(i) + ".json")) characters.push_back(dynamic_pointer_cast<Human>(loadPlayerFromSlot(i)));
+			}
+
+			//print out all slots 
+			cout << "\n=--->\n";
+
+			for (int i = 1; i <= 5; i++)
+			{
+				if (!isSlotEmpty("data/saves/playerSlot" + to_string(i) + ".json"))
+				{
+					cout << dye::light_yellow(" Slot ") << dye::light_yellow(i) << dye::light_yellow(") ") << characters[i - 1]->name << endl;
+				}
+				else
+				{
+					cout << dye::grey(" Slot ") << dye::grey(i) << dye::grey(") EMPTY") << endl;
+				}
+			}
+
+			int slotChoice = validateInput(1, 5);
+
+			//If the slot is empty and the user selects it, ask if they want to start a new game on that slot
+			if (isSlotEmpty("data/saves/playerSlot" + to_string(slotChoice) + ".json"))
+			{
+				cout << dye::light_red(" Slot is empty. Would you like to start a new game here?") << endl;
+				cout << dye::light_yellow(" 1) Yes") << endl;
+				cout << dye::light_yellow(" 2) No") << endl;
+				int newGameChoice = validateInput(1, 2);
+				if (newGameChoice == 1)
+				{
+					//Start a new game
+					//Select a class
+					player = player->setCharacterClass(allItems, allSpells);
+
+					//Chose a name:
+					string name = "";
+					do {
+						cout << dye::light_yellow(" Please enter your name: ");
+						getline(cin, name);
+					} while (name == "");
+
+					player->name = name;
+
+					//Save the player to the slot
+					savePlayerToSlot(player, slotChoice);
+					playerLoaded = true;
+					//Temp break statement, game will start here
+					break;
+				}
+				else
+				{
+					break; // Back to main menu
+				}
+			}
+			else //Load the game
+			{
+				player = loadPlayerFromSlot(slotChoice);
+				GameState game;
+				game.playerCharacter = loadPlayerFromSlot(slotChoice);
+				playerLoaded = true;
+				DialogueManager dialogueManager;
+
+				dialogueManager.loadDialogueNodesFromFolder("data/dialogues/allDialogues/Raw");
+				dialogueManager.playDialogue("Inspect Surroundings", game);
+			}
+			break;
+		}
+		case 2: // NEW GAME
+		{
+			if (numSlots == 0)
+			{
+				cout << dye::light_red(" No save slots available. Please delete a save file to start a new game.") << endl;
+				break;
+			}
+			else
+			{
+				//Select a class
+				player = player->setCharacterClass(allItems, allSpells);
+				//Chose a name:
+				string name = "";
+				do {
+					cout << dye::light_yellow(" Please enter your name: ");
+					getline(cin, name);
+				} while (name == "");
+				player->name = name;
+				//Select a slot to save the game to
+				cout << dye::light_yellow(" Please select a slot to save the game to: ");
+				//print out all slots 
+				cout << "\n=--->\n";
+				//Load characters from file
+				vector<shared_ptr<Human>> characters;
+				//load all characters so their names can be printed in the menu
+				for (int i = 1; i <= 5; i++)
+				{
+					if (!isSlotEmpty("data/saves/playerSlot" + to_string(i) + ".json")) characters.push_back(dynamic_pointer_cast<Human>(loadPlayerFromSlot(i)));
+				}
+				for (int i = 1; i <= 5; i++)
+				{
+					if (!isSlotEmpty("data/saves/playerSlot" + to_string(i) + ".json"))
+					{
+						cout << dye::light_yellow(" Slot ") << dye::light_yellow(i) << dye::light_yellow(") ") << characters[i - 1]->name << endl;
+					}
+					else
+					{
+						cout << dye::grey(" Slot ") << dye::grey(i) << dye::grey(") EMPTY") << endl;
+					}
+				}
+				int slotChoice = validateInput(1, 5);
+				if (!isSlotEmpty("data/saves/playerSlot" + to_string(slotChoice) + ".json"))
+				{
+					cout << dye::light_red(" Slot is not empty. Would you like to overwrite the save file?") << endl;
+					cout << dye::light_yellow(" 1) Yes") << endl;
+					cout << dye::light_yellow(" 2) No") << endl;
+					int overwriteChoice = validateInput(1, 2);
+					if (overwriteChoice == 2)
+					{
+						break;
+					}
+				}
+				//Save the player to the slot
+				savePlayerToSlot(player, slotChoice);
+				playerLoaded = true;
+				//Temp break statement, game will start here
+				break;
+			}
+			break;
+		}
+		case 3: // SAVE GAME
+		{
+			//Select a slot to save the game to
+			cout << dye::light_yellow(" Please select a slot to save the game to: ");
+			//print out all slots 
+			cout << "\n=--->\n";
+			//Load characters from file
+			vector<shared_ptr<Human>> characters;
+			//load all characters so their names can be printed in the menu
+			for (int i = 1; i <= 5; i++)
+			{
+				if (!isSlotEmpty("data/saves/playerSlot" + to_string(i) + ".json")) characters.push_back(dynamic_pointer_cast<Human>(loadPlayerFromSlot(i)));
+			}
+			for (int i = 1; i <= 5; i++)
+			{
+				if (!isSlotEmpty("data/saves/playerSlot" + to_string(i) + ".json"))
+				{
+					cout << dye::light_yellow(" Slot ") << dye::light_yellow(i) << dye::light_yellow(") ") << characters[i - 1]->name << endl;
+				}
+				else
+				{
+					cout << dye::grey(" Slot ") << dye::grey(i) << dye::grey(") EMPTY") << endl;
+				}
+			}
+
+			int slotChoice = validateInput(1, 5);
+			if (!isSlotEmpty("data/saves/playerSlot" + to_string(slotChoice) + ".json"))
+			{
+				cout << dye::light_red(" Slot is not empty. Would you like to overwrite the save file?") << endl;
+				cout << dye::light_yellow(" 1) Yes") << endl;
+				cout << dye::light_yellow(" 2) No") << endl;
+				int overwriteChoice = validateInput(1, 2);
+				if (overwriteChoice == 2)
+				{
+					break;
+				}
+			}
+			//Save the player to the slot
+			savePlayerToSlot(player, slotChoice);
+			playerLoaded = true;
+			break;
+		}
+		case 4: // VIEW CHARACTER
+		{
+			//Load characters from file
+			if (!playerLoaded) cout << dye::light_red(" No Player Character Loaded.") << endl;
+			else
+			{
+				player->printHumanStats();
+			}
+			break;
+		}
+		case 5: // VIEW INVENTORY
+		{
+			if (!playerLoaded) cout << dye::light_red(" No Player Character Loaded.") << endl;
+			else
+			{
+				player->inventory.printInventory();
+			}
+			break;
+		}
+		case 6: // VIEW SPELLS
+		{
+			if (!playerLoaded) cout << dye::light_red(" No Player Character Loaded.") << endl;
+			else
+			{
+				player->printAttunedSpells();
+			}
+			break;
+		}
+		case 7: // VIEW PARTY
+		{
+			if (!playerLoaded) cout << dye::light_red(" No Player Character Loaded.") << endl;
+			else
+			{
+				for (shared_ptr<Character> ally : player->allies) {
+					shared_ptr<Human> humanAlly = dynamic_pointer_cast<Human>(ally);
+					if (humanAlly) {
+						humanAlly->printHumanStats();
+					}
+					else
+					{
+						shared_ptr<Creature> creatureAlly = dynamic_pointer_cast<Creature>(ally);
+						if (creatureAlly) creatureAlly->printCreatureStats();
+					}
+				}
+			}
+			break;
+		}
+		case 8: // DEBUG MENU
+		{
+			shared_ptr<Weapon> sword = make_shared < Weapon>(true, "NAME", "DESC", 1, 1, 1, 1, 1, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+			sword->setDamage(DamageTypes::BLUNT, 1);
+
+			sword->setDefense(Defense::BLEED, 1);
+			sword->setDefense(Defense::BLUNT, 1);
+
+			sword->setWeaponRequirementValue(StatScaling::STRENGTH, 1);
+			sword->setWeaponScalingValue(StatScaling::STRENGTH, 1);
+
+			sword->enchantments.push_back(make_shared<Enchantment>("Enchantment", "Desc", false, false, false));
+			sword->enchantments[0]->effects.push_back(make_shared<DamageEffect>(DamageTypes::BLEED, 1));
+
+			json j;
+			j = sword->toJson();
+			ofstream outFile("templates/weaponTemplate.json");
+			outFile << j.dump(4);
+
+			//DialogueBuilder dialogueBuilder;
+			//dialogueBuilder.processDialogueTree("data/dialogues/allDialogues/Raw/HunterCabin.json");
+			int choice = 0;
+			std::cin >> choice;
+			break;
+		}
+		case 9: // QUIT GAME
+		{
+			cout << "Saving data..." << endl;
+			exitGame = true;
+			break;
+		}
+		default:
+			cout << dye::light_red(" Please enter a number from 1 - 7") << endl;
+			break;
+		}
+	} while (exitGame == false);
+
+}
+
+
+
+bool isValidSaveSlot(const std::string& filename)
+{
+	std::ifstream file(filename);
+	//file couldn't open
+	if (!file.is_open()) return false;
+	try {
+		nlohmann::json j;
+		file >> j;
+		//Check for expected values to be present
+		if (j.contains("type") && j.contains("id") && j.contains("isPlayer"))
+		{
+			//file is valid and populated
+			return true;
+		}
+		else
+		{
+			//file is corrupted or empty
+			return false;
+		}
+	}
+	catch (const std::exception& e) {
+		//file is corrupted or empty
+		return false;
+	}
+}
+
 void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 {
 	//set this condition to true if the fight ends for any reason
@@ -289,10 +753,10 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 		player->inventory.getEquippedItems(mainHand, offHand, reserve1, reserve2, headArmor, chestArmor, armArmor, legArmor, amulet, ring1, ring2, misc);
 
 		//create dummy items for if the item is nullptr for the purposes of checking ranges
-		if (!mainHand) mainHand = make_shared<Weapon>(false, "", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
-		if (!offHand) offHand = make_shared<Weapon>(false, "", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
-		if (!reserve1) reserve1 = make_shared<Weapon>(false, "", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
-		if (!reserve2) reserve2 = make_shared<Weapon>(false, "", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+		if (!mainHand) mainHand = make_shared<Weapon>(false, "Fists", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+		if (!offHand) offHand = make_shared<Weapon>(false, "Fists", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+		if (!reserve1) reserve1 = make_shared<Weapon>(false, "Fists", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
+		if (!reserve2) reserve2 = make_shared<Weapon>(false, "Fists", "", 0, -1, 0, 0, 0, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
 
 		//check if player has equipment to swap to (changes menu color to represent this)
 		bool hasStowedWeapons = false;
@@ -553,9 +1017,9 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 				float playerMovement = 0.0f;
 				shared_ptr<Weapon> weaponChoice = nullptr;
 				std::shared_ptr<Ammunition> ammoChoice = nullptr; //this will be a pointer to the ammo choice so that the quantity can be updated
-				shared_ptr<Spell> spellChoice = make_shared<Spell>("", "", false, false, false, false, false, false, false, 1, 1, false, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1);
+				shared_ptr<Spell> spellChoice = make_shared<Spell>("", "", false, false, false, 0, 0, 0, 0, 0, 0, 0, -1);
 				shared_ptr<Character> targetChoice = nullptr; //this is a pointer to the target choice so that the target's health can be updated
-				
+
 				//used to determine of the player only chose to move
 				bool onlyMove = false;
 
@@ -569,22 +1033,35 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 				std::shared_ptr<Potion> potionChoice = nullptr; //this is a pointer to the potion choice so that the quantity can be updated
 				shared_ptr<Character> potionTarget = nullptr; //this is a pointer to the target choice so that the target's health can be updated
 
-				//ADD MORE AS MORE POTION TYPES GET IMPLEMENTED
 				//Used to track the player's potions and grey out the potion option if they have none
-				vector<std::shared_ptr<Potion>> fatiguePotions;
-				vector<std::shared_ptr<Potion>> healingPotions;
-				vector<std::shared_ptr<Potion>> Potions;
+				vector<std::shared_ptr<Potion>> potions;
+				vector<std::shared_ptr<Consumable>> consumables;
 
 				int numPotionCategories = 0;
 				for (shared_ptr<Item> item : player->inventory.backpackItems)
 				{
-					//TODO ADD CONSUMABLE LOGIC
+					if (std::shared_ptr<Potion> potion = std::dynamic_pointer_cast<Potion>(item))
+					{
+						potions.push_back(potion);
+					}
+					if (std::shared_ptr<Food> food = std::dynamic_pointer_cast<Food>(item))
+					{
+						consumables.push_back(food);
+					}
+					if (std::shared_ptr<Drink> drink = std::dynamic_pointer_cast<Drink>(item))
+					{
+						consumables.push_back(drink);
+					}
+					if (std::shared_ptr<Book> book = std::dynamic_pointer_cast<Book>(item))
+					{
+						consumables.push_back(book);
+					}
 				}
 
 				bool hasPotion = false;
 
 				//EXPAND AS MORE POTIONS GET ADDED
-				if (healingPotions.size() > 0 || fatiguePotions.size() > 0)
+				if (potions.size() > 0)
 				{
 					hasPotion = true;
 				}
@@ -594,7 +1071,6 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 				shared_ptr<Consumable> consumableChoice;
 				shared_ptr<Character> consumableTarget;
 				shared_ptr<Character> thrownConsumableTarget;
-				vector<shared_ptr<Consumable>> consumables;
 				vector<shared_ptr<ThrownConsumable>> throwingWeapons;
 
 				for (shared_ptr<Item> item : player->inventory.backpackItems)
@@ -603,10 +1079,6 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 					if (shared_ptr<ThrownConsumable> consumable = std::dynamic_pointer_cast<ThrownConsumable>(item))
 					{
 						throwingWeapons.push_back(consumable);
-					}
-					if (shared_ptr<Consumable> consumable = std::dynamic_pointer_cast<Consumable>(item))
-					{
-						consumables.push_back(consumable);
 					}
 				}
 
@@ -659,7 +1131,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 				}
 
 				//Option 4: Use Potion
-				if (healingPotions.size() > 0 || fatiguePotions.size() > 0)
+				if (potions.size() > 0)
 				{
 					cout << dye::light_yellow(" 4) Use Potion") << endl;
 				}
@@ -737,7 +1209,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 				case 1: // ATTACK
 				{
 
-					if (!inRange)
+					if (!inRange || !spellsInRange)
 					{
 						cout << dye::white("\n You are out of range of any enemies!") << endl;
 						break;
@@ -750,7 +1222,6 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 						int numEnemiesInRangeBackward = 0;
 						for (const auto& enemy : livingEnemiesPointers)
 						{
-
 							float distance = enemy->position[player->getId()];
 
 							// Forward range: advancing reduces distance
@@ -2166,25 +2637,49 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 					{
 						//TODO
 						std::cout << "\n=--->\n" << std::endl;
-						cout << dye::light_yellow(" 1) Swap to Your Stowed Weapons") << endl;
-						cout << dye::light_yellow(" 2) Go back") << endl;
+						cout << dye::light_yellow(" 1) Swap to your reserves") << endl;
+						cout << dye::light_yellow(" 2) Swap only your mainhand weapon") << endl;
+						cout << dye::light_yellow(" 3) Swap only your offhand weapon") << endl;
+						cout << dye::light_yellow(" 4) Go back") << endl;
 
 						//input validation
-						int swapWeaponChoice = validateInput(1, 2);
+						int swapWeaponChoice = validateInput(1, 4);
 
-						if (swapWeaponChoice == 1)
+						switch (swapWeaponChoice)
 						{
-							std::cout << "\n";
-							std::cout << "=--->" << std::endl;
-							std::cout << "\n";
-							cout << "PLACEHOLDER SWAP WEAPON  TEXT" << endl;
+						case 1: // SWAP ALL WEAPONS TO RESERVED WEAPONS
+						{
+							player->inventory.swapEquippedItems(mainHand, offHand, reserve1, reserve2);
+							if (mainHand->reach > 0 && offHand->reach > 0 && reserve1->reach > 0 && reserve2->reach > 0) cout << dye::light_yellow(" " + player->name)
+								<< " swaps their " << mainHand->name << " and " << offHand->name << " for their " << reserve1->name << " and " << reserve2->name << endl;
+							if (mainHand->reach > 0 && offHand->reach < 0 && reserve1->reach > 0 && reserve2->reach < 0) cout << dye::light_yellow(" " + player->name)
+								<< " swaps their " << mainHand->name << " for " << reserve1->name << endl;
 							break;
 						}
-						else
+						case 2: // SWAP ONLY MAINHAND
+						{
+							player->inventory.swapEquippedItems(mainHand, nullptr, reserve1, nullptr);
+							if (mainHand->reach > 0 && offHand->reach < 0 && reserve1->reach > 0 && reserve2->reach < 0) cout << dye::light_yellow(" " + player->name)
+								<< " swaps their " << mainHand->name << " for " << reserve1->name << endl;
+							break;
+						}
+						case 3: // SWAP ONLY OFFHAND
+						{
+							player->inventory.swapEquippedItems(nullptr, offHand, nullptr, reserve2);
+							if (mainHand->reach < 0 && offHand->reach > 0 && reserve1->reach < 0 && reserve2->reach > 0) cout << dye::light_yellow(" " + player->name)
+								<< " swaps their " << offHand->name << " for " << reserve2->name << endl;
+							break;
+						}
+						case 4: // GO BACK
 						{
 							break;
 						}
-
+						default:
+						{
+							cout << dye::white("\n  Enter a number between 1 - 4") << endl;
+							break;
+						}
+						}
 					}
 					else //NO STOWED WEAPONS, GO BACK
 					{
@@ -2232,12 +2727,25 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 						{
 						case 1: // DRINK POTION
 						{
-							//TODO
 							std::cout << "\n=--->\n" << std::endl;
-							cout << dye::light_yellow(" DRINK POTION PLACEHOLDER TEXT") << endl;
+							int index = 1;
+							for (auto& potion : potions)
+							{
+								cout << dye::light_yellow(to_string(index) + ") " + potion->name) << ("; magnitude: " + to_string(potion->magnitude)) << endl;
+								index++;
+							}
+							std::cout << dye::light_yellow(to_string(index) + ") Go back") << std::endl;
+							int potionSubChoice = validateInput(1, index);
 
-							int potionSubChoice = validateInput(1, numPotionCategories);
-							break;
+							if (potionSubChoice == index) break;
+							else
+							{
+								inputChosen = true;
+								consumableChoice = potions[potionSubChoice - 1];
+								consumableTarget = player;
+								break;
+							}
+
 						}
 						case 2: // SHARE POTION
 						{
@@ -2245,8 +2753,35 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 							{
 								//TODO
 								std::cout << "\n=--->\n" << std::endl;
-								cout << dye::light_yellow(" SHARE POTION PLACEHOLDER TEXT") << endl;
-								int potionSubChoice = validateInput(1, numPotionCategories);
+								std::cout << " Which ally do you want to share with?" << std::endl;
+								for (int i = 0; i < livingAlliesPointers.size(); i++)
+								{
+									cout << dye::light_yellow(" " + to_string(i + 1) + ") " + livingAlliesPointers[i]->name) << endl;
+								}
+								cout << dye::light_yellow(" " + to_string(livingAlliesPointers.size() + 1) + ") ") << dye::light_yellow("Go back...") << endl;
+
+								int shareChoice = validateInput(1, livingAlliesPointers.size() + 1);
+
+								if (shareChoice == livingAlliesPointers.size() + 1) break;
+								else std::cout << "\n=--->\n" << std::endl;
+
+								int index = 1;
+								for (auto& potion : potions)
+								{
+									cout << dye::light_yellow(to_string(index) + ") " + potion->name) << ("; magnitude: " + to_string(potion->magnitude)) << endl;
+									index++;
+								}
+								std::cout << dye::light_yellow(to_string(index) + ") Go back") << std::endl;
+								int potionSubChoice = validateInput(1, index);
+
+								if (potionSubChoice == index) break;
+								else
+								{
+									inputChosen = true;
+									consumableChoice = potions[potionSubChoice - 1];
+									consumableTarget = livingAlliesPointers[shareChoice - 1];
+									break;
+								}
 								break;
 							}
 							else //NO ALLIES, GO BACK
@@ -2276,33 +2811,56 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 						std::cout << "\n=--->\n" << std::endl;
 						if (consumables.size() > 0)
 						{
-							cout << dye::light_yellow(" 1) Use Consumable") << endl;
+							cout << dye::light_yellow(" 1) Use Throwing Weapon") << endl;
 						}
 						else
 						{
-							cout << dye::grey(" 1) Use Consumable") << endl;
+							cout << dye::grey(" 1) Use Throwing Weapon") << endl;
 						}
 						if (throwingWeapons.size() > 0)
 						{
-							cout << dye::light_yellow(" 2) Use Throwing Weapon") << endl;
+							cout << dye::light_yellow(" 2) Use Consumable") << endl;
 						}
 						else
 						{
-							cout << dye::grey(" 2) Use Throwing Weapon") << endl;
+							cout << dye::grey(" 2) Use Consumable") << endl;
 						}
 						cout << dye::light_yellow(" 3) Go back") << endl;
 
 						//input validation
-						int consumableChoice = validateInput(1, 3);
+						int itemChoice = validateInput(1, 3);
 
-						switch (consumableChoice)
+						switch (itemChoice)
 						{
 						case 1: // THROWING WEAPON
 						{
 							if (!throwingWeapons.empty())
 							{
-								cout << "THROWING WEAPON GO" << endl;
-								break;
+								for (int i = 0; i < throwingWeapons.size(); i++)
+								{
+									cout << dye::light_yellow(i + 1) << ") " << dye::light_yellow(throwingWeapons[i]->name) << "; quantity " + to_string(throwingWeapons[i]->quantity) << endl;
+								}
+								cout << dye::light_yellow(throwingWeapons.size() + 1) << ") Go back" << endl;
+
+								int thrownWeaponChoice = validateInput(1, throwingWeapons.size() + 1);
+								if (thrownWeaponChoice == throwingWeapons.size() + 1) break;
+								else
+								{
+									std::cout << " Use " << throwingWeapons[thrownWeaponChoice - 1]->name << " on which enemy?" << std::endl;
+									for (int i = 0; i < livingEnemiesPointers.size(); i++)
+									{
+										cout << dye::light_yellow(i + 1) << ") " << dye::light_yellow(livingEnemiesPointers[i]->name) << endl;
+									}
+									cout << dye::light_yellow(livingEnemiesPointers.size() + 1) << ") Go back" << endl;
+
+									int thrownWeaponTargetChoice = validateInput(1, livingEnemiesPointers.size() + 1);
+									if (thrownWeaponTargetChoice == livingEnemiesPointers.size() + 1) break;
+
+									inputChosen = true;
+									thrownConsumableChoice = throwingWeapons[thrownWeaponChoice - 1];
+									thrownConsumableTarget = livingEnemiesPointers[thrownWeaponTargetChoice - 1];
+									break;
+								}
 							}
 							else //NO THROWING WEAPONS, GO BACK
 							{
@@ -2317,8 +2875,21 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 							if (!consumables.empty())
 							{
 								// TODO
-								cout << "CONSUMABLE GO" << endl;
-								break;
+								for (int i = 0; i < consumables.size(); i++)
+								{
+									cout << dye::light_yellow(i + 1) << ") " << dye::light_yellow(consumables[i]->name) << "; quantity " + to_string(consumables[i]->quantity) << endl;
+								}
+								cout << dye::light_yellow(consumables.size() + 1) << ") Go back" << endl;
+
+								int consumableUseChoice = validateInput(1, consumables.size() + 1);
+								if (consumableUseChoice == consumables.size() + 1) break;
+								else
+								{
+									inputChosen = true;
+									consumableChoice = consumables[consumableUseChoice - 1];
+									consumableTarget = player;
+									break;
+								}
 							}
 							else //NO CONSUMAMBLES, GO BACK
 							{
@@ -2528,9 +3099,18 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 					//dummy effect to call refresh effects
 					std::shared_ptr<Effect> effect = nullptr;
 
+					//variable to track size of player allies vector. used to detect if another ally was summoned
+					int initialPlayerAlliesSize = player->allies.size();
 					// Process turns
 					for (int i = 0; i < combatants.size(); i++)
 					{
+						cout << combatants[i]->name << " bleed points: " << combatants[i]->bleedPoints << endl;
+						cout << combatants[i]->name << " poison points " << combatants[i]->poisonPoints << endl;
+						cout << combatants[i]->name << " burn points " << combatants[i]->burnPoints << endl;
+						cout << combatants[i]->name << " frost points " << combatants[i]->frostPoints << endl;
+						cout << combatants[i]->name << " shock points " << combatants[i]->shockPoints << endl;
+						cout << combatants[i]->name << " sleep points " << combatants[i]->sleepPoints << endl;
+
 						if (combatants[i]->isAlive && player->isAlive)
 						{
 							if (shared_ptr<Creature> creature = std::dynamic_pointer_cast<Creature>(combatants[i]))
@@ -2554,7 +3134,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 								//If player summoned an ally, add it to the living allies vector
 								if (spellChoice)
 								{
-									if (spellChoice->summon)
+									if (player->allies.size() > initialPlayerAlliesSize)
 									{
 										shared_ptr<Character> summonedCreature = player->allies.back();
 										livingAlliesPointers.push_back(summonedCreature);
@@ -2720,1387 +3300,132 @@ void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, 
 		cout << "ERROR: player is null!" << endl;
 		return;
 	}
-	//Target is a human
-	if (dynamic_pointer_cast<Human>(targetChoice))
+
+	//move player
+
+	if (playerMovement < 0) cout << "You advance by " << abs(playerMovement) << " units!" << endl;
+	else if (playerMovement > 0) cout << "You retreat by " << abs(playerMovement) << " units!" << endl;
+	else cout << "You stand your ground!" << endl;
+
+	targetChoice->position[player->getId()] += playerMovement;
+
+	//Printing if the player cannot move towards the enemy any closer
+	if (targetChoice->position[player->getId()] <= 0)
 	{
-		std::shared_ptr<Human> humanTarget = dynamic_pointer_cast<Human>(targetChoice);
+		targetChoice->position[player->getId()] = 0;
+		cout << "You stand close enough to touch " << targetChoice->name << "!" << endl;
+	}
 
-		//move player
+	//Stop the turn if the player only chose to move
+	if (playerMovement && onlyMove)
+	{
+		return;
+	}
 
-		if (playerMovement < 0) cout << "You advance by " << abs(playerMovement) << " units!" << endl;
-		else if (playerMovement > 0) cout << "You retreat by " << abs(playerMovement) << " units!" << endl;
-		else cout << "You stand your ground!" << endl;
-
-		targetChoice->position[player->getId()] += playerMovement;
-
-		//Printing if the player cannot move towards the enemy any closer
-		if (targetChoice->position[player->getId()] <= 0)
+	//Applying Passive Armor Enchantments
+	for (std::shared_ptr<Item> item : player->inventory.equippedItems)
+	{
+		if (dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
 		{
-			targetChoice->position[player->getId()] = 0;
-			cout << "You stand close enough to touch " << targetChoice->name << "!" << endl;
-		}
-
-		//Stop the turn if the player only chose to move
-		if (playerMovement && onlyMove)
-		{
-			return;
-		}
-
-		//Applying Passive Armor Enchantments
-		for (std::shared_ptr<Item> item : player->inventory.equippedItems)
-		{
-			if (dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+			std::shared_ptr<Armor> armor = dynamic_pointer_cast<Armor>(item);
+			for (std::shared_ptr<Enchantment> enchant : armor->enchantments)
 			{
-				std::shared_ptr<Armor> armor = dynamic_pointer_cast<Armor>(item);
-				for (std::shared_ptr<Enchantment> enchant : armor->enchantments)
+				if (!enchant->useOnEnemy)
 				{
-					if (!enchant->doesDamage)
+					for (auto& eff : enchant->effects)
 					{
-						//enchant->applyPassiveEffect(enchant, player);
+						eff->apply(targetChoice, player);
 					}
 				}
 			}
 		}
-		//Player chose to cast a spell on an ally
-		if (spellChoice && humanTarget->isAlly)
+	}
+	//Player chose to cast a spell on an ally
+	if (spellChoice && targetChoice->isAlly)
+	{
+		if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
+			weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
+			weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
 		{
-			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
-				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
-				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
-			{
-				cout << "ERROR: weapon is not a casting tool!" << endl;
-				return;
-			}
-			else
-			{
-				if (weaponChoice)
-				{
-					player->castSpell(*spellChoice, humanTarget, playerMovement);
-				}
-				else
-				{
-					cout << "ERROR: no weapon initialized!" << endl;
-					return;
-				}
-			}
-		}
-		//Player chose to cast a spell on anything but an ally
-		//range check because there is a dummy spellChoice created initially so this will always be true, though the dummy spell has a negative range 
-		// which isn't normally possible so this will not fire if they haven't selected a spell
-		else if (spellChoice && spellChoice->range >= 0)
-		{
-			if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
-				weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
-				weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
-			{
-				cout << "ERROR: weapon is not a casting tool!" << endl;
-				return;
-			}
-			else
-			{
-				if (weaponChoice)
-				{
-					player->castSpell(*spellChoice, humanTarget, playerMovement);
-				}
-				else
-				{
-					cout << "ERROR: no weapon initialized!" << endl;
-					return;
-				}
-			}
-		}
-		//Player chose to attack an enemy with a melee weapon
-		else if (weaponChoice && spellChoice->range < 0)
-		{
-			for (int i = 0; i < 99;)
-			{
-				if (player->isAlive)
-				{
-					player->attackWithMelee(weaponChoice, humanTarget);
-					i += abs(weaponChoice->attackSpeed - 100);
-				}	
-				else
-				{
-					return;
-				}
-			}
-		}
-		//Player chose to attack an enemy with a ranged weapon
-		else if (weaponChoice && ammoChoice)
-		{
-			player->fireRangedWeapon(humanTarget, weaponChoice, ammoChoice);
-		}
-		//Player chose to attack an enemy with a thrown weapon
-		else if (thrownConsumableChoice)
-		{
-			player->throwThrownConsumable(thrownConsumableChoice, humanTarget);
-		}
-		//Player chose to share a consumable with an ally
-		else if (consumableChoice && humanTarget->isAlly)
-		{
-
-		}
-		//Player chose to consume a consumable
-		else if (consumableChoice)
-		{
-
+			cout << "ERROR: weapon is not a casting tool!" << endl;
+			return;
 		}
 		else
 		{
-			cout << "ERROR: NO VALID CHOICE WAS SENT TO PLAYERTURN" << endl;
+			if (weaponChoice)
+			{
+				player->castSpell(*spellChoice, targetChoice, playerMovement);
+			}
+			else
+			{
+				cout << "ERROR: no weapon initialized!" << endl;
+				return;
+			}
 		}
 	}
-	//Target is a creature
+	//Player chose to cast a spell on anything but an ally
+	//range check because there is a dummy spellChoice created initially so this will always be true, though the dummy spell has a negative range 
+	// which isn't normally possible so this will not fire if they haven't selected a spell
+	else if (spellChoice && spellChoice->range >= 0)
+	{
+		if (weaponChoice->weaponType != Weapon::WeaponType::TALISMAN && weaponChoice->weaponType != Weapon::WeaponType::CHIME &&
+			weaponChoice->weaponType != Weapon::WeaponType::TOME && weaponChoice->weaponType != Weapon::WeaponType::ORB &&
+			weaponChoice->weaponType != Weapon::WeaponType::STAFF && weaponChoice->weaponType != Weapon::WeaponType::WAND)
+		{
+			cout << "ERROR: weapon is not a casting tool!" << endl;
+			return;
+		}
+		else
+		{
+			if (weaponChoice)
+			{
+				player->castSpell(*spellChoice, targetChoice, playerMovement);
+			}
+			else
+			{
+				cout << "ERROR: no weapon initialized!" << endl;
+				return;
+			}
+		}
+	}
+	//Player chose to attack an enemy with a melee weapon
+	else if (weaponChoice && spellChoice->range < 0)
+	{
+		for (int i = 0; i < 99;)
+		{
+			if (player->isAlive)
+			{
+				player->attackWithMelee(weaponChoice, targetChoice);
+				i += abs(weaponChoice->attackSpeed - 100);
+			}
+			else
+			{
+				return;
+			}
+		}
+	}
+	//Player chose to attack an enemy with a ranged weapon
+	else if (weaponChoice && ammoChoice)
+	{
+		player->fireRangedWeapon(targetChoice, weaponChoice, ammoChoice);
+	}
+	//Player chose to attack an enemy with a thrown weapon
+	else if (thrownConsumableChoice)
+	{
+		player->throwThrownConsumable(thrownConsumableChoice, targetChoice);
+	}
+	//Player chose to share a consumable with an ally
+	else if (consumableChoice && targetChoice->isAlly)
+	{
+		consumableChoice->use(targetChoice);
+	}
+	//Player chose to consume a consumable
+	else if (consumableChoice)
+	{
+		consumableChoice->use(player);
+	}
 	else
 	{
-		cout << "ATTACKING CREATURES UNDER CONSTRUCTION!" << endl;
+		cout << "ERROR: NO VALID CHOICE WAS SENT TO PLAYERTURN" << endl;
 	}
-
 }
-//void attackEnemy(int& attackChoice, int weaponChoice, bool& progressRound, int inRange, Character& player, vector<Character>& enemies, vector<Character>& deadEnemies, Item mainhand1, Item mainhand2,
-//	Item offhand1, Item offhand2, Item headArmor, Item chestArmor, Item armArmor, Item legArmor, Item amulet,
-//	Item ring1, Item ring2, Item misc)
-//{
-//	//more functionality can be added later as more features get implemented
-//	//such as:
-//	//  -enchantments from equipped items influencing damage
-//	//  -status effects
-//	//  -etc.
-//
-//	if (weaponChoice == 1)
-//	{
-//		//mainhand
-//		//weapon speed caps at 100. 
-//		// Luck has a small impact on attack speed, making the "threshold" before they're done attacking
-//		// for a turn longer.
-//		float attackSpeedValue = abs(mainhand1.attackSpeed - 101);
-//		for (int i = 0; i < 101 + player->luck;)
-//		{
-//
-//			enemies[attackChoice - 1].takeDamage(mainhand1, player);
-//			if (enemies[attackChoice - 1].isAlive == false)
-//			{
-//				deadEnemies.push_back(enemies[attackChoice - 1]);
-//				enemies.erase(enemies.begin() + attackChoice - 1);
-//				break;
-//			}
-//			//this is necessary, otherwise the loop will just keep attacking every enemy no matter 
-//			//  what the user selects
-//			i += attackSpeedValue;
-//		}
-//		attackChoice = 0;
-//
-//	}
-//	else if (weaponChoice == 2)
-//	{
-//		//offhand
-//		float attackSpeedValue = abs(offhand1.attackSpeed - 101);
-//		for (int i = 0; i < 101;)
-//		{
-//
-//			enemies[attackChoice - 1].takeDamage(offhand1, player);
-//			if (enemies[attackChoice - 1].isAlive == false)
-//			{
-//				deadEnemies.push_back(enemies[attackChoice - 1]);
-//				enemies.erase(enemies.begin() + attackChoice - 1);
-//				break;
-//			}
-//			//this is necessary, otherwise the loop will just keep attacking every enemy no matter 
-//			//  what the user selects
-//			i += attackSpeedValue;
-//		}
-//		attackChoice = 0;
-//	}
-//}
-
-//void enemyTurn(Character& player, shared_ptr<Character> enemy, vector<Character>& deadAllies, vector<Character>& livingAllies)
-//{
-//	//get enemy items
-//	//should really make this kind of thing a function...
-//	Item enemyMainhand;
-//	Item enemyOffhand;
-//	Item enemyHeadArmor;
-//	Item enemyChestArmor;
-//	Item enemyArmArmor;
-//	Item enemyLegArmor;
-//	Item enemyAmulet;
-//	Item enemyRing1;
-//	Item enemyRing2;
-//	Item enemyMisc;
-//
-//	vector<Item> enemyItems = enemy->inventory.getEquippedItems();
-//
-//	for (int i = 0; i < enemyItems.size(); i++)
-//	{
-//		if (enemyItems[i].slot == Item::MAINHAND1)
-//		{
-//			enemyMainhand = enemyItems[i];
-//		}
-//		if (enemyItems[i].slot == Item::OFFHAND1)
-//		{
-//			enemyOffhand = enemyItems[i];
-//		}
-//		if (enemyItems[i].slot == Item::HEAD)
-//		{
-//			enemyHeadArmor = enemyItems[i];
-//		}
-//		if (enemyItems[i].slot == Item::CHEST)
-//		{
-//			enemyChestArmor = enemyItems[i];
-//		}
-//		if (enemyItems[i].slot == Item::ARMS)
-//		{
-//			enemyArmArmor = enemyItems[i];
-//		}
-//		if (enemyItems[i].slot == Item::LEGS)
-//		{
-//			enemyLegArmor = enemyItems[i];
-//		}
-//		if (enemyItems[i].slot == Item::AMULET)
-//		{
-//			enemyAmulet = enemyItems[i];
-//		}
-//		if (enemyItems[i].slot == Item::RING1)
-//		{
-//			enemyRing1 = enemyItems[i];
-//		}
-//		if (enemyItems[i].slot == Item::RING2)
-//		{
-//			enemyRing2 = enemyItems[i];
-//		}
-//		if (enemyItems[i].slot == Item::MISC)
-//		{
-//			enemyMisc = enemyItems[i];
-//		}
-//	}
-//	//sets confidence level, max of 100, starts at 100 for humans by default as a baseline
-//	// more flighty creatures will have lower confidence levels and vice versa
-//	// the larger the difference between the player's level and the enemy's level, the lower the confidence level
-//	// higher confidence levels give the chance for the enemy to use their turn insulting the player 
-//	// or moving back and forth for no reason because they're confident they can win and to give the player more breathing
-//	// room in larger fights
-//
-//	//DETAILS:
-//
-//	//confidence level is lowered by 5 for every level the player is above the enemy
-//	//confidence level is increased by 5 for every level the player is below the enemy (up to 100)
-//	//confidence level is lowered by 5 for every 10% of health the enemy loses
-//	//confidence level is raised by 5 for every 10% of health the enemy regains
-//
-//	//confidence level is lowered by 1 for every 10% hp that an ally loses
-//	//confidence level is increased by 1 for every 10%hp that an ally heals
-//	//confidence level is raised by 10 for every 10% of health the player loses
-//	//confidence level is lowered by 10 for every 10% of health the player regains
-//
-//	//confidence level is lowered by 50 for every ally that dies
-//
-//	////removes the enemy in question from the pool of allies
-//	//for (int i = 0; i < livingAllies.size(); i++)
-//	//{
-//
-//	//	if (livingAllies[i].name == enemy->name)
-//	//	{
-//	//		livingAllies.erase(livingAllies.begin() + i);
-//	//		break; // Exit the loop after erasing the element
-//	//	}
-//
-//	//}
-//
-//	// check dead allies
-//	int deadAlliesNum = 0;
-//	if (!deadAllies.empty())
-//	{
-//		for (int i = 0; i < deadAllies.size(); i++)
-//		{
-//			deadAlliesNum += 50;
-//		}
-//	}
-//	enemy->confidenceLevel -= deadAlliesNum;
-//
-//	// check living allies
-//	float healthLost = 0;
-//	if (!livingAllies.empty())
-//	{
-//		for (int i = 0; i < livingAllies.size(); i++)
-//		{
-//			healthLost += (livingAllies[i].maxHealthPoints - livingAllies[i].healthPoints) / 10.0f;
-//		}
-//	}
-//	enemy->confidenceLevel -= healthLost;
-//
-//	//check player health
-//	float playerHealthLost = (player->maxHealthPoints - player->healthPoints) / 10.0f;
-//	enemy->confidenceLevel += playerHealthLost;
-//
-//	//check player level
-//	float levelDifference = player->level - enemy->level;
-//	enemy->confidenceLevel -= levelDifference * 5;
-//
-//	//last minute sanity checks
-//	if (enemy->confidenceLevel > 100)
-//	{
-//		enemy->confidenceLevel = 100;
-//	}
-//	if (enemy->confidenceLevel < 0)
-//	{
-//		enemy->confidenceLevel = 0;
-//	}
-//
-//	//random number generator for decision making
-//	int randomNum = (rand() % 101) + 1;
-//
-//
-//	//decision tree
-//
-//	//enemy is confident, high chance to insult the player or meander about
-//	if (enemy->confidenceLevel >= 90)
-//	{
-//		//insult the player
-//		if (randomNum >= 60 - player->luck)
-//		{
-//			std::cout << "=--->" << std::endl;
-//			getCombatBanter(*enemy, player);
-//		}
-//		//meander about
-//		else if (randomNum >= 60 - player->luck)
-//		{
-//			std::cout << "=--->" << std::endl;
-//			cout << "The " << enemy->name << " meanders about. Are they looking for an opening, or just taunting you?" << endl;
-//		}
-//		//attack the player
-//		else
-//		{
-//			int distanceTraveled = enemy->speed / 10;
-//			std::cout << "=--->" << std::endl;
-//			if (enemy->distanceFromPlayer >= enemyMainhand.reach)
-//			{
-//				if (distanceTraveled > enemy->distanceFromPlayer || enemy->distanceFromPlayer < 0)
-//				{
-//					distanceTraveled = 0;
-//					enemy->distanceFromPlayer = 0;
-//					cout << "The " << enemy->name << " is right on top of you!" << endl;
-//				}
-//				else
-//				{
-//					cout << "The " << enemy->name << " advances by " << distanceTraveled << " units!" << endl;
-//					enemy->distanceFromPlayer -= distanceTraveled;
-//				}
-//			}
-//			else
-//			{
-//				for (int i = 0; i < 101;)
-//				{
-//					player->takeDamage(enemyMainhand, *enemy);
-//					if (player->isAlive == false)
-//					{
-//						cout << "The " << enemy->name << " strikes you down!" << endl;
-//						break;
-//					}
-//					i += enemyMainhand.attackSpeed;
-//				}
-//			}
-//		}
-//	}
-//	//enemy is confident, medium chance to insult the player or meander about
-//	else if (enemy->confidenceLevel < 90 && enemy->confidenceLevel >= 80)
-//	{
-//		//insult the player
-//		if (randomNum >= 80 - player->luck)
-//		{
-//			std::cout << "=--->" << std::endl;
-//			getCombatBanter(*enemy, player);
-//		}
-//		//meander about
-//		else if (randomNum >= 80 - player->luck)
-//		{
-//			std::cout << "=--->" << std::endl;
-//			cout << "The " << enemy->name << " meanders about. Are they looking for an opening, or just taunting you?" << endl;
-//		}
-//		//attack the player
-//		else
-//		{
-//			int distanceTraveled = enemy->speed / 10;
-//			std::cout << "=--->" << std::endl;
-//			if (enemy->distanceFromPlayer >= enemyMainhand.reach)
-//			{
-//				if (distanceTraveled > enemy->distanceFromPlayer || enemy->distanceFromPlayer < 0)
-//				{
-//					distanceTraveled = 0;
-//					enemy->distanceFromPlayer = 0;
-//					cout << "The " << enemy->name << " is right on top of you!" << endl;
-//				}
-//				else
-//				{
-//					cout << "The " << enemy->name << " advances by " << distanceTraveled << " units!" << endl;
-//					enemy->distanceFromPlayer -= distanceTraveled;
-//				}
-//			}
-//			else
-//			{
-//				for (int i = 0; i < 101;)
-//				{
-//					player->takeDamage(enemyMainhand, *enemy);
-//					if (player->isAlive == false)
-//					{
-//						cout << "The " << enemy->name << " strikes you down!" << endl;
-//						break;
-//					}
-//					i += enemyMainhand.attackSpeed;
-//				}
-//			}
-//		}
-//	}
-//	//enemy is confident, low chance to meander about or insult the player
-//	else if (enemy->confidenceLevel < 80 && enemy->confidenceLevel >= 70)
-//	{
-//		//insult the player
-//		if (randomNum >= 90 - player->luck)
-//		{
-//			std::cout << "=--->" << std::endl;
-//			getCombatBanter(*enemy, player);
-//		}
-//		//meander about
-//		else if (randomNum >= 90 - player->luck)
-//		{
-//			std::cout << "=--->" << std::endl;
-//			cout << "The " << enemy->name << " meanders about. Are they looking for an opening, or just taunting you?" << endl;
-//		}
-//		//attack the player
-//		else
-//		{
-//			int distanceTraveled = enemy->speed / 10;
-//			std::cout << "=--->" << std::endl;
-//			if (enemy->distanceFromPlayer >= enemyMainhand.reach)
-//			{
-//				if (distanceTraveled > enemy->distanceFromPlayer || enemy->distanceFromPlayer < 0)
-//				{
-//					distanceTraveled = 0;
-//					enemy->distanceFromPlayer = 02;
-//					cout << "The " << enemy->name << " is right on top of you!" << endl;
-//				}
-//				else
-//				{
-//					cout << "The " << enemy->name << " advances by " << distanceTraveled << " units!" << endl;
-//					enemy->distanceFromPlayer -= distanceTraveled;
-//				}
-//			}
-//			else
-//			{
-//				for (int i = 0; i < 101;)
-//				{
-//					player->takeDamage(enemyMainhand, *enemy);
-//					if (player->isAlive == false)
-//					{
-//						cout << "The " << enemy->name << " strikes you down!" << endl;
-//						break;
-//					}
-//					i += enemyMainhand.attackSpeed;
-//				}
-//			}
-//		}
-//	}
-//	//enemy is not confident, check ally health and heal if necessary
-//	//future implementation: allow them to use miracles to heal their allies
-//	else if (enemy->confidenceLevel < 70 && enemy->confidenceLevel >= 60)
-//	{
-//		bool allyNeedsHealing = false;
-//		for (int i = 0; i < livingAllies.size(); i++)
-//		{
-//			if (livingAllies[i].healthPoints <= livingAllies[i].maxHealthPoints * .5)
-//			{
-//				allyNeedsHealing = true;
-//				break;
-//			}
-//		}
-//		//heal allies if possible
-//		if (allyNeedsHealing == true)
-//		{
-//			enemySharePotion(*enemy, livingAllies);
-//		}
-//		//heal themselves if not possible
-//		else if (enemy->healthPoints <= enemy->maxHealthPoints * .5)
-//		{
-//			//find the first healing potion they have access to
-//			for (int i = 0; i < enemy->inventory.potions.size(); i++)
-//			{
-//				if (enemy->inventory.potions[i].effects == Potion::HEALING)
-//				{
-//					enemy->drinkPotion(enemy->inventory.potions[i]);
-//					break;
-//				}
-//			}
-//		}
-//		//attack the player
-//		else
-//		{
-//			std::cout << "=--->" << std::endl;
-//			for (int i = 0; i < 101;)
-//			{
-//				player->takeDamage(enemyMainhand, *enemy);
-//				if (player->isAlive == false)
-//				{
-//					cout << "The " << enemy->name << " strikes you down!" << endl;
-//					break;
-//				}
-//				i += enemyMainhand.attackSpeed;
-//			}
-//		}
-//	}
-//	//enemy is not confident, attack player, check ally health and heal if necessary
-//	//future implementation: give them a very small chance for spells to fail
-//
-//	//enemy is not confident, attack player, check ally health and heal if necessary
-//	//future implementation: give them a small chance for spells to fail
-//
-//	//enemy is terrified, attack player (swing speed increased, chance to miss increased), heals self
-//	//future implementation: give them a small-medium chance for spells to fail
-//
-//	//enemy is terrified, attack player (swing speed increased, chance to miss greatly increased), heals self
-//	//future implementation: give them a medium chance for spells to fail
-//
-//	//enemy is terrified, retreat (not flee, it would be annoying to the player), heals self
-//}
-
-//void printPotions(bool& progressRound, Character& character) {
-//	std::cout << "You have the following potions:" << std::endl;
-//	//add more here as more types get implemented
-//
-//	int healingTally = 0;
-//	int fatigueTally = 0;
-//	int cureDiseaseTally = 0;
-//
-//	std::string types[] = { "Restores Health", "Restores fatigue", "Cures Diseases" };
-//
-//	for (int i = 0; i < character.inventory.potions.size(); i++)
-//	{
-//		if (character.inventory.potions[i].effects == Potion::HEALING)
-//		{
-//			healingTally += character.inventory.potions[i].quantity;
-//		}
-//		else if (character.inventory.potions[i].effects == Potion::fatigue)
-//		{
-//			fatigueTally += character.inventory.potions[i].quantity;
-//		}
-//		else if (character.inventory.potions[i].effects == Potion::CUREDISEASE)
-//		{
-//			cureDiseaseTally += character.inventory.potions[i].quantity;
-//		}
-//	}
-//
-//	int categoryTally = 0;
-//
-//	categoryTally += 1;
-//	std::cout << dye::light_yellow(categoryTally) << dye::light_yellow(") Healing Potions: x") << dye::light_yellow(healingTally) << std::endl;
-//
-//	categoryTally += 1;
-//	std::cout << dye::light_yellow(categoryTally) << dye::light_yellow(") fatigue Potions: x") << dye::light_yellow(fatigueTally) << std::endl;
-//
-//	categoryTally += 1;
-//	std::cout << dye::light_yellow(categoryTally) << dye::light_yellow(") Cure Disease Potions: x") << dye::light_yellow(cureDiseaseTally) << std::endl;
-//
-//	std::cout << "Would you like to drink a potion? Enter its number or press " << categoryTally + 1
-//		<< " to go back" << std::endl;
-//	int potionChoice = 0;
-//	//input validation
-//	do
-//	{
-//		std::cout << "\n>> ";
-//		std::cin >> potionChoice;
-//		if (std::cin.fail() || potionChoice > categoryTally + 1 || potionChoice == 0)
-//		{
-//			std::cout << "Enter a number from 1 - " << categoryTally + 1 << std::endl;
-//		}
-//		std::cin.clear();
-//		std::cin.ignore(10000, '\n');
-//	} while (std::cin.fail() || potionChoice > categoryTally + 1 || potionChoice == 0);
-//
-//	if (potionChoice == categoryTally + 1)
-//	{
-//		//we don't want it to consume a round if they decide not to drink a potion
-//		progressRound = false;
-//		return;
-//	}
-//	else
-//	{
-//		//healing potions
-//		if (potionChoice == 1 && healingTally > 0)
-//		{
-//			std::vector<Potion> healingPotions;
-//			std::cout << "Select which healing potion you would like to drink.." << std::endl;
-//			for (int i = 1; i < character.inventory.potions.size() + 1; i++)
-//			{
-//				if (character.inventory.potions[i - 1].effects == Potion::HEALING)
-//				{
-//					std::cout << i << ") " << character.inventory.potions[i - 1].name << ", magnitude of "
-//						<< character.inventory.potions[i - 1].magnitude << ", quantity of " << character.inventory.potions[i - 1].quantity << std::endl;
-//					healingPotions.push_back(character.inventory.potions[i - 1]);
-//				}
-//			}
-//			std::cout << healingPotions.size() + 1 << ") Go back" << std::endl;
-//
-//			do
-//			{
-//				std::cout << ">> ";
-//				std::cin >> potionChoice;
-//				if (std::cin.fail() || potionChoice > healingPotions.size() + 1 || potionChoice == 0)
-//				{
-//					std::cout << "Enter a number from 1 - " << healingPotions.size() + 1 << std::endl;
-//				}
-//				std::cin.clear();
-//				std::cin.ignore(10000, '\n');
-//			} while (std::cin.fail() || potionChoice > healingPotions.size() + 1 || potionChoice == 0);
-//
-//			if (potionChoice == healingPotions.size() + 1)
-//			{
-//				progressRound = false;
-//			}
-//			else
-//			{
-//				character.drinkPotion(healingPotions[potionChoice - 1]);
-//				progressRound = true;
-//			}
-//		}
-//		else if (potionChoice == 1 && healingTally <= 0)
-//		{
-//			std::cout << "You don't have any healing potions!" << std::endl;
-//			progressRound = false;
-//		}
-//		//fatigue potions
-//		else if (potionChoice == 2 && fatigueTally > 0)
-//		{
-//			std::vector<Potion> fatiguePotions;
-//			std::cout << "Select which fatigue potion you would like to drink.." << std::endl;
-//			for (int i = 1; i < character.inventory.potions.size() + 1; i++)
-//			{
-//				if (character.inventory.potions[i - 1].effects == Potion::fatigue)
-//				{
-//					std::cout << i << ") " << character.inventory.potions[i - 1].name << ", magnitude of "
-//						<< character.inventory.potions[i - 1].magnitude << ", quantity of " << character.inventory.potions[i - 1].quantity << std::endl;
-//					fatiguePotions.push_back(character.inventory.potions[i - 1]);
-//				}
-//			}
-//			std::cout << fatiguePotions.size() + 1 << ") Go back" << std::endl;
-//			do
-//			{
-//				std::cout << ">> ";
-//				std::cin >> potionChoice;
-//				if (std::cin.fail() || potionChoice > fatiguePotions.size() + 1 || potionChoice == 0)
-//				{
-//					std::cout << "Enter a number from 1 - " << fatiguePotions.size() + 1 << std::endl;
-//				}
-//				std::cin.clear();
-//				std::cin.ignore(10000, '\n');
-//			} while (std::cin.fail() || potionChoice > fatiguePotions.size() + 1 || potionChoice == 0);
-//			if (potionChoice == fatiguePotions.size() + 1)
-//			{
-//				progressRound = false;
-//			}
-//			else
-//			{
-//				character.drinkPotion(fatiguePotions[potionChoice - 1]);
-//				progressRound = true;
-//			}
-//		}
-//		else if (potionChoice == 2 && fatigueTally <= 0)
-//		{
-//			std::cout << "You don't have any fatigue potions!" << std::endl;
-//			progressRound = false;
-//		}
-//		//cure disease potions
-//		else if (potionChoice == 3 && cureDiseaseTally > 0)
-//		{
-//			std::vector<Potion> cureDiseasePotions;
-//			std::cout << "Select which cure disease potion you would like to drink.." << std::endl;
-//			for (int i = 1; i < character.inventory.potions.size() + 1; i++)
-//			{
-//				if (character.inventory.potions[i - 1].effects == Potion::CUREDISEASE)
-//				{
-//					std::cout << i << ") " << character.inventory.potions[i - 1].name << ", magnitude of "
-//						<< character.inventory.potions[i - 1].magnitude << ", quantity of " << character.inventory.potions[i - 1].quantity << std::endl;
-//					cureDiseasePotions.push_back(character.inventory.potions[i - 1]);
-//				}
-//			}
-//			std::cout << cureDiseasePotions.size() + 1 << ") Go back" << std::endl;
-//			do
-//			{
-//				std::cout << ">> ";
-//				std::cin >> potionChoice;
-//				if (std::cin.fail() || potionChoice > cureDiseasePotions.size() + 1 || potionChoice == 0)
-//				{
-//					std::cout << "Enter a number from 1 - " << cureDiseasePotions.size() + 1 << std::endl;
-//				}
-//				std::cin.clear();
-//				std::cin.ignore(10000, '\n');
-//			} while (std::cin.fail() || potionChoice > cureDiseasePotions.size() + 1 || potionChoice == 0);
-//			if (potionChoice == cureDiseasePotions.size() + 1)
-//			{
-//				progressRound = false;
-//			}
-//			else
-//			{
-//				character.drinkPotion(cureDiseasePotions[potionChoice - 1]);
-//				progressRound = true;
-//			}
-//		}
-//		else if (potionChoice == 3 && cureDiseaseTally <= 0)
-//		{
-//			std::cout << "You don't have any cure disease potions!" << std::endl;
-//			progressRound = false;
-//		}
-//	}
-//}
-//
-//void getCombatBanter(Character sender, Character& reciever)
-//{
-//	//random number generator for decision making
-//	int randomNum = (rand() % 5) + 1;
-//	//getting the sender's equipment
-//	std::vector<Item> senderPotions = sender.inventory.potions();
-//	std::vector<Item> senderItems = sender.inventory.getEquippedItems();
-//	Item senderMainHand1;
-//	Item senderMainHand2;
-//	Item senderOffHand1;
-//	Item senderOffHand2;
-//	Item senderAmulet;
-//	Item senderRing1;
-//	Item senderRing2;
-//	Item sendermisc;
-//	Item senderHelmet;
-//	Item senderChest;
-//	Item senderArms;
-//	Item senderLegs;
-//
-//	//until I figure out how to ensure this is set to false by default, we need this because its true 
-//	//  by default 
-//	senderMainHand1.hasBeenInitialized = false;
-//	senderMainHand2.hasBeenInitialized = false;
-//	senderOffHand1.hasBeenInitialized = false;
-//	senderOffHand2.hasBeenInitialized = false;
-//	senderAmulet.hasBeenInitialized = false;
-//	senderRing1.hasBeenInitialized = false;
-//	senderRing2.hasBeenInitialized = false;
-//	sendermisc.hasBeenInitialized = false;
-//	senderHelmet.hasBeenInitialized = false;
-//	senderChest.hasBeenInitialized = false;
-//	senderArms.hasBeenInitialized = false;
-//	senderLegs.hasBeenInitialized = false;
-//
-//	for (int i = 0; i < senderItems.size(); i++)
-//	{
-//		if (senderItems[i].slot == Item::EquipSlots::MAINHAND)
-//		{
-//			senderMainHand1 = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::MAINHAND2)
-//		{
-//			senderMainHand2 = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::OFFHAND1)
-//		{
-//			senderOffHand1 = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::OFFHAND2)
-//		{
-//			senderOffHand2 = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::AMULET)
-//		{
-//			senderAmulet = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::RING1)
-//		{
-//			senderRing1 = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::RING2)
-//		{
-//			senderRing2 = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::MISC)
-//		{
-//			sendermisc = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::HEAD)
-//		{
-//			senderHelmet = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::CHEST)
-//		{
-//			senderChest = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::ARMS)
-//		{
-//			senderArms = senderItems[i];
-//		}
-//		else if (senderItems[i].slot == Item::LEGS)
-//		{
-//			senderLegs = senderItems[i];
-//		}
-//	}
-//
-//	//getting the reciever's equipment
-//	std::vector<Potion> recieverPotions = reciever.inventory.potions;
-//	std::vector<Item> recieverItems = reciever.inventory.getEquippedItems();
-//	Item recieverMainHand1;
-//	Item recieverMainHand2;
-//	Item recieverOffHand1;
-//	Item recieverOffHand2;
-//	Item recieverAmulet;
-//	Item recieverRing1;
-//	Item recieverRing2;
-//	Item recievermisc;
-//	Item recieverHelmet;
-//	Item recieverChest;
-//	Item recieverArms;
-//	Item recieverLegs;
-//
-//	//until I figure out how to ensure this is set to false by default, we need this because its true 
-//	//  by default 
-//	recieverMainHand1.hasBeenInitialized = false;
-//	recieverMainHand2.hasBeenInitialized = false;
-//	recieverOffHand1.hasBeenInitialized = false;
-//	recieverOffHand2.hasBeenInitialized = false;
-//	recieverAmulet.hasBeenInitialized = false;
-//	recieverRing1.hasBeenInitialized = false;
-//	recieverRing2.hasBeenInitialized = false;
-//	recievermisc.hasBeenInitialized = false;
-//	recieverHelmet.hasBeenInitialized = false;
-//	recieverChest.hasBeenInitialized = false;
-//	recieverArms.hasBeenInitialized = false;
-//	recieverLegs.hasBeenInitialized = false;
-//
-//	for (int i = 0; i < recieverItems.size(); i++)
-//	{
-//		if (recieverItems[i].slot == Item::MAINHAND1)
-//		{
-//			recieverMainHand1 = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::MAINHAND2)
-//		{
-//			recieverMainHand2 = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::OFFHAND1)
-//		{
-//			recieverOffHand1 = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::OFFHAND2)
-//		{
-//			recieverOffHand2 = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::AMULET)
-//		{
-//			recieverAmulet = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::RING1)
-//		{
-//			recieverRing1 = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::RING2)
-//		{
-//			recieverRing2 = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::MISC)
-//		{
-//			recievermisc = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::HEAD)
-//		{
-//			recieverHelmet = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::CHEST)
-//		{
-//			recieverChest = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::ARMS)
-//		{
-//			recieverArms = recieverItems[i];
-//		}
-//		else if (recieverItems[i].slot == Item::LEGS)
-//		{
-//			recieverLegs = recieverItems[i];
-//		}
-//	}
-//
-//	if (randomNum == 1)
-//	{
-//		//WEAPONS
-//		//if the player has nothing equipped
-//		if (!recieverMainHand1.hasBeenInitialized && !recieverMainHand2.hasBeenInitialized && !recieverOffHand1.hasBeenInitialized && !recieverOffHand2.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("What are you gonna do, tickle me to death?") << endl;
-//		}
-//		//if the player is using a talisman
-//		else if (recieverMainHand1.weaponType == Item::TALISMAN && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::TALISMAN && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("What, are you going to pray me to death?") << endl;
-//		}
-//		//if the player is using a chime
-//		else if (recieverMainHand1.weaponType == Item::CHIME && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::CHIME && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A chime? Good lord I'm annoyed already.") << endl;
-//		}
-//		//if the player is using a tome
-//		else if (recieverMainHand1.weaponType == Item::TOME && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::TOME && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Are you going to read me a bed time story from tome?") << endl;
-//		}
-//		//if the player is using a wand
-//		else if (recieverMainHand1.weaponType == Item::WAND && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::WAND && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Great. Another bloody wizard.") << endl;
-//		}
-//		//if the player is using a staff
-//		else if (recieverMainHand1.weaponType == Item::STAFF && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::STAFF && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A staff? You're gonna need it to walk when I'm done with you.") << endl;
-//		}
-//		//if the player is using a orb
-//		else if (recieverMainHand1.weaponType == Item::ORB && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::ORB && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("An orb? I'll give you something to ponder!") << endl;
-//		}
-//		//if the player is using a dagger
-//		else if (recieverMainHand1.weaponType == Item::DAGGER && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::DAGGER && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Oh, a dagger! Are you going to carve me a little statue?") << endl;
-//		}
-//		//if the player is using a straight sword 
-//		else if (recieverMainHand1.weaponType == Item::STRAIGHTSWORD && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::STRAIGHTSWORD && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A straight sword? Fancy yourself a knight?") << endl;
-//		}
-//		//if the player is using a greatsword
-//		else if (recieverMainHand1.weaponType == Item::GREATSWORD && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::GREATSWORD && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A greatsword? You're compensating for something, aren't you?") << endl;
-//		}
-//		//if the player is using a fist weapon
-//		else if (recieverMainHand1.weaponType == Item::FIST && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::FIST && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Fist weapons? You're going to punch me to death? Really?") << endl;
-//		}
-//		//if the player is using a mace
-//		else if (recieverMainHand1.weaponType == Item::MACE && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::MACE && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A mace? The only skull you're cracking with that is your own when you trip over yourself.") << endl;
-//		}
-//		//if the player is using a great mace
-//		else if (recieverMainHand1.weaponType == Item::GREATMACE && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::GREATMACE && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A great mace? I'll just wait the three business days it will take for you to swing that thing.") << endl;
-//		}
-//		//if the player is using a hatchet
-//		else if (recieverMainHand1.weaponType == Item::HATCHET && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::HATCHET && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A hatchet? Did your Pa lend you that for tinder?") << endl;
-//		}
-//		//if the player is using a axe
-//		else if (recieverMainHand1.weaponType == Item::AXE && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::AXE && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("An axe? There are plenty of trees around. Oh wait, you're using it as a weapon.") << endl;
-//		}
-//		//if the player is using a great axe
-//		else if (recieverMainHand1.weaponType == Item::GREATAXE && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::GREATAXE && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A great axe? The trees you fell with that must rival the girth of your mother!") << endl;
-//		}
-//		//if the player is using a thrusting sword
-//		else if (recieverMainHand1.weaponType == Item::THRUSTINGSWORD && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::THRUSTINGSWORD && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A thrusting sword? Fancy yourself some kind of noble?") << endl;
-//		}
-//		//if the player is using a spear
-//		else if (recieverMainHand1.weaponType == Item::SPEAR && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::SPEAR && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A spear? Coward, fight me from a reasonable range!") << endl;
-//		}
-//		//if the player is using a great spear
-//		else if (recieverMainHand1.weaponType == Item::GREATSPEAR && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::GREATSPEAR && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A great spear? You're compensating for something, aren't you?") << endl;
-//		}
-//		//if the player is using a halberd
-//		else if (recieverMainHand1.weaponType == Item::HALBERD && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::HALBERD && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A halberd? You're going to trip over yourself with that thing!") << endl;
-//		}
-//		//if the player is using a polehammer
-//		else if (recieverMainHand1.weaponType == Item::POLEHAMMER && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::POLEHAMMER && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A polehammer? What, not brave enough to use a weapon with an entire zip code's reach?") << endl;
-//		}
-//		//if the player is using a parrying shield
-//		else if (recieverMainHand1.weaponType == Item::PARRYSHIELD && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::PARRYSHIELD && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A parrying shield? Hold on, I'll swing nice and slow for you!") << endl;
-//		}
-//		//if the player is using a medium shield
-//		else if (recieverMainHand1.weaponType == Item::MEDIUMSHIELD && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::MEDIUMSHIELD && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A medium shield? Fancy yourself a knight, do you?") << endl;
-//		}
-//		//if the player is using a great shield
-//		else if (recieverMainHand1.weaponType == Item::GREATSHIELD && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::GREATSHIELD && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("You know, they say the size of the shield is directly proportional to the size of the coward!") << endl;
-//		}
-//		//if the player is using a longbow
-//		else if (recieverMainHand1.weaponType == Item::LONGBOW && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::LONGBOW && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Great, an archer. Your cowardice is matched only by the annoyance you cause me.") << endl;
-//		}
-//		//if the player is using a compound bow
-//		else if (recieverMainHand1.weaponType == Item::COMPOUNDBOW && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::COMPOUNDBOW && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Of course, and now you're just gonna keep running and shooting and running and shooting. It's so boring!") << endl;
-//		}
-//		//if the player is using a great bow
-//		else if (recieverMainHand1.weaponType == Item::GREATBOW && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::GREATBOW && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("What are you hunting with that bloody thing, boulders?") << endl;
-//		}
-//		//if the player is using a mini crossbow
-//		else if (recieverMainHand1.weaponType == Item::MINICROSSBOW && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::MINICROSSBOW && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A miniature crossbow? What are you hunting, mice?") << endl;
-//		}
-//		//if the player is using a crossbow
-//		else if (recieverMainHand1.weaponType == Item::CROSSBOW && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::CROSSBOW && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("A crossbow? Sure, I'll wait the three business days it will take for you to reload it.") << endl;
-//		}
-//		//if the player is using a hand ballista
-//		else if (recieverMainHand1.weaponType == Item::BALLISTA && recieverMainHand1.hasBeenInitialized ||
-//			recieverOffHand1.weaponType == Item::BALLISTA && recieverOffHand1.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Good lord, are you firing entire logs from that thing?") << endl;
-//		}
-//		else
-//		{
-//			getGenericCombatBanter(sender);
-//		}
-//	}
-//	else if (randomNum == 2)
-//	{
-//		//ARMOR
-//		int lightArmorCount = 0;
-//		for (int i = 0; i < recieverItems.size(); i++)
-//		{
-//			if (recieverItems[i].armorType == Item::LEATHER || recieverItems[i].armorType == Item::PADDED || recieverItems[i].armorType == Item::STUDDEDLEATHER)
-//			{
-//				lightArmorCount++;
-//			}
-//		}
-//		int mediumArmorCount = 0;
-//		for (int i = 0; i < recieverItems.size(); i++)
-//		{
-//			if (recieverItems[i].armorType == Item::CHAIN || recieverItems[i].armorType == Item::LAMELLAR || recieverItems[i].armorType == Item::SCALE)
-//			{
-//				mediumArmorCount++;
-//			}
-//		}
-//		int heavyArmorCount = 0;
-//		for (int i = 0; i < recieverItems.size(); i++)
-//		{
-//			if (recieverItems[i].armorType == Item::CHAINPLATE || recieverItems[i].armorType == Item::BEASTSCALE || recieverItems[i].armorType == Item::FULLPLATE)
-//			{
-//				heavyArmorCount++;
-//			}
-//		}
-//		//if the player is wearing no armor
-//		if (!recieverHelmet.hasBeenInitialized && !recieverChest.hasBeenInitialized && !recieverArms.hasBeenInitialized && !recieverLegs.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("The madman is wearing nothing! I don't know if you're more brave or stupid.") << endl;
-//		}
-//		//if the player is wearing light armor
-//		else if (lightArmorCount > mediumArmorCount && lightArmorCount > heavyArmorCount)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Light armor? Couldn't fatiguege even a hint of weight on your body, could you?") << endl;
-//		}
-//		//if the player is wearing medium armor
-//		else if (mediumArmorCount > lightArmorCount && mediumArmorCount > heavyArmorCount)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("So you couldn't decide if you wanted to be fast or durable, so you went with a worse version of both. Good job.") << endl;
-//		}
-//		//if the player is wearing heavy armor
-//		else if (heavyArmorCount > lightArmorCount && heavyArmorCount > mediumArmorCount)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Heavy armor? You know, they say the thickness of the steel is directly proportional to the thickness of the skull!") << endl;
-//		}
-//		//if they're wearing a mixture of armor types
-//		else if (lightArmorCount > 0 && mediumArmorCount > 0 && heavyArmorCount > 0)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Did your mother dress you?") << endl;
-//		}
-//		else
-//		{
-//			getGenericCombatBanter(sender);
-//		}
-//	}
-//	else if (randomNum == 3)
-//	{
-//		//POTIONS
-//		int healingTally = 0;
-//		int fatigueTally = 0;
-//		int cureDiseaseTally = 0;
-//		for (int i = 0; i < recieverPotions.size(); i++)
-//		{
-//			if (recieverPotions[i].effects == Potion::HEALING)
-//			{
-//				healingTally += recieverPotions[i].quantity;
-//			}
-//			else if (recieverPotions[i].effects == Potion::fatigue)
-//			{
-//				fatigueTally += recieverPotions[i].quantity;
-//			}
-//			else if (recieverPotions[i].effects == Potion::CUREDISEASE)
-//			{
-//				cureDiseaseTally += recieverPotions[i].quantity;
-//			}
-//		}
-//		//if the player has no potions
-//		if (healingTally == 0 && fatigueTally == 0 && cureDiseaseTally == 0)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("No potions? Shame, I was running low.") << endl;
-//		}
-//		//if the player has mainly healing potions
-//		else if (healingTally > fatigueTally && healingTally > cureDiseaseTally)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("You're gonna need all those healing potions you're hoarding!") << endl;
-//		}
-//		//if the player has mainly fatigue potions
-//		else if (fatigueTally > healingTally && fatigueTally > cureDiseaseTally)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("fatigue potions? Another bloody wizard. Fantastic!") << endl;
-//		}
-//		//if the player has mainly cure disease potions
-//		else if (cureDiseaseTally > healingTally && cureDiseaseTally > fatigueTally)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Cure disease potions? Make a habit of covorting with wild animals or something?") << endl;
-//		}
-//		//if the player has a mix of potions
-//		else if (healingTally > 0 && fatigueTally > 0 && cureDiseaseTally > 0)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("What are you, a walking apothecary?") << endl;
-//		}
-//		else
-//		{
-//			getGenericCombatBanter(sender);
-//		}
-//
-//	}
-//	else if (randomNum == 4)
-//	{
-//		//TRINKETS
-//
-//		//if the player has no trinkets
-//		if (!recieverAmulet.hasBeenInitialized && !recieverRing1.hasBeenInitialized && !recieverRing2.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("No trinkets? No jewelry? What a let-down!") << endl;
-//		}
-//		//if the player has an amulet
-//		else if (recieverAmulet.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("I'm gonna rip that amulet from your neck!") << endl;
-//		}
-//		//if the player has a ring
-//		else if (recieverRing1.hasBeenInitialized || recieverRing2.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("I sure hope that isn't a wedding ring, I might feel bad about this.") << endl;
-//		}
-//		//if the player has two rings
-//		else if (recieverRing1.hasBeenInitialized && recieverRing2.hasBeenInitialized)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Two rings? Two times the profit for me.") << endl;
-//		}
-//		else
-//		{
-//			getGenericCombatBanter(sender);
-//		}
-//	}
-//	else if (randomNum == 5)
-//	{
-//		//GOLD
-//
-//		//if the player has no gold
-//		if (reciever.gold == 0)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("Do you not have a single gold piece on you? What a loser!") << endl;
-//		}
-//		//if the player has a <=200 gold
-//		else if (reciever.gold <= 200 && reciever.gold > 0)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("I can hear all that gold in your pockets!") << endl;
-//		}
-//		//if the player has a <=500 gold
-//		else if (reciever.gold <= 500 && reciever.gold > 200)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("You're carrying around a lot of gold, you know. Have you ever heard of a bank?") << endl;
-//		}
-//		//if the player has a <=1000 gold
-//		else if (reciever.gold <= 1000 && reciever.gold > 500)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("How are you even carrying all that gold?") << endl;
-//		}
-//		//if the player has a >1000 gold
-//		else if (reciever.gold > 1000)
-//		{
-//			cout << dye::light_yellow(sender.name) << ": " << dye::white("I'm gonna retire with all that gold you're carrying!") << endl;
-//		}
-//		else
-//		{
-//			getGenericCombatBanter(sender);
-//		}
-//	}
-//}
-
-//void getGenericCombatBanter(Character sender)
-//{
-//	//fallback generic lines (for debug)
-//	int randomNum = (rand() % 9) + 1;
-//	switch (randomNum) {
-//	case 1:
-//	{
-//		cout << dye::light_yellow(sender.name) << ": " << dye::white("Well men, we've trained hard, but looking upon the face of our enemy, I fear we needn't... have trained quite so hard.") << endl;
-//		break;
-//	}
-//	case 2:
-//	{
-//		cout << dye::light_yellow(sender.name) << ": " << dye::white("Look men, look how terrible they are!") << endl;
-//		break;
-//	}
-//	case 3:
-//	{
-//		cout << dye::light_yellow(sender.name) << ": " << dye::white("Maybe, you should take up FARMING!") << endl;
-//		break;
-//	}
-//	case 4:
-//	{
-//		cout << dye::light_yellow(sender.name) << ": " << dye::white("You move with the grace of a drunken peasant!") << endl;
-//		break;
-//	}
-//	case 5:
-//	{
-//		cout << dye::light_yellow(sender.name) << ": " << dye::white("Ahoy, uh, the 'dung covered peasant convention,' is THAT way!") << endl;
-//		break;
-//	}
-//	case 6:
-//	{
-//		cout << dye::light_yellow(sender.name) << ": " << dye::white("My Nan can fight better than that!") << endl;
-//		break;
-//	}
-//	case 7:
-//	{
-//		cout << dye::light_yellow(sender.name) << ": " << dye::white("Your mother was a hamster!") << endl;
-//		break;
-//	}
-//	case 8:
-//	{
-//		cout << dye::light_yellow(sender.name) << ": " << dye::white("Your father smelt of elderberries!") << endl;
-//		break;
-//	}
-//	case 9:
-//	{
-//		cout << dye::light_yellow(sender.name) << ": " << dye::white("I fart in your general direction!") << endl;
-//		break;
-//	}
-//	}
-//}
-//
-//void enemySharePotion(Character& character, vector<Character>& allies)
-//{
-//	std::vector<Potion> healingPotions;
-//	for (int i = 0; i < character.inventory.potions.size(); i++)
-//	{
-//		if (character.inventory.potions[i].effects == Potion::HEALING)
-//		{
-//			healingPotions.push_back(character.inventory.potions[i]);
-//		}
-//	}
-//	std::vector<Potion> fatiguePotions;
-//	for (int i = 0; i < character.inventory.potions.size(); i++)
-//	{
-//		if (character.inventory.potions[i].effects == Potion::fatigue)
-//		{
-//			fatiguePotions.push_back(character.inventory.potions[i]);
-//		}
-//	}
-//	std::vector<Potion> cureDiseasePotions;
-//	for (int i = 0; i < character.inventory.potions.size(); i++)
-//	{
-//		if (character.inventory.potions[i].effects == Potion::CUREDISEASE)
-//		{
-//			cureDiseasePotions.push_back(character.inventory.potions[i]);
-//		}
-//	}
-//
-//	//check ally health
-//	if (!allies.empty() && !healingPotions.empty())
-//	{
-//		for (int i = 0; i < allies.size(); i++)
-//		{
-//			if (allies[i].healthPoints <= allies[i].maxHealthPoints * .5)
-//			{
-//				cout << "=--->" << endl;
-//				cout << dye::light_yellow(character.name) << " tosses a healing potion to " << dye::light_yellow(allies[i].name) << endl;
-//				allies[i].inventory.addPotion(healingPotions[0]);
-//				for (int i = 0; i < character.inventory.potions.size(); i++)
-//				{
-//					if (character.inventory.potions[i].effects == Potion::HEALING)
-//					{
-//						character.inventory.potions.erase(character.inventory.potions.begin() + i);
-//					}
-//				}
-//			}
-//		}
-//	}
-//	//check ally fatigue
-//	else if (!allies.empty() && !fatiguePotions.empty())
-//	{
-//		for (int i = 0; i < allies.size(); i++)
-//		{
-//			if (allies[i].fatiguePoints <= allies[i].maxfatiguePoints * .5)
-//			{
-//				cout << "=--->" << endl;
-//				cout << dye::light_yellow(character.name) << " tosses a fatigue potion to " << dye::light_yellow(allies[i].name) << endl;
-//				allies[i].inventory.addPotion(fatiguePotions[0]);
-//				character.inventory.potions.erase(character.inventory.potions.begin() + 0);
-//				for (int i = 0; i < character.inventory.potions.size(); i++)
-//				{
-//					if (character.inventory.potions[i].effects == Potion::fatigue)
-//					{
-//						character.inventory.potions.erase(character.inventory.potions.begin() + i);
-//					}
-//				}
-//			}
-//		}
-//	}
-//	//check ally disease
-//}

@@ -4,17 +4,17 @@
 #include <string>
 #include <vector>
 #include <array>
-#include "MagicDamageType.h"
+#include "DamageTypes.h"
 #include "PhysicalDamageType.h"
 #include <memory>
 #include <nlohmann/json.hpp>
+#include "IDManager.h"
+
 using json = nlohmann::json;
 
 class Item {
-protected:
-	static int nextId;
-	int id;
 public:	
+	int id;
 	bool hasBeenInitialized = false;
 	std::string name = "ITEM NAME PLS CHANGE";
 	std::string description = "ITEM DESCRIPTION PLS CHANGE";
@@ -30,7 +30,7 @@ public:
 
 
 	Item() = default;
-	Item(bool hasBeenInitialized, std::string name, std::string description, float value, float weight, float quantity,
+	Item(std::string name, std::string description, float value, float weight, float quantity,
 		Item::EquipSlots slot);
 
 	virtual ~Item() = default;

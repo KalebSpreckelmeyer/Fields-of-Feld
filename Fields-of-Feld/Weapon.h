@@ -1,38 +1,31 @@
 #pragma once
 #include "Item.h"
 #include "PhysicalDamageType.h"
-#include "MagicDamageType.h"
+#include "DamageTypes.h"
 #include "Enchantment.h"
 #include <vector>
 #include <unordered_map>
 #include "StatScaling.h"	
+#include "Defense.h"
 
 class Weapon :
     public Item
 {
 public:
-
+	int id;
 	//Physical and Magical Damage of the Weapon
-	std::unordered_map<PhysicalDamageType, float>physicalDamages;
-	std::unordered_map<MagicDamageType, float> magicDamages;
-
-	PhysicalDamageType physDmgType = PhysicalDamageType::BLUNT;
-	MagicDamageType magDmgType = MagicDamageType::NONE;
+	std::unordered_map<DamageTypes, float> damageTypes;
 
 	//Physical and Magical Defense of the Weapon
-	std::unordered_map<PhysicalDamageType, float> physicalResistance;
-	std::unordered_map<MagicDamageType, float> magicResistance;
-
-	PhysicalDamageType physDefType = PhysicalDamageType::BLUNT;
-	MagicDamageType magDefType = MagicDamageType::NONE;
+	std::unordered_map<Defense, float> defenseTypes;
 
 	//Weapon Scaling Stats
 	std::unordered_map<StatScaling, float> scalingStats;
-	StatScaling scalingStat = StatScaling::NONE;
+	//StatScaling scalingStat = StatScaling::NONE;
 
 	//Weapon Requirements
 	std::unordered_map<StatScaling, float> statRequirements;
-	StatScaling statRequirement = StatScaling::NONE;
+	//StatScaling statRequirement = StatScaling::NONE;
 
 	bool specialDamage = false;
 	float reach = 0.0f;
@@ -45,7 +38,7 @@ public:
 		HATCHET, AXE, GREATAXE, THRUSTINGSWORD, SPEAR, GREATSPEAR, HALBERD, POLEHAMMER,
 		PARRYSHIELD, MEDIUMSHIELD, GREATSHIELD,
 		LONGBOW, COMPOUNDBOW, GREATBOW, MINICROSSBOW, CROSSBOW, BALLISTA,
-		TALISMAN, CHIME, TOME, WAND, STAFF, ORB
+		TALISMAN, CHIME, TOME, WAND, STAFF, ORB, CANDLE, CANDLESTICK, TOTEM 
 	};
 	WeaponType weaponType = WeaponType::DAGGER;
 
@@ -54,38 +47,29 @@ public:
 
 	static std::shared_ptr<Item> fromJson(const nlohmann::json& j);
 
+	float getWeaponDamageBase(std::shared_ptr<Weapon> weapon);
 
-	float getWeaponDamage(std::shared_ptr<Character> target, Weapon weapon);
+	float getWeaponDamage(std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon);
 
-	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
+	void setDamage(DamageTypes damType, float damValue);
 
-	void setMagicDamage(MagicDamageType magType, float magDamage);
+	float getDamage(DamageTypes damValue);
 
-	float getPhysicalDamage(PhysicalDamageType physType);
+	float getDefense(Defense defenseType);
 
-	float getMagicDamage(MagicDamageType magType);
+	void setDefense(Defense defenseType, float defenseValue);
 
-	float getWeaponDefense(std::shared_ptr<Character> target);
+	float getWeaponScalingValue(StatScaling scalingStat);
 
-	void setPhysicalDefense(PhysicalDamageType physType, float physDefense);
+	float getWeaponRequirementValue(StatScaling statRequirement);
 
-	void setMagicDefense(MagicDamageType magType, float magDefense);
+	void setWeaponScalingValue(StatScaling scalingStat, float scalingValue);
 
-	float getPhysicalDefense(PhysicalDamageType physType);
-
-	float getMagicDefense(MagicDamageType magType);
-
-	float getWeaponScalingValue(StatScaling);
-
-	float getWeaponRequirementValue(StatScaling);
-
-	void setWeaponScalingValue(StatScaling, float scalingValue);
-
-	void setWeaponRequirementValue(StatScaling, float requirementValue);
+	void setWeaponRequirementValue(StatScaling statRequirement, float requirementValue);
 	//ENCHANTMENTS
 	std::vector<std::shared_ptr<Enchantment>> enchantments;
 	
-	Weapon() = default;
+	Weapon();
 
 	Weapon(bool specialDamage, std::string name, std::string description, float stability, float reach, float attackSpeed, float weight, float value,
 		bool twohanded, bool needsAmmo, WeaponType weaponType, EquipSlots slot);

@@ -3,32 +3,20 @@
 #include <string>
 #include <vector>
 #include "Effect.h"
+#include "IDManager.h"
 
 class Enchantment 
 {
 public:
-	std::unordered_map<PhysicalDamageType, float>physicalDamage;
-	std::unordered_map<MagicDamageType, float> magicDamage;
-
-	PhysicalDamageType physType = PhysicalDamageType::BLUNT;
-	MagicDamageType magType = MagicDamageType::NONE;
+	int id;
 
 	std::vector<std::shared_ptr<Effect>> effects;
 	std::string name;
 	std::string description;
-	bool areaOfEffect = false;
-	bool summon = false;
-	bool doesDamage = false;
-	bool healing = false;
+	bool useOnEnemy = false;
 	bool useOnAlly = false;
 	bool useOnSelf = false;
-	bool buff = false;
-	int duration = 0;
-	float magnitude = 0.0f;
-	bool applied = false;
-	bool stackable = false;
-	int stacks = 0;
-	int maxStacks = 0;
+
 
 	nlohmann::json toJson() const;
 	static std::shared_ptr<Enchantment> fromJson(const nlohmann::json& j);
@@ -37,19 +25,7 @@ public:
 
 	~Enchantment();
 
-	Enchantment(std::string name, std::string description, bool areaOfEffect, bool summon, bool doesDamage, 
-		bool healing, bool useOnAlly, bool useOnSelf, bool buff, float duration, float magnitude, bool applied, bool stackable,
-		int stacks, int maxStacks);
-
-	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
-
-	void setMagicDamage(MagicDamageType magType, float magDamage);
-
-	float getPhysicalDamage(PhysicalDamageType physType);
-
-	float getMagicDamage(MagicDamageType magType);
-
-	float getEnchantmentDamage(std::shared_ptr<Character> target, Enchantment Enchantment);
+	Enchantment(std::string name, std::string description,bool useOnEnemy, bool useOnAlly, bool useOnSelf);
 
 	//void applyOffensiveEnchantment(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target);
 

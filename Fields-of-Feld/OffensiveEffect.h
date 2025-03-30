@@ -8,6 +8,19 @@ class OffensiveEffect :
 	
 };
 
+class DamageEffect : public TimedEffect
+{
+public:
+	DamageTypes damageTypes = DamageTypes::NONE;
+	float damageMagnitude = 0.0f;
+	DamageEffect(DamageTypes damageValues, float damageMagnitude);
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> target) override;
+	void burst(std::shared_ptr<Character> target) override;
+	nlohmann::json toJson() const override;
+	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
+	std::string getType() const;
+};
 class BleedEffect : public TimedEffect
 {
 public:
@@ -113,6 +126,24 @@ public:
 	std::string getType() const;
 };
 
+class LightningArcEffect : public TimedEffect
+{
+public:
+	float range = 0.0f;
+	float arcChance = 0.0f;
+	float arcRange = 0.0f;
+	float magnitude = 0.0f;
+	LightningArcEffect(float magnitude, float range, float arcChance, float arcRange);
+
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void tick(std::shared_ptr<Character> wielder) override;
+	void burst(std::shared_ptr<Character> target) override;
+
+	nlohmann::json toJson() const override;
+	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
+
+	std::string getType() const;
+};
 class SleepEffect : public TimedEffect
 {
 public:
@@ -204,9 +235,8 @@ class ExplosionEffect : public TimedEffect
 {
 public:
 	float range = 0.0f;
-	MagicDamageType magicDamage = MagicDamageType::NONE;
-	PhysicalDamageType physDamage = PhysicalDamageType::NONE;
-	ExplosionEffect(MagicDamageType magicDamage, PhysicalDamageType physDamage, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
+	DamageTypes damageType = DamageTypes::NONE;
+	ExplosionEffect(DamageTypes magicDamage, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 
 	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
 	void tick(std::shared_ptr<Character> target) override;

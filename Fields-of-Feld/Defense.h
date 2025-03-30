@@ -1,6 +1,5 @@
 #ifndef DEFENSE_H
 #define DEFENSE_H
-
 enum class Defense {
 	NONE,
 	SLASH,
@@ -18,4 +17,13 @@ enum class Defense {
 	DARK,
 	HOLY
 };
+namespace std {
+	template <>
+	struct hash<Defense> {
+		std::size_t operator()(const Defense& d) const noexcept {
+			return std::hash<int>()(static_cast<int>(d));
+		}
+	};
+}
+
 #endif // !DEFENSE_H

@@ -3,6 +3,8 @@
 #include "Effect.h"
 #include "Enchantment.h"
 #include <iostream>
+#include "HelperFunctions.h"
+#include "color.hpp"
 
 Creature::Creature(bool namedCharacter, bool isAlly, bool isAlive, bool active, bool alert,
 	std::string name, std::string description, float damage, float reach, float confidenceLevel,
@@ -12,156 +14,190 @@ Creature::Creature(bool namedCharacter, bool isAlly, bool isAlive, bool active, 
 	float maxPoisonPoints, float frostPoints, float maxFrostPoints,
 	float shockPoints, float maxShockPoints, float sleepPoints,
 	float maxSleepPoints, const Inventory& inventory, CombatFlags combatFlag)
-    : Character(isAlly, namedCharacter, isAlive, active, alert,
+	: Character(isAlly, namedCharacter, isAlive, active, alert,
 		name, description, confidenceLevel,
 		healthPoints, maxHealthPoints, fatiguePoints,
 		maxFatiguePoints, speed, critChance, dodgeChance,
-		 blockChance, bleedPoints, maxBleedPoints,
+		blockChance, bleedPoints, maxBleedPoints,
 		burnPoints, maxBurnPoints, poisonPoints,
-		 maxPoisonPoints, frostPoints, maxFrostPoints,
-		 shockPoints, maxShockPoints, sleepPoints,
-		 maxSleepPoints, inventory,
-		level, combatFlag), damage(damage), reach(reach) {
+		maxPoisonPoints, frostPoints, maxFrostPoints,
+		shockPoints, maxShockPoints, sleepPoints,
+		maxSleepPoints, inventory,
+		level, combatFlag), damage(damage), reach(reach), id(IDManager::getNextId()) {
 }
 
 nlohmann::json Creature::toJson() const {
-    nlohmann::json j;
+	nlohmann::json j;
 
-    j["type"] = "Creature";
-    j["id"] = id;
-    j["isAlly"] = isAlly;
-    j["namedCharacter"] = namedCharacter;
-    j["isAlive"] = isAlive;
-    j["active"] = active;
-    j["alert"] = alert;
+	//General Character Fields
+	j["isAlly"] = isAlly;
+	j["namedCharacter"] = namedCharacter;
+	j["isAlive"] = isAlive;
+	j["active"] = active;
+	j["alert"] = alert;
+	j["name"] = name;
+	j["description"] = description;
+	j["confidenceLevel"] = confidenceLevel;
+	j["healthPoints"] = healthPoints;
+	j["maxHealthPoints"] = maxHealthPoints;
+	j["fatiguePoints"] = fatiguePoints;
+	j["maxFatiguePoints"] = maxFatiguePoints;
+	j["speed"] = speed;
+	j["critChance"] = critChance;
+	j["dodgeChance"] = dodgeChance;
+	j["blockChance"] = blockChance;
+	j["bleedPoints"] = bleedPoints;
+	j["maxBleedPoints"] = maxBleedPoints;
+	j["burnPoints"] = burnPoints;
+	j["maxBurnPoints"] = maxBurnPoints;
+	j["poisonPoints"] = poisonPoints;
+	j["maxPoisonPoints"] = maxPoisonPoints;
+	j["frostPoints"] = frostPoints;
+	j["maxFrostPoints"] = maxFrostPoints;
+	j["shockPoints"] = shockPoints;
+	j["maxShockPoints"] = maxShockPoints;
+	j["sleepPoints"] = sleepPoints;
+	j["maxSleepPoints"] = maxSleepPoints;
 
-    j["name"] = name;
-    j["description"] = description;
+	j["type"] = "Creature";
+	j["id"] = id;
 
-    // Creature-specific
-    j["damage"] = damage;
-    j["reach"] = reach;
+	// Creature-specific
+	j["damage"] = damage;
+	j["reach"] = reach;
 
-    // Core stats
-    j["confidenceLevel"] = confidenceLevel;
-    j["healthPoints"] = healthPoints;
-    j["maxHealthPoints"] = maxHealthPoints;
-    j["fatiguePoints"] = fatiguePoints;
-    j["maxFatiguePoints"] = maxFatiguePoints;
-    j["speed"] = speed;
-    j["critChance"] = critChance;
-    j["dodgeChance"] = dodgeChance;
-    j["blockChance"] = blockChance;
+	//Combat flags
+	j["combatFlags"] = nlohmann::json::array();
+	for (const auto& flag : combatFlags)
+		j["combatFlags"].push_back(combatFlagToString(flag));
 
-    // Status buildup
-    j["bleedPoints"] = bleedPoints;
-    j["maxBleedPoints"] = maxBleedPoints;
-    j["burnPoints"] = burnPoints;
-    j["maxBurnPoints"] = maxBurnPoints;
-    j["poisonPoints"] = poisonPoints;
-    j["maxPoisonPoints"] = maxPoisonPoints;
-    j["frostPoints"] = frostPoints;
-    j["maxFrostPoints"] = maxFrostPoints;
-    j["shockPoints"] = shockPoints;
-    j["maxShockPoints"] = maxShockPoints;
-    j["sleepPoints"] = sleepPoints;
-    j["maxSleepPoints"] = maxSleepPoints;
+	//position
+	j["position"] = positionToJson(position);
 
-    // Position
-    j["position"] = position;
+	// Effects
+	for (const auto& eff : effects)
+		j["effects"].push_back(eff->toJson());
 
-    // Combat flags
-    for (const auto& flag : combatFlags)
-        j["combatFlags"].push_back(static_cast<int>(flag));
+	// Tags
+	for (const auto& tag : tags)
+		j["tags"].push_back(*tag);
 
-    // Effects
-    for (const auto& eff : effects)
-        j["effects"].push_back(eff->toJson());
+	// Inventory & defenses
+	j["inventory"] = inventory.toJson();
+	// Resistances / defenses
+	nlohmann::json defenseJson;
+	for (const auto& [key, value] : defenseValues) {
+		defenseJson[defenseToString(key)] = value;
+	}
+	j["defenseValues"] = defenseJson;
 
-    // Tags
-    for (const auto& tag : tags)
-        j["tags"].push_back(*tag);
-
-    // Inventory & defenses
-    j["inventory"] = inventory.toJson();
-    j["defenseValues"] = defenseValues;
-
-    return j;
+	return j;
 }
+
 
 
 std::shared_ptr<Character> Creature::fromJson(const nlohmann::json& j) {
-    auto c = std::make_shared<Creature>();
+	auto creature = std::make_shared<Creature>();
 
-    // Basic flags & identity
-    c->id = j.at("id");
-    c->isAlly = j.at("isAlly");
-    c->namedCharacter = j.at("namedCharacter");
-    c->isAlive = j.at("isAlive");
-    c->active = j.at("active");
-    c->alert = j.at("alert");
+	try {
+		// Base character info
+		if (j.contains("id")) creature->id = j["id"];
+		if (j.contains("isAlly")) creature->isAlly = j["isAlly"];
+		if (j.contains("namedCharacter")) creature->namedCharacter = j["namedCharacter"];
+		if (j.contains("isAlive")) creature->isAlive = j["isAlive"];
+		if (j.contains("active")) creature->active = j["active"];
+		if (j.contains("alert")) creature->alert = j["alert"];
+		if (j.contains("name")) creature->name = j["name"];
+		if (j.contains("description")) creature->description = j["description"];
+		if (j.contains("confidenceLevel")) creature->confidenceLevel = j["confidenceLevel"];
 
-    c->name = j.at("name");
-    c->description = j.at("description");
+		if (j.contains("healthPoints")) creature->healthPoints = j["healthPoints"];
+		if (j.contains("maxHealthPoints")) creature->maxHealthPoints = j["maxHealthPoints"];
+		if (j.contains("fatiguePoints")) creature->fatiguePoints = j["fatiguePoints"];
+		if (j.contains("maxFatiguePoints")) creature->maxFatiguePoints = j["maxFatiguePoints"];
+		if (j.contains("speed")) creature->speed = j["speed"];
+		if (j.contains("critChance")) creature->critChance = j["critChance"];
+		if (j.contains("dodgeChance")) creature->dodgeChance = j["dodgeChance"];
+		if (j.contains("blockChance")) creature->blockChance = j["blockChance"];
 
-    // Creature-specific values
-    c->damage = j.at("damage");
-    c->reach = j.at("reach");
+		// Status points
+		if (j.contains("bleedPoints")) creature->bleedPoints = j["bleedPoints"];
+		if (j.contains("maxBleedPoints")) creature->maxBleedPoints = j["maxBleedPoints"];
+		if (j.contains("burnPoints")) creature->burnPoints = j["burnPoints"];
+		if (j.contains("maxBurnPoints")) creature->maxBurnPoints = j["maxBurnPoints"];
+		if (j.contains("poisonPoints")) creature->poisonPoints = j["poisonPoints"];
+		if (j.contains("maxPoisonPoints")) creature->maxPoisonPoints = j["maxPoisonPoints"];
+		if (j.contains("frostPoints")) creature->frostPoints = j["frostPoints"];
+		if (j.contains("maxFrostPoints")) creature->maxFrostPoints = j["maxFrostPoints"];
+		if (j.contains("shockPoints")) creature->shockPoints = j["shockPoints"];
+		if (j.contains("maxShockPoints")) creature->maxShockPoints = j["maxShockPoints"];
+		if (j.contains("sleepPoints")) creature->sleepPoints = j["sleepPoints"];
+		if (j.contains("maxSleepPoints")) creature->maxSleepPoints = j["maxSleepPoints"];
 
-    // Core stats
-    c->confidenceLevel = j.at("confidenceLevel");
-    c->healthPoints = j.at("healthPoints");
-    c->maxHealthPoints = j.at("maxHealthPoints");
-    c->fatiguePoints = j.at("fatiguePoints");
-    c->maxFatiguePoints = j.at("maxFatiguePoints");
-    c->speed = j.at("speed");
-    c->critChance = j.at("critChance");
-    c->dodgeChance = j.at("dodgeChance");
-    c->blockChance = j.at("blockChance");
+		// Creature-specific
+		if (j.contains("damage")) creature->damage = j["damage"];
+		if (j.contains("reach")) creature->reach = j["reach"];
 
-    // Status buildup values
-    c->bleedPoints = j.at("bleedPoints");
-    c->maxBleedPoints = j.at("maxBleedPoints");
-    c->burnPoints = j.at("burnPoints");
-    c->maxBurnPoints = j.at("maxBurnPoints");
-    c->poisonPoints = j.at("poisonPoints");
-    c->maxPoisonPoints = j.at("maxPoisonPoints");
-    c->frostPoints = j.at("frostPoints");
-    c->maxFrostPoints = j.at("maxFrostPoints");
-    c->shockPoints = j.at("shockPoints");
-    c->maxShockPoints = j.at("maxShockPoints");
-    c->sleepPoints = j.at("sleepPoints");
-    c->maxSleepPoints = j.at("maxSleepPoints");
+		// Combat flags
+		if (j.contains("combatFlags") && j["combatFlags"].is_array()) {
+			for (const auto& f : j["combatFlags"])
+				creature->combatFlags.push_back(stringToCombatFlag(f.get<std::string>()));
+		}
 
-    // Positioning
-    c->position = j.at("position");
+		// Position map
+		if (j.contains("position") && j["position"].is_object()) {
+			creature->position = positionFromJson(j["position"]);
+		}
 
-    // Combat behavior
-    for (const auto& flag : j["combatFlags"])
-        c->combatFlags.push_back(static_cast<CombatFlags>(flag.get<int>()));
+		// Effects
+		if (j.contains("effects") && j["effects"].is_array()) {
+			for (const auto& eff : j["effects"]) {
+				creature->effects.push_back(Effect::fromJson(eff));
+			}
+		}
 
-    // Inventory
-    c->inventory.fromJson(j["inventory"]);
+		// Tags
+		if (j.contains("tags") && j["tags"].is_array()) {
+			for (const auto& tag : j["tags"]) {
+				creature->tags.push_back(std::make_shared<std::string>(tag.get<std::string>()));
+			}
+		}
 
-    // Effects
-    for (const auto& eff : j["effects"])
-        c->effects.push_back(Effect::fromJson(eff));
+		// Inventory
+		if (j.contains("inventory")) {
+			creature->inventory.fromJson(j["inventory"]);
+		}
 
-    // Tags
-    for (const auto& tag : j["tags"])
-        c->tags.push_back(std::make_shared<std::string>(tag.get<std::string>()));
+		// Defense values
+		if (j.contains("defenseValues") && j["defenseValues"].is_object()) {
+			for (const auto& [key, value] : j["defenseValues"].items()) {
+				creature->defenseValues[stringToDefense(key)] = value.get<float>();
+			}
+		}
+	}
+	catch (const std::exception& e) {
+		std::cerr << "[ERROR] Failed to load Creature from JSON: " << e.what() << std::endl;
+		return nullptr;
+	}
 
-    // Resistances / defenses
-    c->defenseValues = j.at("defenseValues");
-
-    return c;
+	return creature;
 }
 
-void Creature::takeDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon, std::shared_ptr<Ammunition> ammunition,
-	std::shared_ptr<ThrownConsumable> consumable, Spell* spell, std::optional<std::vector<std::shared_ptr<Character>>>& allies,
-	std::optional<std::vector<std::shared_ptr<Character>>>& enemyAllies)
+void Creature::printCreatureStats()
 {
-	std::cout << "Creature taking damage" << std::endl;
-	return;
-
+	std::cout << "=---->" << std::endl;
+	std::cout << dye::light_yellow(" Name: ") << name << std::endl;
+	std::cout << "=---->" << std::endl;
+	std::cout << dye::light_yellow(" Health Points: ") << healthPoints << " / " << maxHealthPoints << std::endl;
+	std::cout << dye::light_yellow(" Fatigue Points: ") << fatiguePoints << " / " << maxFatiguePoints << std::endl;
+	std::cout << "=---->" << std::endl;
+	std::cout << dye::light_yellow(" Bleed Points: ") << bleedPoints << " / " << maxBleedPoints << std::endl;
+	std::cout << dye::light_yellow(" Burn Points: ") << burnPoints << " / " << maxBurnPoints << std::endl;
+	std::cout << dye::light_yellow(" Poison Points: ") << poisonPoints << " / " << maxPoisonPoints << std::endl;
+	std::cout << dye::light_yellow(" Frost Points: ") << frostPoints << " / " << maxFrostPoints << std::endl;
+	std::cout << dye::light_yellow(" Shock Points: ") << shockPoints << " / " << maxShockPoints << std::endl;
+	std::cout << dye::light_yellow(" Sleep Points: ") << sleepPoints << " / " << maxSleepPoints << std::endl;
+	std::cout << "=---->" << std::endl;
+	std::cout << "Damage: " << damage << std::endl;
+	std::cout << "Reach: " << reach << std::endl;
 }

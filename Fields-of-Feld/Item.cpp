@@ -8,26 +8,27 @@
 #include "Food.h"
 #include "Potion.h"
 #include "ThrownConsumable.h"
-
+#include "LootItem.h"
 #include <string>
+#include "Drink.h"
 #include <iostream>
+#include <memory>
+#include <nlohmann/json.hpp>
+#include "IDManager.h"
 
-int Item::nextId = 1;
 
-Item::Item(bool hasBeenInitialized, std::string name, std::string description , float value, float weight, float quantity, Item::EquipSlots slot) : id(nextId++),
-	hasBeenInitialized(hasBeenInitialized), name(name), description(description)
-	,value(value), weight(weight), quantity(quantity), slot(slot) {
+Item::Item( std::string name, std::string description , float value, float weight, float quantity, Item::EquipSlots slot) : 
+	id(IDManager::getNextId()), name(name), description(description) ,value(value), weight(weight), quantity(quantity), slot(slot) {
 }
-
 
 std::shared_ptr<Item> Item::fromJson(const nlohmann::json& j)
 {
-	std::string type = j.at("type");
-	if (type == "Consumable")
-	{
-		return Consumable::fromJson(j);
+	if (!j.contains("type") || !j["type"].is_string()) {
+		throw std::runtime_error("Missing or invalid 'type' field in item JSON.");
 	}
-	else if (type == "Weapon")
+
+	std::string type = j["type"].get<std::string>();
+	if (type == "Weapon")
 	{
 		return Weapon::fromJson(j);
 	}
@@ -47,6 +48,10 @@ std::shared_ptr<Item> Item::fromJson(const nlohmann::json& j)
 	{
 		return Book::fromJson(j);
 	}
+	else if (type == "Drink")
+	{
+		return Drink::fromJson(j);
+	}
 	else if (type == "Food")
 	{
 		return Food::fromJson(j);
@@ -58,6 +63,10 @@ std::shared_ptr<Item> Item::fromJson(const nlohmann::json& j)
 	else if (type == "ThrownConsumable")
 	{
 		return ThrownConsumable::fromJson(j);
+	}
+	else if (type == "Loot")
+	{
+		return LootItem::fromJson(j);
 	}
 	else
 	{

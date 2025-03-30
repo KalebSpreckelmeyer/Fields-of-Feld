@@ -3,11 +3,12 @@
 #include <string>
 #include "vector"
 #include "optional"
-#include "MagicDamageType.h"
-#include "PhysicalDamageType.h"
+#include "DamageTypes.h"
+#include "Defense.h"
 #include "unordered_map"
 #include "nlohmann/json.hpp"
 #include "memory"
+#include "IDManager.h"
 
 using json = nlohmann::json;
 
@@ -16,9 +17,9 @@ class Character;
 class Effect : public std::enable_shared_from_this<Effect>
 {
 public:
+	int id;
 
-	std::unordered_map<PhysicalDamageType, float> physicalDamage;
-	std::unordered_map<MagicDamageType, float> magicDamage;
+	std::unordered_map<DamageTypes, float> damageValues;
 
 	std::string name = "EFFECT NAME";
 	std::string description = "EFFECT DESC";
@@ -48,13 +49,9 @@ public:
 
 	virtual std::string getType() const = 0;
 
-	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
+	void setDamage(DamageTypes damageType, float damage);
 
-	void setMagicDamage(MagicDamageType magType, float magDamage);
-
-	float getPhysicalDamage(PhysicalDamageType physType);
-
-	float getMagicDamage(MagicDamageType magType);
+	float getDamage(DamageTypes damageType);
 
 	float getEffectDamage(std::shared_ptr<Character> target, std::shared_ptr<Effect> effect);
 

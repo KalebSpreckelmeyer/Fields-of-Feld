@@ -26,8 +26,17 @@ public:
 	void getEquippedWeapons(std::shared_ptr<Weapon>& mainHand, std::shared_ptr<Weapon>& offHand, std::shared_ptr<Weapon>& reserve1, 
 		std::shared_ptr<Weapon>& reserve2);
 	
+	void printInventory() const;
 	void addToBackpack(std::shared_ptr<Item> item);
 	void addToEquippedItems(std::shared_ptr<Item> item);
+	//DESC: Fetches the index of an item in the backpackItems vector, returning -1 if not found
+	//PRE: Item ideally should exist. If it doesnt, preare for it to return -1
+	//POST: Returns the index of the item in the backpackItems vector
+	int findItemIndexById(int id);
+	//DESC:
+	//PRE:
+	//POST:
+	void swapEquippedItems(std::shared_ptr<Weapon> mainHand, std::shared_ptr<Weapon> offHand, std::shared_ptr<Weapon> reserve1, std::shared_ptr<Weapon> reserve2);
 	void save(const std::string& fileName) const;
 	void load(const std::string& fileName);
 	void print() const;

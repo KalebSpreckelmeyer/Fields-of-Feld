@@ -2,12 +2,13 @@
 #include <string>
 
 LootItem::LootItem(std::string name, std::string description, float value, float weight, float quantity)
-	: Item(true, name, description, value, weight, quantity, EquipSlots::BACKPACK)
+	: Item(name, description, value, weight, quantity, EquipSlots::BACKPACK), id(IDManager::getNextId())
 {
 }
 
 nlohmann::json LootItem::toJson() const {
-    return {
+	return {
+		{"id", id},
         {"type", "Loot"},
         {"name", name},
         {"description", description},
@@ -18,11 +19,14 @@ nlohmann::json LootItem::toJson() const {
 }
 
 std::shared_ptr<Item> LootItem::fromJson(const nlohmann::json& j) {
-    return std::make_shared<LootItem>(
-        j.at("name"),
-        j.at("description"),
-        j.at("value"),
-		j.at("weight"),
-		j.at("quantity")
-    );
+    auto loot = std::make_shared<LootItem>();
+
+    if (j.contains("id")) loot->id = j["id"];
+    if (j.contains("name")) loot->name = j["name"];
+    if (j.contains("description")) loot->description = j["description"];
+    if (j.contains("value")) loot->value = j["value"];
+    if (j.contains("weight")) loot->weight = j["weight"];
+    if (j.contains("quantity")) loot->quantity = j["quantity"];
+
+    return loot;
 }

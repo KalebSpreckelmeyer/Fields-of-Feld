@@ -11,23 +11,14 @@
 #include "LootItem.h"
 #include "Creature.h"
 
-Spell::Spell(std::string name, std::string description, bool areaOfEffect, bool summon, bool doesDamage, bool healing, bool useOnAlly, bool useOnSelf, bool buff, int duration,
-	float magnitude, bool stackable, int stacks, int maxStacks, float intelligenceScaling, float faithScaling, float arcaneScaline,
-	float luckScaling, float charismaScaling, float fatigueCost, float attackSpeed, float range) :
+Spell::Spell(std::string name, std::string description, bool useOnAlly, bool useOnSelf, bool useOnEnemy, float intelligenceScaling, 
+	float faithScaling, float arcaneScaline, float luckScaling, float charismaScaling, float fatigueCost, float attackSpeed, float range) :
+	id(IDManager::getNextId()),
 	name(name),
 	description(description),
-	areaOfEffect(areaOfEffect), 
-	summon(summon), 
-	doesDamage(doesDamage), 
-	healing(healing), 
 	useOnAlly(useOnAlly), 
 	useOnSelf(useOnSelf), 
-	buff(buff), 
-	duration(duration),
-	magnitude(magnitude),
-	stackable(stackable),
-	stacks(stacks),
-	maxStacks(maxStacks),
+	useOnEnemy(useOnEnemy),
 	intelligenceScaling(intelligenceScaling),
 	faithScaling(faithScaling),
 	arcaneScaling(arcaneScaline),
@@ -40,190 +31,102 @@ Spell::Spell(std::string name, std::string description, bool areaOfEffect, bool 
 
 }
 
+Spell::Spell() 
+{
+	id = IDManager::getNextId();
+}
 nlohmann::json Spell::toJson() const {
-	nlohmann::json j;
-	j["type"] = "Spell";
-	j["name"] = name;
-	j["description"] = description;
-	j["range"] = range;
-	j["duration"] = duration;
-	j["magnitude"] = magnitude;
-	j["stackable"] = stackable;
-	j["stacks"] = stacks;
-	j["maxStacks"] = maxStacks;
-	j["areaOfEffect"] = areaOfEffect;
-	j["useOnSelf"] = useOnSelf;
-	j["healing"] = healing;
-	j["useOnAlly"] = useOnAlly;
-	j["fatigueCost"] = fatigueCost;
-	j["arcaneScaling"] = arcaneScaling;
-	j["intelligenceScaling"] = intelligenceScaling;
-	j["faithScaling"] = faithScaling;
-	j["charismaScaling"] = charismaScaling;
-	j["luckScaling"] = luckScaling;
-	j["attackSpeed"] = attackSpeed;
-	j["doesDamage"] = doesDamage;
-	j["buff"] = buff;
-	j["summon"] = summon;
+	nlohmann::json j = {
+		{"type", "Spell"},
+		{"id", id},
+		{"name", name},
+		{"description", description},
+		{"range", range},
+		{"useOnSelf", useOnSelf},
+		{"useOnAlly", useOnAlly},
+		{"useOnEnemy", useOnEnemy},
+		{"fatigueCost", fatigueCost},
+		{"arcaneScaling", arcaneScaling},
+		{"intelligenceScaling", intelligenceScaling},
+		{"faithScaling", faithScaling},
+		{"charismaScaling", charismaScaling},
+		{"luckScaling", luckScaling},
+		{"attackSpeed", attackSpeed},
+		{"effects", nlohmann::json::array()}
+	};
 
-	for (const auto& effect : effects)
+	for (const auto& effect : effects) {
 		j["effects"].push_back(effect->toJson());
+	}
+
 	return j;
 }
 
+
 std::shared_ptr<Spell> Spell::fromJson(const nlohmann::json& j) {
-	auto spell = std::make_shared<Spell>(j.at("name"),
-		j.at("description"),
-		j.at("range"),
-		j.at("duration"),
-		j.at("magnitude"),
-		j.at("stackable"),
-		j.at("stacks"),	
-		j.at("maxStacks"),
-		j.at("areaOfEffect"),
-		j.at("useOnSelf"),
-		j.at("healing"),
-		j.at("useOnAlly"),
-		j.at("fatigueCost"),
-		j.at("arcaneScaling"),
-		j.at("intelligenceScaling"),
-		j.at("faithScaling"),
-		j.at("charismaScaling"),
-		j.at("luckScaling"),
-		j.at("attackSpeed"),
-		j.at("doesDamage"),
-		j.at("buff"),
-		j.at("summon"));
-	for (const auto& eff : j["effects"])
-		spell->effects.push_back(Effect::fromJson(eff));
+	auto spell = std::make_shared<Spell>();
+
+	try {
+		if (j.contains("id")) spell->id = j.at("id");
+		if (j.contains("name")) spell->name = j.at("name");
+		if (j.contains("description")) spell->description = j.at("description");
+		if (j.contains("range")) spell->range = j.at("range");
+		if (j.contains("useOnSelf")) spell->useOnSelf = j.at("useOnSelf");
+		if (j.contains("useOnAlly")) spell->useOnAlly = j.at("useOnAlly");
+		if (j.contains("useOnEnemy")) spell->useOnEnemy = j.at("useOnEnemy");
+		if (j.contains("fatigueCost")) spell->fatigueCost = j.at("fatigueCost");
+		if (j.contains("arcaneScaling")) spell->arcaneScaling = j.at("arcaneScaling");
+		if (j.contains("intelligenceScaling")) spell->intelligenceScaling = j.at("intelligenceScaling");
+		if (j.contains("faithScaling")) spell->faithScaling = j.at("faithScaling");
+		if (j.contains("charismaScaling")) spell->charismaScaling = j.at("charismaScaling");
+		if (j.contains("luckScaling")) spell->luckScaling = j.at("luckScaling");
+		if (j.contains("attackSpeed")) spell->attackSpeed = j.at("attackSpeed");
+
+		if (j.contains("effects") && j["effects"].is_array()) {
+			for (const auto& eff : j["effects"]) {
+				spell->effects.push_back(Effect::fromJson(eff));
+			}
+		}
+	}
+	catch (const nlohmann::json::exception& e) {
+		std::cerr << "[ERROR] Failed to load Spell from JSON: " << e.what() << std::endl;
+		return nullptr;
+	}
+
 	return spell;
 }
 
-float Spell::calculateSpellDamage(std::shared_ptr<Character> target, Spell spell)
+void Spell::setStatRequirements(StatScaling stat, int value)
 {
-	if (std::dynamic_pointer_cast<Human>(target))
+	statRequirements[stat] = value;
+}
+
+std::unordered_map<std::string, int> Spell::getStatRequirements()
+{
+	std::string statArray[] = { "None", "Strength", "Agility", "Charisma", "Intelligence", "Arcane", "Faith", "Luck" };
+	std::unordered_map<std::string, int> statRequirementsStrings;
+	for (const auto& [stat, value] : statRequirements)
 	{
-		std::shared_ptr<Human> human = std::dynamic_pointer_cast<Human>(target);
-		//GET ARMOR RESISTANCES
-		float cumulativeSlashResist = 0;
-		float cumulativePierceResist = 0;
-		float cumulativeBluntResist = 0;
-		float cumulativeChopResist = 0;
-
-		float cumulativeMagicResist = 0;
-		float cumulativeFireResist = 0;
-		float cumulativeIceResist = 0;
-		float cumulativeShockResist = 0;
-		float cumulativePoisonResist = 0;
-		float cumulativeBleedResist = 0;
-		float cumulativeSleepResist = 0;
-		float cumulativeDarkResist = 0;
-		float cumulativeHolyResist = 0;
-		float cumulativeWindResist = 0;
-
-		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
-		{
-			std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
-			if (!armor) continue;
-				cumulativeSlashResist += armor->getPhysicalResistance(PhysicalDamageType::SLASH);
-				cumulativePierceResist += armor->getPhysicalResistance(PhysicalDamageType::PIERCE);
-				cumulativeBluntResist += armor->getPhysicalResistance(PhysicalDamageType::BLUNT);
-				cumulativeChopResist += armor->getPhysicalResistance(PhysicalDamageType::CHOP);
-				cumulativeMagicResist += armor->getMagicResistance(MagicDamageType::MAGIC);
-				cumulativeFireResist += armor->getMagicResistance(MagicDamageType::FIRE);
-				cumulativeIceResist += armor->getMagicResistance(MagicDamageType::FROST);
-				cumulativeShockResist += armor->getMagicResistance(MagicDamageType::SHOCK);
-				cumulativeWindResist += armor->getMagicResistance(MagicDamageType::WIND);
-				cumulativePoisonResist += armor->getMagicResistance(MagicDamageType::POISON);
-				cumulativeBleedResist += armor->getMagicResistance(MagicDamageType::BLEED);
-				cumulativeSleepResist += armor->getMagicResistance(MagicDamageType::SLEEP);
-				cumulativeDarkResist += armor->getMagicResistance(MagicDamageType::DARK);
-				cumulativeHolyResist += armor->getMagicResistance(MagicDamageType::HOLY);
-			
-		}
-
-		cumulativeSlashResist = max(cumulativeSlashResist, 0.0f);
-		cumulativePierceResist = max(cumulativePierceResist, 0.0f);
-		cumulativeBluntResist = max(cumulativeBluntResist, 0.0f);
-		cumulativeChopResist = max(cumulativeChopResist, 0.0f);
-
-		cumulativeMagicResist = max(cumulativeMagicResist, 0.0f);
-		cumulativeFireResist = max(cumulativeFireResist, 0.0f);
-		cumulativeIceResist = max(cumulativeIceResist, 0.0f);
-		cumulativeShockResist = max(cumulativeShockResist, 0.0f);
-		cumulativePoisonResist = max(cumulativePoisonResist, 0.0f);
-		cumulativeBleedResist = max(cumulativeBleedResist, 0.0f);
-		cumulativeSleepResist = max(cumulativeSleepResist, 0.0f);
-		cumulativeDarkResist = max(cumulativeDarkResist, 0.0f);
-		cumulativeHolyResist = max(cumulativeHolyResist, 0.0f);
-		cumulativeWindResist = max(cumulativeWindResist, 0.0f);
-
-		//damage = damage - (damage * (resistance / 500)) - max won't let it go below 0
-		float cumulativeSlashDamage = spell.getPhysicalDamage(PhysicalDamageType::SLASH) - (spell.getPhysicalDamage(PhysicalDamageType::SLASH) * (cumulativeSlashResist / 500));
-		cumulativeSlashDamage = max(cumulativeSlashDamage, 0.0f);
-		float cumulativePierceDamage = spell.getPhysicalDamage(PhysicalDamageType::PIERCE) - (spell.getPhysicalDamage(PhysicalDamageType::PIERCE) * (cumulativePierceResist / 500));
-		cumulativePierceDamage = max(cumulativePierceDamage, 0.0f);
-		float cumulativeBluntDamage = spell.getPhysicalDamage(PhysicalDamageType::BLUNT) - (spell.getPhysicalDamage(PhysicalDamageType::BLUNT) * (cumulativeBluntResist / 500));
-		cumulativeBluntDamage = max(cumulativeBluntDamage, 0.0f);
-		float cumulativeChopDamage = spell.getPhysicalDamage(PhysicalDamageType::CHOP) - (spell.getPhysicalDamage(PhysicalDamageType::CHOP) * (cumulativeChopResist / 500));
-		cumulativeChopDamage = max(cumulativeChopDamage, 0.0f);
-
-		float cumulativeMagicDamage = spell.getMagicDamage(MagicDamageType::MAGIC) - (spell.getMagicDamage(MagicDamageType::MAGIC) * (cumulativeMagicResist / 500));
-		cumulativeMagicDamage = max(cumulativeMagicDamage, 0.0f);
-		float cumulativeFireDamage = spell.getMagicDamage(MagicDamageType::FIRE) - (spell.getMagicDamage(MagicDamageType::FIRE) * (cumulativeFireResist / 500));
-		cumulativeFireDamage = max(cumulativeFireDamage, 0.0f);
-		float cumulativeIceDamage = spell.getMagicDamage(MagicDamageType::FROST) - (spell.getMagicDamage(MagicDamageType::FROST) * (cumulativeIceResist / 500));
-		cumulativeIceDamage = max(cumulativeIceDamage, 0.0f);
-		float cumulativeShockDamage = spell.getMagicDamage(MagicDamageType::SHOCK) - (spell.getMagicDamage(MagicDamageType::SHOCK) * (cumulativeShockResist / 500));
-		cumulativeShockDamage = max(cumulativeShockDamage, 0.0f);
-		float cumulativePoisonDamage = spell.getMagicDamage(MagicDamageType::POISON) - (spell.getMagicDamage(MagicDamageType::POISON) * (cumulativePoisonResist / 500));
-		cumulativePoisonDamage = max(cumulativePoisonDamage, 0.0f);
-		float cumulativeBleedDamage = spell.getMagicDamage(MagicDamageType::BLEED) - (spell.getMagicDamage(MagicDamageType::BLEED) * (cumulativeBleedResist / 500));
-		cumulativeBleedDamage = max(cumulativeBleedDamage, 0.0f);
-		float cumulativeSleepDamage = spell.getMagicDamage(MagicDamageType::SLEEP) - (spell.getMagicDamage(MagicDamageType::SLEEP) * (cumulativeSleepResist / 500));
-		cumulativeSleepDamage = max(cumulativeSleepDamage, 0.0f);
-		float cumulativeDarkDamage = spell.getMagicDamage(MagicDamageType::DARK) - (spell.getMagicDamage(MagicDamageType::DARK) * (cumulativeDarkResist / 500));
-		cumulativeDarkDamage = max(cumulativeDarkDamage, 0.0f);
-		float cumulativeHolyDamage = spell.getMagicDamage(MagicDamageType::HOLY) - (spell.getMagicDamage(MagicDamageType::HOLY) * (cumulativeHolyResist / 500));
-		cumulativeHolyDamage = max(cumulativeHolyDamage, 0.0f);
-		float cumulativeWindDamage = spell.getMagicDamage(MagicDamageType::WIND) - (spell.getMagicDamage(MagicDamageType::WIND) * (cumulativeWindResist / 500));
-		cumulativeWindDamage = max(cumulativeWindDamage, 0.0f);
-
-		//DAMAGE AFTER RESISTANCES = damage of all damages after resistances applied added together	
-		float spellDamge = (cumulativeSlashDamage + cumulativePierceDamage + cumulativeBluntDamage + cumulativeChopDamage +
-			cumulativeMagicDamage + cumulativeFireDamage + cumulativeIceDamage + cumulativeShockDamage + cumulativePoisonDamage +
-			cumulativeBleedDamage + cumulativeSleepDamage + cumulativeDarkDamage + cumulativeHolyDamage + cumulativeWindDamage);
-		spellDamge = max(spellDamge, 0.0f);
-		return spellDamge;
+		statRequirementsStrings[statArray[static_cast<int>(stat)]] = value;
 	}
-	else
+	return statRequirementsStrings;
+}
+bool Spell::checkSpellRequirements(std::shared_ptr<Spell> spell, std::shared_ptr<Character> caster)
+{
+	bool hasRequirements = true;
+	std::unordered_map<std::string, int> requirements;
+	requirements = spell->getStatRequirements();
+	for (auto& [stat, value] : requirements)
 	{
-		//UNDER CONSTRUCTION
-		return 0;
+		if (stat == "Strength" && value < caster->getStrength()) hasRequirements = false;
+		if (stat == "Agility" && value < caster->getAgility()) hasRequirements = false;
+		if (stat == "Intelligence" && value < caster->getIntelligence()) hasRequirements = false;
+		if (stat == "Faith" && value < caster->getFaith()) hasRequirements = false;
+		if (stat == "Luck" && value < caster->getLuck()) hasRequirements = false;
+		if (stat == "Arcane" && value < caster->getArcane()) hasRequirements = false;
+		if (stat == "Charisma" && value < caster->getCharisma()) hasRequirements = false;
 	}
-
-}
-
-void Spell::setPhysicalDamage(PhysicalDamageType physType, float physDamage)
-{
-	physicalDamages[physType] = physDamage;
-}
-
-void Spell::setMagicDamage(MagicDamageType magType, float magDamage)
-{
-	magicDamages[magType] = magDamage;
-}
-
-float Spell::getPhysicalDamage(PhysicalDamageType physType)
-{
-	auto it = physicalDamages.find(physType);
-	return (it != physicalDamages.end()) ? it->second : 0.0f;
-}
-
-float Spell::getMagicDamage(MagicDamageType magType)
-{
-	auto it = magicDamages.find(magType);
-	return (it != magicDamages.end()) ? it->second : 0.0f;
+	return hasRequirements;
 }
 
 
@@ -243,7 +146,7 @@ std::shared_ptr<Spell> Spell::getBonetrousleEffect(Character& caster)
 	float statInvestment = caster.getArcane();
 
 	float arcaneBonus = caster.getArcane() * 1.5f;  
-	float bonetrousleDamage = (arcaneBonus * (arcaneBonus / (arcaneBonus + 50))) * 0.3;
+	float bonetrousleDamage = (arcaneBonus * (arcaneBonus / (arcaneBonus + 50))) * 3;
 	float bonetrousleBleed = (arcaneBonus * (arcaneBonus / (arcaneBonus + 50))) * 3;
 
 	std::shared_ptr<Spell> bonetrousle;
@@ -251,29 +154,30 @@ std::shared_ptr<Spell> Spell::getBonetrousleEffect(Character& caster)
 	if (statInvestment < 30)
 	{
 		bonetrousle = std::make_shared<Spell>("Bonetrousle I", "A flurry of sharpened bone fragments pelt the target",
-			false, false, true, false, false, false, false, 1, bonetrousleDamage, false, 1, 1, 0, 0, 100, 0, 0, 50, 70, 75);
+			false, false, true, 0, 0, 100, 0, 0, 50, 70, 75);
 		bonetrousle->effects.push_back(std::make_shared<BleedEffect>(1, bonetrousleBleed, false, 1, 1));
-		bonetrousle->setPhysicalDamage(PhysicalDamageType::PIERCE, bonetrousleDamage * .8);
-		bonetrousle->setMagicDamage(MagicDamageType::DARK, bonetrousleDamage * .2);
+		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::BLUNT, bonetrousleDamage * 0.8));
+		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::DARK, bonetrousleDamage * 0.2));
+
 
 		return bonetrousle;
 	}
 	else if (statInvestment < 60)
 	{
 		bonetrousle = std::make_shared<Spell>("Bonetrousle II", "A flurry of sharpened bone pieces pelt the target", 
-			false, false, true, false, false, false, false, 1, bonetrousleDamage, false, 1, 1, 0, 0, 100, 0, 0, 60, 80, 75);
+			false, false, true, 0, 0, 100, 0, 0, 60, 80, 75);
 		bonetrousle->effects.push_back(std::make_shared<BleedEffect>(1, bonetrousleBleed, false, 1, 1));
-		bonetrousle->setPhysicalDamage(PhysicalDamageType::PIERCE, bonetrousleDamage * .8);
-		bonetrousle->setMagicDamage(MagicDamageType::DARK, bonetrousleDamage * .2);
+		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::BLUNT, bonetrousleDamage * 0.8));
+		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::DARK, bonetrousleDamage * 0.2));
 		return bonetrousle;
 	}
 	else
 	{
 		bonetrousle = std::make_shared<Spell>("Bonetrousle III", "A flurry of sharpened bone chunks pelt the target", 
-			false, false, true, false, false, false, false, 1, bonetrousleDamage, false, 1, 1, 0, 0, 100, 0, 0, 70, 90, 75);
+			false, false, true, 0, 0, 100, 0, 0, 70, 90, 75);
 		bonetrousle->effects.push_back(std::make_shared<BleedEffect>(1, bonetrousleBleed, false, 1, 1));
-		bonetrousle->setPhysicalDamage(PhysicalDamageType::PIERCE, bonetrousleDamage * .8);
-		bonetrousle->setMagicDamage(MagicDamageType::DARK, bonetrousleDamage * .2);
+		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::BLUNT, bonetrousleDamage * 0.8));
+		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::DARK, bonetrousleDamage * 0.2));
 		return bonetrousle;
 	}
 }
@@ -289,7 +193,8 @@ std::shared_ptr<Spell> Spell::getSummonAnimalAllyEffect(Character& caster)
 		Inventory inventory;
 		inventory.addToBackpack(std::make_shared<LootItem>("Vulture Feather", "A feather from a vulture", 40, 0.1, 5));
 		std::shared_ptr<Creature> vulture = std::make_shared<Creature>(false, true, true, true, true, "Vulture", "A large vulture", 100, 20, 100, 200, 200, 200, 5, 20, 0, 200, 200, 200, 2000, 200, 200, 200, 200, 200, 200, 200, 200, inventory, Character::CombatFlags::NEUTRAL);
-		animalAlly = std::make_shared<Spell>("Summon Vulture", "A large vulture will come to your aid in combat!", false, true, false, false, false, true, false, 10, 1, false, 1, 1, 0, 0, 100, 0, 0, 100, 1, 0);
+		animalAlly = std::make_shared<Spell>("Summon Vulture", "A large vulture will come to your aid in combat!",
+			false, true, false, 0, 0, 100, 0, 0, 100, 1, 0);
 		animalAlly->effects.push_back(std::make_shared<Summon>(vulture, 10, 1, false, 1, 1));
 		return animalAlly;
 	}
@@ -299,7 +204,8 @@ std::shared_ptr<Spell> Spell::getSummonAnimalAllyEffect(Character& caster)
 		inventory.addToBackpack(std::make_shared<LootItem>("Wolf Pelt", "A pelt from a wolf", 150.0f, 0.5f, 1.0f));
 		std::shared_ptr<Creature> wolf = std::make_shared<Creature>(false, true, true, true, false, "Wolf", "A rugged wolf", 150, 20, 100, 300, 300, 250, 5, 20, 0, 200, 200, 200, 2000,
 			200, 200, 200, 200, 200, 200, 200, 200, inventory, Character::CombatFlags::NEUTRAL);
-		animalAlly = std::make_shared<Spell>("Summon Wolf", "A rugged wolf will come to your aid in combat!", false, true, false, false, false, true, false, 10, 1, false, 1, 1, 0, 0, 125, 0, 0, 100, 1, 0);
+		animalAlly = std::make_shared<Spell>("Summon Wolf", "A rugged wolf will come to your aid in combat!", 
+			false, true, false, 0, 0, 100, 0, 0, 125, 1, 0);
 		animalAlly->effects.push_back(std::make_shared<Summon>(wolf, 10, 1, false, 1, 1));
 		return animalAlly;
 	}
@@ -309,7 +215,8 @@ std::shared_ptr<Spell> Spell::getSummonAnimalAllyEffect(Character& caster)
 		inventory.addToBackpack(std::make_shared<LootItem>("Bear Pelt", "A pelt from a bear", 300.0f, 5.0f, 1.0f));
 		std::shared_ptr<Creature> bear = std::make_shared<Creature>(false, true, true, true, false, "Bear", "A mountain bear", 250, 20, 100, 400, 400, 200, 5, 20, 0, 200, 200, 200, 2000,
 			200, 200, 200, 200, 200, 200, 200, 200, inventory, Character::CombatFlags::NEUTRAL);
-		animalAlly = std::make_shared<Spell>("Summon Bear", "A mountain bear will come to your aid in combat!", false, true, false, false, false, true, false, 10, 1, false, 1, 1, 0, 0, 150, 0, 0, 100, 1, 0);
+		animalAlly = std::make_shared<Spell>("Summon Bear", "A mountain bear will come to your aid in combat!",
+			false, true, false, 0, 0, 100, 0, 0, 150, 1, 0);
 		animalAlly->effects.push_back(std::make_shared<Summon>(bear, 10, 1, false, 1, 1));
 		return animalAlly;
 	}
@@ -322,8 +229,8 @@ std::shared_ptr<Spell> Spell::getOakenArmorEffect(Character& caster)
 	//Determine which version of the spell is the one used by the player
 	if (statInvestment < 30)
 	{
-		oakArmor = std::make_shared<Spell>("Oaken Armor I", "The trees give willingly when asked nicely. Project a thin layer of magically strengthened wood upon the surface of your body increasing physical damage negation for 3 turns. Investment in arcane causes the armor to gain a healing effect", 
-			false, false, false, false, false, true, true, 3, 100, false, 1, 1, 0, 0, 100, 0, 0, 75, 1, 0);
+		oakArmor = std::make_shared<Spell>("Oaken Armor I", "The trees give willingly when asked nicely. Project a thin layer of magically strengthened wood upon the surface of your body increasing physical damage negation for 3 turns. Investment in arcane causes the armor to gain a healing effect",
+			false, true, false, 0, 0, 100, 0, 0, 75, 1, 0);
 		oakArmor->effects.push_back(std::make_shared<ArmorBuff>(Defense::BLUNT, 3, 75, false, 1, 1));
 		oakArmor->effects.push_back(std::make_shared<ArmorBuff>(Defense::CHOP, 3, 75, false, 1, 1));
 		oakArmor->effects.push_back(std::make_shared<ArmorBuff>(Defense::PIERCE, 3, 75, false, 1, 1));
@@ -333,7 +240,7 @@ std::shared_ptr<Spell> Spell::getOakenArmorEffect(Character& caster)
 	else if (statInvestment < 60)
 	{
 		oakArmor = std::make_shared<Spell>("Oaken Armor II", "The trees give willingly when asked nicely. Project a thin layer of magically strengthened wood upon the surface of your body increasing physical damage negation for 3 turns. Investment in arcane causes the armor to gain a healing effect",
-			false, false, false, false, false, true, true, 3, 100, false, 1, 1, 0, 0, 100, 0, 0, 100, 1, 0);
+			false, true, false, 0, 0, 100, 0, 0, 100, 1, 0);
 		oakArmor->effects.push_back(std::make_shared<ArmorBuff>(Defense::BLUNT, 3, 115, false, 1, 1));
 		oakArmor->effects.push_back(std::make_shared<ArmorBuff>(Defense::CHOP, 3, 115, false, 1, 1));
 		oakArmor->effects.push_back(std::make_shared<ArmorBuff>(Defense::PIERCE, 3, 115, false, 1, 1));
@@ -344,7 +251,7 @@ std::shared_ptr<Spell> Spell::getOakenArmorEffect(Character& caster)
 	else
 	{
 		oakArmor = std::make_shared<Spell>("Oaken Armor III", "The trees give willingly when asked nicely. Project a thin layer of magically strengthened wood upon the surface of your body increasing physical damage negation for 3 turns. Investment in arcane causes the armor to gain a healing effect",
-			false, false, false, false, false, true, true, 3, 100, false, 1, 1, 0, 0, 100, 0, 0, 125, 1, 0);
+			false, true, false, 0, 0, 100, 0, 0, 125, 1, 0);
 		oakArmor->effects.push_back(std::make_shared<ArmorBuff>(Defense::BLUNT, 3, 150, false, 1, 1));
 		oakArmor->effects.push_back(std::make_shared<ArmorBuff>(Defense::CHOP, 3, 150, false, 1, 1));
 		oakArmor->effects.push_back(std::make_shared<ArmorBuff>(Defense::PIERCE, 3, 150, false, 1, 1));
@@ -361,8 +268,8 @@ std::shared_ptr<Spell> Spell::getFruitOfTheEarthEffect(Character& caster)
 	//Determine which version of the spell is the one used by the player
 	if (statInvestment < 30)
 	{
-		fruit = std::make_shared<Spell>("Fruit of the Earth I", "Vegetation nearby grows a nutritious fruit. Consume it and regain health and fatigue. Investment in arcane increases the restorative effects of the fruit", 
-			false, false, false, true, false, true, false, 1, 1, false, 1, 1, 0, 0, 100, 0, 0, 50, 1, 0);
+		fruit = std::make_shared<Spell>("Fruit of the Earth I", "Vegetation nearby grows a nutritious fruit. Consume it and regain health and fatigue. Investment in arcane increases the restorative effects of the fruit",
+			false, true, false, 0, 0, 100, 0, 0, 50, 1, 0);
 		fruit->effects.push_back(std::make_shared<Healing>(1, 100, false, 1, 1));
 		fruit->effects.push_back(std::make_shared<FatigueRestore>(1, 50, false, 1, 1));
 		return fruit;
@@ -370,7 +277,7 @@ std::shared_ptr<Spell> Spell::getFruitOfTheEarthEffect(Character& caster)
 	else if (statInvestment < 60)
 	{
 		fruit = std::make_shared<Spell>("Fruit of the Earth II", "Vegetation nearby grows a highly nutritious fruit. Consume it and regain health and fatigue. Investment in arcane increases the restorative effects of the fruit",
-			false, false, false, true, false, true, false, 1, 1, false, 1, 1, 0, 0, 100, 0, 0, 60, 1, 0);
+			false, true, false, 0, 0, 100, 0, 0, 75, 1, 0);
 		fruit->effects.push_back(std::make_shared<Healing>(1, 150, false, 1, 1));
 		fruit->effects.push_back(std::make_shared<FatigueRestore>(1, 75, false, 1, 1));
 		return fruit;
@@ -378,7 +285,7 @@ std::shared_ptr<Spell> Spell::getFruitOfTheEarthEffect(Character& caster)
 	else
 	{
 		fruit = std::make_shared<Spell>("Fruit of the Earth III", "Vegetation nearby grows a unbelievably nutritious fruit. Consume it and regain health and fatigue. Investment in arcane increases the restorative effects of the fruit",
-			false, false, false, true, false, true, false, 1, 1, false, 1, 1, 0, 0, 100, 0, 0, 70, 1, 0);
+			false, true, false, 0, 0, 100, 0, 0, 100, 1, 0);
 		fruit->effects.push_back(std::make_shared<Healing>(1, 200, false, 1, 1));
 		fruit->effects.push_back(std::make_shared<FatigueRestore>(1, 100, false, 1, 1));
 		return fruit;
@@ -394,8 +301,8 @@ std::shared_ptr<Spell> Spell::getEndothermicGraspEffect(Character& caster)
 	if (statInvestment < 30)
 	{
 		endothermicGrasp = std::make_shared<Spell>("Endorthermic Nudge",
-			"A chilling touch that applies frost burst and freezes weaker targets solid! Investment in intelligence causes the range of the spell to increase.", 
-			false, false, true, false, false, false, false, 1, 1, false, 1, 1, 100, 0, 0, 0, 0, 50, 1, 10);
+			"A chilling touch that applies frost burst and freezes weaker targets solid! Investment in intelligence causes the range of the spell to increase.",
+			false, false, true, 100, 0, 0, 0, 0, 30, 1, 10);
 		endothermicGrasp->effects.push_back(std::make_shared<FrostBurstEffect>(1, 5000, false, 1, 1));
 		endothermicGrasp->effects.push_back(std::make_shared<FreezeEffect>(1, 1, false, 1, 1));
 		return endothermicGrasp;
@@ -404,7 +311,7 @@ std::shared_ptr<Spell> Spell::getEndothermicGraspEffect(Character& caster)
 	{
 		endothermicGrasp = std::make_shared<Spell>("Endorthermic Touch",
 			"A chilling touch that applies frost burst and freezes weaker targets solid! Investment in intelligence causes the range of the spell to increase.",
-			false, false, true, false, false, false, false, 1, 1, false, 1, 1, 100, 0, 0, 0, 0, 60, 1, 15);
+			false, false, true, 100, 0, 0, 0, 0, 40, 1, 15);
 		endothermicGrasp->effects.push_back(std::make_shared<FrostBurstEffect>(1, 5000, false, 1, 1));
 		endothermicGrasp->effects.push_back(std::make_shared<FreezeEffect>(1, 1, false, 1, 1));
 		return endothermicGrasp;
@@ -413,7 +320,7 @@ std::shared_ptr<Spell> Spell::getEndothermicGraspEffect(Character& caster)
 	{
 		endothermicGrasp = std::make_shared<Spell>("Endorthermic Grasp",
 			"A chilling touch that applies frost burst and freezes weaker targets solid! Investment in intelligence causes the range of the spell to increase.",
-			false, false, true, false, false, false, false, 1, 1, false, 1, 1, 100, 0, 0, 0, 0, 70, 1, 20);
+			false, false, true, 100, 0, 0, 0, 0, 50, 1, 20);
 		endothermicGrasp->effects.push_back(std::make_shared<FrostBurstEffect>(1, 5000, false, 1, 1));
 		endothermicGrasp->effects.push_back(std::make_shared<FreezeEffect>(1, 1, false, 1, 1));
 		return endothermicGrasp;
@@ -424,33 +331,68 @@ std::shared_ptr<Spell> Spell::getEndothermicGraspEffect(Character& caster)
 std::shared_ptr<Spell> Spell::getForceBurstEffect(Character& caster)
 {
 	float statInvestment = caster.getFaith();
-	float faithBonus = caster.getFaith() * 1.5f;
-	float damage = (faithBonus * (faithBonus / (faithBonus + 50))) * 0.3;
+	float faithBonus = caster.getFaith() * 1.0f;
+	float damage = (faithBonus * (faithBonus / (faithBonus + 50))) * 1.0f;
 	
 	std::shared_ptr<Spell> forceBurst;
 	if (statInvestment < 30)
 	{
-		forceBurst = std::make_shared<Spell>("Force Burst I", "Create a small burst of holy energy dealing tiny amounts of damage and pushing enemies in melee range away from you. Investments in faith increase the damage and the knockback",
-			true, false, true, false, false, false, false, 1, 1, false, 1, 1, 0, 100, 0, 0, 0, 30, 1, 10);
-		forceBurst->effects.push_back(std::make_shared<KnockbackEffect>(1, damage * 1.5f, false, 1, 1));
-		forceBurst->setMagicDamage(MagicDamageType::HOLY, damage * 1);
+		forceBurst = std::make_shared<Spell>("Holy Gust", "Create a small gust of holy wind dealing tiny amounts of damage and pushing enemies in melee range away from you. Investments in faith causes holy fire to accompany the explosion.",
+			false, false, true, 0, 100, 0, 0, 0, 30, 1, 10);
+		forceBurst->effects.push_back(std::make_shared<KnockbackEffect>(1, max(damage * 1.5f, 20), false, 1, 1));
+		forceBurst->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::BLUNT, damage * .5));
+		forceBurst->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::HOLY, damage * .5));
 		return forceBurst;
 	}
 	else if (statInvestment < 60)
 	{
-		forceBurst = std::make_shared<Spell>("Force Burst II", "Create a small burst of holy energy dealing tiny amounts of damage and pushing enemies in melee range away from you. Investments in faith increase the damage and the knockback",
-			true, false, true, false, false, false, false, 1, 1, false, 1, 1, 0, 100, 0, 0, 0, 40, 1, 10);
-		forceBurst->effects.push_back(std::make_shared<KnockbackEffect>(1, damage * 1.6, false, 1, 1));
-		forceBurst->setMagicDamage(MagicDamageType::HOLY, damage * 2);
+		forceBurst = std::make_shared<Spell>("Holy Gale", "Create a burst of holy wind dealing small amounts of damage and pushing enemies in melee range away from you. Investments in faith causes holy fire to accompany the explosion.",
+			false, false, true, 0, 100, 0, 0, 0, 40, 1, 15);
+		forceBurst->effects.push_back(std::make_shared<KnockbackEffect>(1, max(damage * 1.6f, 20), false, 1, 1));
+		forceBurst->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::BLUNT, damage * .5));
+		forceBurst->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::HOLY, damage * .5));
+		forceBurst->effects.push_back(std::make_shared<BurnEffect>(4, damage * 0.5, false, 1, 1));
 		return forceBurst;
 	}
 	else
 	{
-		forceBurst = std::make_shared<Spell>("Force Burst III", "Create a small burst of holy energy dealing tiny amounts of damage and pushing enemies in melee range away from you. Investments in faith increase the damage and the knockback",
-			true, false, true, false, false, false, false, 1, 1, false, 1, 1, 0, 100, 0, 0, 0, 50, 1, 10);
-		forceBurst->effects.push_back(std::make_shared<KnockbackEffect>(1, damage * 1.7f, false, 1, 1));
-		forceBurst->setMagicDamage(MagicDamageType::HOLY, damage * 3);
+		forceBurst = std::make_shared<Spell>("Holy Burst", "Create a great burst of holy wind dealing moderate amounts of damage and pushing enemies in melee range away from you. Investments in faith causes holy fire to accompany the explosion.",
+			false, false, true, 0, 100, 0, 0, 0, 50, 1, 20);
+		forceBurst->effects.push_back(std::make_shared<KnockbackEffect>(1, max(damage * 1.7f, 20), false, 1, 1));
+		forceBurst->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::BLUNT, damage * .5));
+		forceBurst->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::HOLY, damage * .5));
+		forceBurst->effects.push_back(std::make_shared<BurnEffect>(4, damage * 0.5, false, 1, 1));
 		return forceBurst;
+	}
+}
+std::shared_ptr<Spell> Spell::getWarmthOfTheGodsEffect(Character& caster)
+{
+	float statInvestment = caster.getFaith();
+	float faithBonus = caster.getFaith() * 2.0f;
+	float healing = (faithBonus * (faithBonus / (faithBonus + 10))) * 1.5f;
+
+	std::shared_ptr<Spell> warmth;
+	if (statInvestment < 30)
+	{
+		warmth = std::make_shared<Spell>("Hearth of the Home", "Cast a holy sigil of warmth upon the ground that heals you and your allies. Investment in faith increases the range, healing, and adds a healing over time effect.",
+			true, true, false, 0, 100, 0, 0, 0, 60, 1, 10);
+		warmth->effects.push_back(std::make_shared<AreaOfEffectHealing>(10, 0, healing * 0.8f, false, 1, 1));
+		return warmth;
+	}
+	else if (statInvestment < 60)
+	{
+		warmth = std::make_shared<Spell>("Hearth of the Church", "Cast a holy sigil of warmth upon the ground that heals you and your allies. Investment in faith increases the range, healing, and adds a healing over time effect.",
+			true, true, false, 0, 100, 0, 0, 0, 70, 1, 15);
+		warmth->effects.push_back(std::make_shared<AreaOfEffectHealing>(15, 0, healing, false, 1, 1));
+		return warmth;
+	}
+	else
+	{
+		warmth = std::make_shared<Spell>("Hearth of the Gods", "Cast a holy sigil of warmth upon the ground that heals you and your allies. Investment in faith increases the range, healing, and adds a healing over time effect.",
+			true, true, false, 0, 100, 0, 0, 0, 80, 1, 20);
+		warmth->effects.push_back(std::make_shared<AreaOfEffectHealing>(20, 0, healing * 1.1, false, 1, 1));
+		warmth->effects.push_back(std::make_shared<AreaOfEffectHealing>(20, 3, healing * 0.3, false, 1, 1));
+		return warmth;
 	}
 }
 //PYROMANCY
@@ -465,30 +407,98 @@ std::shared_ptr<Spell> Spell::getFireBallEffect(Character& caster)
 	//Determine which version of the spell is the one used by the player
 	if (statInvestment < 30)
 	{
-		fireball = std::make_shared<Spell>("Fire Bolt", "A bolt of holy fire that deals burning damage", false, false, true, false, false, false, false, 1, fireballDamage + 50 + caster.getFaith(), false, 1, 1, 0, 100, 0, 0, 0, 50, 1, 100);
-		fireball->effects.push_back(std::make_shared<BurnEffect>(1, fireballDamage, false, 1, 1));
-		fireball->effects[0]->setMagicDamage(MagicDamageType::FIRE, 25 + caster.getFaith() * 0.5);
-		fireball->setMagicDamage(MagicDamageType::FIRE, fireballDamage + 75);
+		fireball = std::make_shared<Spell>("Fire Bolt", "A bolt of holy fire that deals burning damage",
+			false, false, true, 0, 100, 0, 0, 0, 50, 50, 100);
+		fireball->effects.push_back(std::make_shared<BurnEffect>(1, fireballDamage * 2, false, 1, 1));
+		fireball->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::FIRE, fireballDamage + 50));
 		return fireball;
 	}
 	else if (statInvestment < 60)
 	{
-		fireball = std::make_shared<Spell>("Fire Ball", "A ball of holy fire that deals moderate burning damage", false, false, true, false, false, false, false, 1, fireballDamage + 75 + caster.getFaith(), false, 1, 1, 0, 100, 0, 0, 0, 75, 1, 100);
-		fireball->effects.push_back(std::make_shared<BurnEffect>(1, fireballDamage, false, 1, 1));
-		fireball->effects[0]->setMagicDamage(MagicDamageType::FIRE, 25 + caster.getFaith() * 0.5);
-		fireball->setMagicDamage(MagicDamageType::FIRE, fireballDamage + 100);
+		fireball = std::make_shared<Spell>("Fire Ball", "A ball of holy fire that deals moderate burning damage",
+			false, false, true, 0, 100, 0, 0, 0, 60, 50, 100);
+		fireball->effects.push_back(std::make_shared<BurnEffect>(1, fireballDamage * 2, false, 1, 1));
+		fireball->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::FIRE, fireballDamage + 75));
+
 		return fireball;
 	}
 	else
 	{
-		fireball = std::make_shared<Spell>("Captive Sun", "A searing ball of holy plasma that does immense burning damage", false, false, true, false, false, false, false, 1, fireballDamage + 100 + caster.getFaith(), false, 1, 1, 0, 100, 0, 0, 0, 100, 1, 100);
-		fireball->effects.push_back(std::make_shared<BurnEffect>(1, fireballDamage, false, 1, 1));
-		fireball->effects[0]->setMagicDamage(MagicDamageType::FIRE, 25 + caster.getFaith() * 0.5);
+		fireball = std::make_shared<Spell>("Captive Sun", "A searing ball of holy plasma that does immense burning damage",
+			false, false, true, 0, 100, 0, 0, 0, 70, 50, 100);
+		fireball->effects.push_back(std::make_shared<BurnEffect>(1, fireballDamage * 2, false, 1, 1));
+		fireball->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::FIRE, fireballDamage + 100));
 		fireball->effects.push_back(std::make_shared<FieryExplosionEffect>(fireball->range * 0.3f, fireballDamage * 0.5f, false, 1, 1));
-		fireball->setMagicDamage(MagicDamageType::FIRE, fireballDamage + 125);
 		return fireball;
 	}
 }
 //AEROMANCY
 //FULGURAMANCY
+std::shared_ptr<Spell> Spell::getThunderboltEffect(Character& caster)
+{
+	float statInvestment = caster.getIntelligence();
+	float intBonus = caster.getIntelligence() * 1.5f;
+	float thunderboltDamage = (intBonus * (intBonus / (intBonus + 50))) * 1.5;
+
+	std::shared_ptr<Spell> thunderbolt;
+	//Determine which version of the spell is the one used by the player
+	if (statInvestment < 30)
+	{
+		thunderbolt = std::make_shared<Spell>("Lightning Bolt", "Emit an arc of electricity from your fingertips that seeks out its target and applies moderate shock damage. Investments in intelligence give the spell the chance to arc between enemies.",
+			false, false, true, 100, 0, 0, 0, 0, 50, 50, 150);
+		thunderbolt->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::SHOCK, thunderboltDamage));
+		thunderbolt->effects.push_back(std::make_shared<ShockEffect>(false, 3, thunderboltDamage, false, 1, 1));
+		return thunderbolt;
+	}
+	else if (statInvestment < 60)
+	{
+		thunderbolt = std::make_shared<Spell>("Thunder Bolt", "Emit an arc of electricity from your fingertips that seeks out its target and applies moderate shock damage. Investments in intelligence give the spell the chance to arc between enemies.", 
+			false, false, true, 100, 0, 0, 0, 0, 60, 50, 150);
+		thunderbolt->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::SHOCK, thunderboltDamage));
+		thunderbolt->effects.push_back(std::make_shared<ShockEffect>(false, 3, thunderboltDamage, false, 1, 1));
+		thunderbolt->effects.push_back(std::make_shared<LightningArcEffect>(thunderboltDamage * 0.5, 150, 10, 30));
+		return thunderbolt;
+	}
+	else
+	{
+		thunderbolt = std::make_shared<Spell>("Plasma Bolt", "Emit an arc of electricity from your fingertips that seeks out its target and applies moderate shock damage. Investments in intelligence give the spell the chance to arc between enemies.", 
+			false, false, true, 100, 0, 0, 0, 0, 70, 50, 150);
+		thunderbolt->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::SHOCK, thunderboltDamage));
+		thunderbolt->effects.push_back(std::make_shared<ShockEffect>(false, 3, thunderboltDamage, false, 1, 1));
+		thunderbolt->effects.push_back(std::make_shared<LightningArcEffect>(thunderboltDamage * 0.5, 150, 20, 50));
+		return thunderbolt;
+	}
+}
+std::shared_ptr<Spell> Spell::getLightningArmamentEffect(Character& caster)
+{
+	float statInvestment = caster.getIntelligence();
+	float intBonus = caster.getIntelligence() * 1.5f;
+	float lightningArmamentDamage = (intBonus * (intBonus / (intBonus + 50))) * 1;
+	std::shared_ptr<Spell> lightningArmament;
+	//Determine which version of the spell is the one used by the player
+	if (statInvestment < 30)
+	{
+		lightningArmament = std::make_shared<Spell>("Electrify Armament I", "Use your weapon as a magical lightning rod, absorbing a falling bolt of lightning. For the next 5 turns your weapon deals additional shock damage. Investments in intelligence increase the potency of the enchantment and cause nearby targets to be shocked when applying the spell.",
+			false, true, false, 100, 0, 0, 0, 0, 50, 1, 0);
+		lightningArmament->effects.push_back(std::make_shared<ArmamentBuff>(DamageTypes::SHOCK, 5, lightningArmamentDamage, false, 1, 1));
+		return lightningArmament;
+	}
+	else if (statInvestment < 60)
+	{
+		lightningArmament = std::make_shared<Spell>("Electrify Armament II", "Use your weapon as a magical lightning rod, absorbing a falling bolt of lightning. For the next 5 turns your weapon deals additional shock damage. Investments in intelligence increase the potency of the enchantment and cause nearby targets to be shocked when applying the spell.",
+			false, true, false, 100, 0, 0, 0, 0, 70, 1, 0);
+		lightningArmament->effects.push_back(std::make_shared<ArmamentBuff>(DamageTypes::SHOCK, 5, lightningArmamentDamage * 1.1f, false, 1, 1));
+		lightningArmament->effects.push_back(std::make_shared<AuraEffect>(DamageTypes::SHOCK, 10, 1, lightningArmamentDamage * 2, false, 1, 1));
+		return lightningArmament;
+	}
+	else
+	{
+		lightningArmament = std::make_shared<Spell>("Electrify Armament III", "Use your weapon as a magical lightning rod, absorbing a falling bolt of lightning. For the next 5 turns your weapon deals additional shock damage. Investments in intelligence increase the potency of the enchantment and cause nearby targets to be shocked when applying the spell.",
+			false, true, false, 100, 0, 0, 0, 0, 80, 1, 0);
+		lightningArmament->effects.push_back(std::make_shared<ArmamentBuff>(DamageTypes::SHOCK, 5, lightningArmamentDamage * 1.2f, false, 1, 1));
+		lightningArmament->effects.push_back(std::make_shared<AuraEffect>(DamageTypes::SHOCK, 15, 1, lightningArmamentDamage * 4, false, 1, 1));
+
+		return lightningArmament;
+	}
+}
 //VENOMANCY

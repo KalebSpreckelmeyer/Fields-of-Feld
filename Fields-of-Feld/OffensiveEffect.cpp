@@ -2,6 +2,52 @@
 #include "Character.h"
 #include <iostream>
 #include "color.hpp"
+#include "HelperFunctions.h"
+// ------------------------------------------ DAMAGE EFFECT ------------------------------------------ //
+
+DamageEffect::DamageEffect(DamageTypes damageType, float damage) :
+	TimedEffect(duration, magnitude, stackable, stacks, maxStacks), damageTypes(damageType), damageMagnitude(damage)
+{
+	
+}
+
+std::string DamageEffect::getType() const
+{
+	return "Damage";
+}
+
+void DamageEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+{
+	target->healthPoints -= this->getEffectDamage(target, shared_from_this());
+	if (target->namedCharacter) std::cout << dye::light_yellow(target->name) << " takes " << this->getEffectDamage(target, shared_from_this()) << " points of damage!" << std::endl;
+	if (!target->namedCharacter) std::cout << "The " << dye::light_yellow(target->name) << " takes " << this->getEffectDamage(target, shared_from_this()) << " points of damage!" << std::endl;
+	
+	if (target->healthPoints <= 0) target->killCharacter();
+}
+
+void DamageEffect::tick(std::shared_ptr<Character> target)
+{
+	//default implementation does nothing
+}
+
+void DamageEffect::burst(std::shared_ptr<Character> target)
+{
+	//default implementation does nothing
+}
+
+nlohmann::json DamageEffect::toJson() const {
+	return {
+		{"type", getType()},
+		{"damageTypes", damageTypesToString(damageTypes)},
+		{"damageMagnitude", damageMagnitude},
+	};
+}
+
+std::shared_ptr<Effect> DamageEffect::fromJson(const nlohmann::json& j) {
+	auto damageType = stringToDamageTypes(j.at("damageTypes"));
+	float damageValue = j.at("damageMagnitude");
+	return std::make_shared<DamageEffect>(damageType, damageValue);
+}
 
 // ------------------------------------------ BLEED EFFECT ------------------------------------------ //
 BleedEffect::BleedEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks) :
@@ -18,7 +64,7 @@ std::string BleedEffect::getType() const
 void BleedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
 {
 	float bleedPoints = magnitude;
-	this->setMagicDamage(MagicDamageType::BLEED, bleedPoints);
+	this->setDamage(DamageTypes::BLEED, bleedPoints);
 	bleedPoints = this->getEffectDamage(target, shared_from_this());
 	target->bleedPoints += bleedPoints;
 	if (target->bleedPoints > target->maxBleedPoints)
@@ -83,8 +129,8 @@ std::string BurnEffect::getType() const
 void BurnEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
 {
 	float burnPoints = magnitude;
-	this->setMagicDamage(MagicDamageType::FIRE, burnPoints);
-	burnPoints = this->getMagicDamage(MagicDamageType::FIRE);
+	this->setDamage(DamageTypes::FIRE, burnPoints);
+	burnPoints = this->getDamage(DamageTypes::FIRE);
 	target->burnPoints += burnPoints;
 
 	//check if target is already on fire, disallow burst if already on fire (you can't be more on fire)
@@ -119,7 +165,7 @@ void BurnEffect::burst(std::shared_ptr<Character> target)
 {
 	//damage player
 	float burnDamage = magnitude;
-	this->setMagicDamage(MagicDamageType::FIRE, burnDamage);
+	this->setDamage(DamageTypes::FIRE, burnDamage);
 	target->healthPoints -= this->getEffectDamage(target, shared_from_this());
 	if (target->namedCharacter) std::cout << dye::light_yellow(target->name) << " is " << dye::light_red("BURNING") << " and takes "
 		<< this->getEffectDamage(target, shared_from_this()) << " points of damage!" << std::endl;
@@ -192,12 +238,12 @@ void BurnDamageEffect::burst(std::shared_ptr<Character> target)
 	if (target->isAlive)
 	{
 		float burnDamage = magnitude;
-		this->setMagicDamage(MagicDamageType::FIRE, burnDamage);
-		target->healthPoints -= this->getMagicDamage(MagicDamageType::FIRE);
+		this->setDamage(DamageTypes::FIRE, burnDamage);
+		target->healthPoints -= this->getDamage(DamageTypes::FIRE);
 		if (target->namedCharacter) std::cout << dye::light_yellow(target->name) << " is " << dye::light_red("BURNING") << " and takes "
-			<< this->getMagicDamage(MagicDamageType::FIRE) << " points of damage!" << std::endl;
+			<< this->getDamage(DamageTypes::FIRE) << " points of damage!" << std::endl;
 		if (!target->namedCharacter) std::cout << "The " << dye::light_yellow(target->name) << " is " << dye::light_red("BURNING") << " and takes "
-			<< this->getMagicDamage(MagicDamageType::FIRE) << " points of damage!" << std::endl;
+			<< this->getDamage(DamageTypes::FIRE) << " points of damage!" << std::endl;
 
 		//kill player if health is less than or equal to 0
 		if (target->healthPoints <= 0) target->killCharacter();
@@ -241,8 +287,8 @@ std::string PoisonEffect::getType() const
 void PoisonEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
 {
 	float poisonBuildup = magnitude;
-	this->setMagicDamage(MagicDamageType::POISON, poisonBuildup);
-	poisonBuildup = this->getMagicDamage(MagicDamageType::POISON);
+	this->setDamage(DamageTypes::POISON, poisonBuildup);
+	poisonBuildup = this->getDamage(DamageTypes::POISON);
 	target->poisonPoints += poisonBuildup;
 	if (target->poisonPoints > target->maxPoisonPoints)
 	{
@@ -403,8 +449,8 @@ void FrostBurstEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr
 {
 	//Apply frost points
 	float frostBuildup = magnitude;
-	this->setMagicDamage(MagicDamageType::FROST, frostBuildup);
-	frostBuildup = this->getMagicDamage(MagicDamageType::FROST);
+	this->setDamage(DamageTypes::FROST, frostBuildup);
+	frostBuildup = this->getDamage(DamageTypes::FROST);
 	target->frostPoints += frostBuildup;
 	bool isSlowed = false;
 
@@ -492,8 +538,8 @@ std::string ShockEffect::getType() const
 void ShockEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
 {
 	float shockBuildup = magnitude;
-	this->setMagicDamage(MagicDamageType::SHOCK, shockBuildup);
-	shockBuildup = this->getMagicDamage(MagicDamageType::SHOCK);
+	this->setDamage(DamageTypes::SHOCK, shockBuildup);
+	shockBuildup = this->getDamage(DamageTypes::SHOCK);
 	target->shockPoints += shockBuildup;
 	float shockDamage = shockBuildup * 1.0f;
 	target->healthPoints -= shockDamage;
@@ -515,7 +561,6 @@ void ShockEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Char
 
 void ShockEffect::tick(std::shared_ptr<Character> target)
 {
-	if (duration > 0) --duration;
 	if (duration <= 0) 
 	{
 		if (burstTriggered)
@@ -526,6 +571,7 @@ void ShockEffect::tick(std::shared_ptr<Character> target)
 		}
 		target->effects.erase(std::remove(target->effects.begin(), target->effects.end(), shared_from_this()), target->effects.end());
 	}
+	if (duration > 0) --duration;
 }
 
 void ShockEffect::burst(std::shared_ptr<Character> target)
@@ -560,6 +606,72 @@ std::shared_ptr<Effect> ShockEffect::fromJson(const nlohmann::json& j)
 	int maxStacks = j.at("maxStacks");
 	return std::make_shared<ShockEffect>(burstTriggered, duration, magnitude, stackable, stacks, maxStacks);
 }
+// ------------------------------------------ LIGHTNING BOLT EFFECT ------------------------------------------ //
+
+LightningArcEffect::LightningArcEffect(float magnitude, float range, float arcChance, float arcRange) :
+	TimedEffect(duration, magnitude, stackable, stacks, maxStacks), magnitude(magnitude), range(range), arcChance(arcChance), arcRange(arcRange)
+{
+	this->setDamage(DamageTypes::SHOCK, magnitude);
+}
+
+std::string LightningArcEffect::getType() const
+{
+	return "LightningArc";
+}
+
+void LightningArcEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+{
+	//Chance to arc to allies. Chance is increased by wielder's luck and by the provided arcChance
+	//Each arc does less and less damage
+	int randomNum = (rand() % 100 - (wielder->getLuck() + arcChance)) + 1;
+	float arcDamage = this->getDamage(DamageTypes::SHOCK);
+	for (auto& ally : target->allies)
+	{
+		if (randomNum >= 50 && ally->position[target->getId()] <= arcRange)
+		{
+			ally->healthPoints -= arcDamage;
+			if (ally->namedCharacter) std::cout << dye::light_yellow(ally->name) << " is" << dye::light_purple(" SHOCKED") << " by the arcing bolt and takes " << arcDamage << " points of damage!" << std::endl;
+			if (!ally->namedCharacter) std::cout << "The " << ally->name << " is" << dye::light_purple(" SHOCKED") << " by the arcing bolt and takes " << arcDamage << " points of damage!" << std::endl;
+			arcDamage -= arcDamage * 0.3f;
+			if (ally->healthPoints <= 0)
+			{
+				ally->healthPoints = 0;
+				ally->killCharacter();
+			}
+		}
+	}
+	return;
+}
+
+void LightningArcEffect::tick(std::shared_ptr<Character> target)
+{
+	//default implementation does nothing
+}
+
+void LightningArcEffect::burst(std::shared_ptr<Character> target)
+{
+	//default implementation does nothing
+}
+
+nlohmann::json LightningArcEffect::toJson() const
+{
+	return{
+		{"type", getType()},
+		{"magnitude", magnitude},
+		{"range", range},
+		{"arcChance", arcChance},
+		{"arcRange", arcRange}
+	};
+}
+
+std::shared_ptr<Effect> LightningArcEffect::fromJson(const nlohmann::json& j)
+{
+	float magnitude = j.at("magnitude");
+	float range = j.at("range");
+	float arcChance = j.at("arcChance");
+	float arcRange = j.at("arcRange");
+	return std::make_shared<LightningArcEffect>(magnitude, range, arcChance, arcRange);
+}
 
 // ------------------------------------------ SLEEP EFFECT ------------------------------------------ //
 
@@ -576,8 +688,8 @@ std::string SleepEffect::getType() const
 void SleepEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
 {
 	float sleepBuildup = magnitude;
-	this->setMagicDamage(MagicDamageType::SLEEP, sleepBuildup);
-	sleepBuildup = this->getMagicDamage(MagicDamageType::SLEEP);
+	this->setDamage(DamageTypes::SLEEP, sleepBuildup);
+	sleepBuildup = this->getDamage(DamageTypes::SLEEP);
 
 	//Adds effect so duration can be reduced and additional effects can be applied
 	target->effects.push_back(shared_from_this());
@@ -993,11 +1105,10 @@ std::shared_ptr<Effect> ArmorPenetrationEffect::fromJson(const nlohmann::json& j
 
 // ------------------------------------------ Explosion ------------------------------------------ //
 
-ExplosionEffect::ExplosionEffect(MagicDamageType magicDamage, PhysicalDamageType physDamage, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks) :
+ExplosionEffect::ExplosionEffect(DamageTypes damageType, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks) :
 	TimedEffect(duration, magnitude, stackable, stacks, maxStacks)
 {
-	this->setMagicDamage(magicDamage, magnitude);
-	this->setPhysicalDamage(physDamage, magnitude);
+	this->setDamage(damageType, magnitude);
 	this->range = range;
 }
 
@@ -1008,7 +1119,7 @@ std::string ExplosionEffect::getType() const
 
 void ExplosionEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
 {
-	float explosionDamge = this->getMagicDamage(magicDamage) + this->getPhysicalDamage(physDamage);
+	float explosionDamge = this->getDamage(damageType) + this->getDamage(damageType);
 	float splashDamage = explosionDamge * 0.3f;
 
 	//Damage the main target
@@ -1040,8 +1151,7 @@ nlohmann::json ExplosionEffect::toJson() const
 {
 	return{
 		{"type", getType()},
-		{"magicDamage", magicDamage},
-		{"physDamage", physDamage},
+		{"damageType", damageTypesToString(damageType)},
 		{"range", range},
 		{"duration", duration},
 		{"magnitude", magnitude},
@@ -1053,15 +1163,14 @@ nlohmann::json ExplosionEffect::toJson() const
 
 std::shared_ptr<Effect> ExplosionEffect::fromJson(const nlohmann::json& j)
 {
-	MagicDamageType magicDamage = j.at("magicDamage");
-	PhysicalDamageType physDamage = j.at("physDamage");
+	DamageTypes damage = stringToDamageTypes(j.at("damageType"));
 	float range = j.at("range");
 	int duration = j.at("duration");
 	float magnitude = j.at("magnitude");
 	bool stackable = j.at("stackable");
 	int stacks = j.at("stacks");
 	int maxStacks = j.at("maxStacks");
-	return std::make_shared<ExplosionEffect>(magicDamage, physDamage, range, duration, magnitude, stackable, stacks, maxStacks);
+	return std::make_shared<ExplosionEffect>(damage, range, duration, magnitude, stackable, stacks, maxStacks);
 }
 
 // ------------------------------------------ SLOW EFFECT ------------------------------------------ //
@@ -1128,9 +1237,9 @@ std::shared_ptr<Effect> SlowEffect::fromJson(const nlohmann::json& j)
 // ------------------------------------------ FIERY EXPLOSION EFFECT ------------------------------------------ //
 
 FieryExplosionEffect::FieryExplosionEffect(float range, float magnitude, bool stackable, int stacks, int maxStacks) :
-	ExplosionEffect(magicDamage, physDamage, range, duration, magnitude, stackable, stacks, maxStacks)
+	ExplosionEffect(damageType, range, duration, magnitude, stackable, stacks, maxStacks)
 {
-	this->setMagicDamage(MagicDamageType::FIRE, magnitude);
+	this->setDamage(DamageTypes::FIRE, magnitude);
 }
 
 std::string FieryExplosionEffect::getType() const
@@ -1140,7 +1249,7 @@ std::string FieryExplosionEffect::getType() const
 
 void FieryExplosionEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
 {
-	float explosionDamage = this->getMagicDamage(MagicDamageType::FIRE);
+	float explosionDamage = this->getDamage(DamageTypes::FIRE);
 	float splashDamage = explosionDamage * 0.3f;
 
 	//Damage the main target

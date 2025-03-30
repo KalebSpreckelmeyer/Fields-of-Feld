@@ -1,0 +1,14 @@
+[
+    {
+        "type": "Potion",
+        "id": 0,
+        "name": "Testing Potion",
+        "description": "Testing Potion",
+        "value": 10.0,
+        "weight": 1.0,
+        "quantity": 1.0,
+        "magnitude": 10,
+        "potionEffect": "NONE",
+        "effects": []
+    }
+]

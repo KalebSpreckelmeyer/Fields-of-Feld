@@ -1,0 +1,818 @@
+[
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Bread loaf",
+    "description": "A hard crusty loaf of hearty bread. Restores fatiuge when consumed.",
+    "value": 2.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 50,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 50
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Bread Slice",
+    "description": "A thick slice of bread. Restores a small amount of fatigue when consumed.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Deer Jerky",
+    "description": "Salted jerky from a wild deer. Restores fatigue when consumed.",
+    "value": 2.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 30,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 30
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Handfull of Nuts",
+    "description": "A handful of various nuts forraged from the owner's surroundings. Nutritious, though they could use some salt.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Handfull of Berries",
+    "description": "A handful of various berries forraged from the owner's surroundings. Nutritious and sweet.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 30,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 30
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Cabbage",
+    "description": "An entire head of cabbage. Not particularly flavorful on its own, but it's nutritious nontheless. Restores fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Orange",
+    "description": "A sweet and tart orange, makes a great snack. Restores a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Wedge of Cheese",
+    "description": "A wedge of cheese. Full of fat and nutrients, perfect to keep a warrior going on the road. Restores fatigue when eaten.",
+    "value": 2.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 50,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 50
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Wheel of Cheese",
+    "description": "An entire wheel of cheese. Full of fat and nutrients, this could sustain a man alone. Restores a large amount of fatigue when eaten.",
+    "value": 10.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 100,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 100
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Bundle of Leeks",
+    "description": "A bundle of leeks, wrapped together with twine. Not particularly flavorful or nutritious alone, they're best used as an ingredient in another dish. Restores a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 10,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 10
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Raw Potato",
+    "description": "A large, hearty potato. It would be better if cooked. Restores a small amount of fatigue.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 10,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 10
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Baked Potato",
+    "description": "A large, hearty potato baked until blackened and topped with salt. Delicious and nutritious. Restores fatigue when eaten.",
+    "value": 2.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 50,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 50
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Loaded Baked Potato",
+    "description": "A large, hearty potato baked until blackened and topped with salt, butter, and strips of fatty meat. Delicious and nutritious. Restores a large amount of fatigue when eaten.",
+    "value": 5.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 100,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 100
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Carrot",
+    "description": "A large, crisp carrot. Tasty and nutritious by its lonesome, though it would be great in a stew. Restores a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Onion",
+    "description": "A large, pungent onion. Surprisingly nutritious, if one can stand the taste. Restores a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Tomato",
+    "description": "A large, ripe tomato. Sweet and acidic, it makes a decent snack alone. Restores a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Bundle of Turnips",
+    "description": "A bundle of turnips. Nutritious and surprisingly tasty. Restores a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Bundle of Spinach",
+    "description": "A bundle of spinach. These leafy greens are a bit bland alone, but they are nutritious. Restores a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Cooked Spinach",
+    "description": "A bunch of cooked spinach, seasoned with salt and meat drippings. Tasty and nutritious. Restores a fair amount of fatigue when eaten.",
+    "value": 2.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 40,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 40
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Raw Garlic",
+    "description": "A bulb or raw garlic. If one can handle the taste, they would find it surprisingly nutritious. Restores a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Bag of Brussel Sprouts",
+    "description": "A bag of fresh brussel sprouts. Bitter to a fault but nutritious nonetheless. Restores a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Roasted Brussel Sprouts",
+    "description": "A serving of roasted brussel sprouts, cooked until crispy and seasoned with salt and meat drippings. Delicious and nutritious. Restores a fair amount of fatigue when eaten.",
+    "value": 3.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 60,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 60
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Lemon",
+    "description": "A crisp, acidic lemon. If one can stand the sourness they would find it surprisingly tasty and nutritious. Restors a small amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 20,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 20
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Rice Ball",
+    "description": "A ball of sticky white rice bound together into a ball and sealed with thin cloth. Bland but nutritious. Restores fatigue when eaten.",
+    "value": 2.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 40,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 40
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Bowl of Beans",
+    "description": "A small bowl of nutritious beans, seasoned with salt and meat drippings. Restores a fair amount of fatigue when eaten.",
+    "value": 4.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 70,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 70
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Bowl of Lentils",
+    "description": "A small bowl of nutritious lentils, seasoned with salt and meat drippings. Restores a fair amount of fatigue when eaten.",
+    "value": 3.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 70,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 70
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Smoked Fish",
+    "description": "A decent-sized fish, smoked over a fire and seasoned with salt. As tasty as it is simple. Restores a fair amount of fatigue when eaten.",
+    "value": 4.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 70,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 70
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Hard-Boiled Egg",
+    "description": "A chicken or duck's egg, boiled until solid and tasty. Highly nutritious despite its small size. Restores a small amount of fatigue when eaten.",
+    "value": 2.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 40,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 40
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Bowl of Scrambled Eggs",
+    "description": "A bowl of eggs, cooked and scrambled until just solid and seasoned with salt. Restores a small amount of fatiuge when eaten.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 70,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 70
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Chicken Leg",
+    "description": "A leg of a chicken, roasted until golden and tender and seasoned with salt. Delicious, nutritious, and affordable compared to other meat options. Restores a large amount of fatigue when eaten.",
+    "value": 7.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 90,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 90
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Duck Leg",
+    "description": "A leg of a duck, roasted until golden and tender and seasoned with salt. Delicious, nutritious, and affordable compared to other meat options. Restores a large amount of fatigue when eaten.",
+    "value": 7.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 90,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 90
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Beef Steak",
+    "description": "A chunk of beef, roasted and salted to perfection. A real treat for anyone but the highest of nobles. Restores a large amount of fatigue when eaten.",
+    "value": 12.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 120,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 120
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Meat and Rice Bowl",
+    "description": "A bowl of sticky white rice topped with meat and coated with a savory meat sauce. This could feed a man alone. Restores a large amount of fatigue.",
+    "value": 10.0,
+    "weight": 0.4,
+    "quantity": 1,
+    "magnitude": 120,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 120
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Sushi",
+    "description": "A roll of rice surrounding raw fish, seasoned with both regular and frost salt to keep it fresh and tasty. Restores a large amount of fatigue when eaten.",
+    "value": 11.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 100,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 100
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Meat and Potato Bowl",
+    "description": "A slab of meat served alongside a roasted potato, both seasoned with salt and butter. Delicious and filling enough for a solider. Restores a large amount of fatigue when eaten.",
+    "value": 14.0,
+    "weight": 0.4,
+    "quantity": 1,
+    "magnitude": 150,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 150
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Beef Stew",
+    "description": "A large bowl of hearty beef stew, filled with various vegetables like potatoes and carrots. A meal fit for a king. Restores a vast amount of fatigue when eaten.",
+    "value": 15.0,
+    "weight": 0.4,
+    "quantity": 1,
+    "magnitude": 200,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 200
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Beef Pie",
+    "description": "An entire pie, stuffed with beef and vegetable chunks and wrapped in a salty crust. A meal fit for a king. Restores a vast amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 1.0,
+    "quantity": 1,
+    "magnitude": 200,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 200
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Meat Kabobs",
+    "description": "A thin stick with chunks of meat and vegetables, grilled and salted to perfection. Restores a large amount of fatigue when eaten.",
+    "value": 8.0,
+    "weight": 0.1,
+    "quantity": 1,
+    "magnitude": 100,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 100
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Chicken Dinner",
+    "description": "A roasted chicken breast served with a baked potato and roasted vegetables. Restores a vast amount of fatigue when eaten.",
+    "value": 11.0,
+    "weight": 0.4,
+    "quantity": 1,
+    "magnitude": 200,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 200
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Roast Duck",
+    "description": "A roasted duck breast served with mashed potatoes and roasted vegetables. Restores a vast amount of fatigue when eaten.",
+    "value": 12.0,
+    "weight": 0.4,
+    "quantity": 1,
+    "magnitude": 200,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 200
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Chicken Pot Pie",
+    "description": "An entire pie, stuffed with chicken and vegetables and wrapped in a salty crust. Restores a vast amount of fatigue when eaten.",
+    "value": 1.0,
+    "weight": 1.0,
+    "quantity": 1,
+    "magnitude": 200,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 200
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "An Entire Roasted Chicken",
+    "description": "A whole roasted chicken, salted and buttered to perfection. One would typically share such a treat. Restores a vast amount of fatigue when eaten.",
+    "value": 15.0,
+    "weight": 2,
+    "quantity": 1,
+    "magnitude": 250,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 250
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "A Whole Roast Duck",
+    "description": "A whole roasted duck, salted and buttered to perfection. One would typically share such a treat. Restores a vast amount of fatigue when eaten.",
+    "value": 15.0,
+    "weight": 2,
+    "quantity": 1,
+    "magnitude": 250,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 250
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Meatballs",
+    "description": "Balls of ground beef, rolled in breadcrumbs and fried in animal fat until crispy. Served enrobed in a garlic tomato sauce. Restores a vast amount of fatigue when eaten.",
+    "value": 10.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 150,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 150
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Meat Loaf",
+    "description": "Ground beef, rolled in breadcrumbs and shaped into a loaf. Served brushed with a tomato sauce. Restores a vast amount of fatigue when eaten.",
+    "value": 12.0,
+    "weight": 0.3,
+    "quantity": 1,
+    "magnitude": 170,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 170
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Apple Pie",
+    "description": "An entire pie, stuffed with apple slices sweetened with sugar. One would typically share such a treat. Restores a vast amount of fatigue when eaten.",
+    "value": 10.0,
+    "weight": 1.0,
+    "quantity": 1,
+    "magnitude": 200,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 200
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Berry Pie",
+    "description": "An entire pie, stuffed with berries and sweetened with sugar. One would typically share such a treat. Restores a vast amount of fatigue when eaten.",
+    "value": 10.0,
+    "weight": 1.0,
+    "quantity": 1,
+    "magnitude": 200,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 200
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Apple Tart",
+    "description": "A small pastry stuffed with apple chunks and sweetened with sugar. Restores a large amount of fatigue when eaten.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 80,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 80
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Berry Tart",
+    "description": "A small pastry stuffed with berries and sweetened with sugar. Restores a large amount of fatigue when eaten.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 80,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 80
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Sweet Roll",
+    "description": "A small pastry topped with a sugar-filled icing. Restores a large amount of fatigue when eaten.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 80,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 80
+        }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Candied Oranges",
+    "description": "Orange slices enrobed and preserved in a sugar glaze. Restores a large amount of fatigue when eaten.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 80,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 80
+        }
+    ]
+  }
+]

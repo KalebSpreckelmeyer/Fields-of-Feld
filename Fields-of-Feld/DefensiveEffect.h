@@ -1,14 +1,14 @@
 #pragma once
 #include "Effect.h"
 #include "TimedEffect.h"
-#include "MagicDamageType.h"
+#include "DamageTypes.h"
 
 class ThornsEffect : public TimedEffect
 {
 public:
 	float range;
-	MagicDamageType damageType;
-	ThornsEffect(MagicDamageType damageType, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
+	DamageTypes damageType;
+	ThornsEffect(DamageTypes damageType, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 
 	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
 	void tick(std::shared_ptr<Character> target) override;
@@ -24,8 +24,8 @@ class AuraEffect : public TimedEffect
 {
 public:
 	float range;
-	
-	AuraEffect(MagicDamageType magicDamage, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
+	DamageTypes damageType;
+	AuraEffect(DamageTypes magicDamage, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;

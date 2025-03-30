@@ -3,22 +3,31 @@
 #include <unordered_map>
 #include "nlohmann/json.hpp"
 #include <memory>
+#include <vector>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "Consumable.h"
+#include "Potion.h"
+#include "Food.h"
+#include "Book.h"
+#include "Item.h"
+#include "Weapon.h"
+#include "Armor.h"
 
 using josn = nlohmann::json;
+
 class ItemFactory
 {
+private:
+	std::unordered_map<std::string, std::vector<nlohmann::json>> itemTemplates;
 public:
-	static void loadItemsFromFile(const std::string& fileName);
-	static void saveItemsToFile(const std::string& fileName);
+	bool loadItemsFromFile(const std::string& filePath);
 
-	//std::unique_ptr<Item> createWeapon(const std::string& id);
-	std::shared_ptr<Consumable> createConsumable(const std::string& type);
+	//create a random item of a specific type
+	std::shared_ptr<Item> createRandomItem(const std::string& type);
 
-	static std::unordered_map<std::string, nlohmann::json> itemDatabase;
+	//create a specific item by index or name
+	std::shared_ptr<Item> createItemByIndex(const std::string& type, size_t index);
 };
 
 #endif // !ITEMFACTORY_H

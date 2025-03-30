@@ -16,10 +16,6 @@ public:
 		float magnitude, float weight, float quantity, float value);
 	virtual ~Consumable() = default;
 
-	nlohmann::json toJson() const override;
-
-	static std::shared_ptr<Item> fromJson(const nlohmann::json& j);
-
-	virtual void use() = 0; //virtual function to be overwritten in the derived classes
+	virtual void use(std::shared_ptr<Character> consumer) = 0;
 };
 

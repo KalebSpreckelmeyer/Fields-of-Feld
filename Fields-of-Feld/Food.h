@@ -4,6 +4,9 @@ class Food :
     public Consumable
 {
 public:
+	int id;
+
+	std::vector<std::shared_ptr<Effect>> effects;
 
 	nlohmann::json toJson() const override;
 
@@ -12,6 +15,6 @@ public:
 	Food() = default;
 	Food(std::string name, std::string description, float magnitude, float weight, float quantity, float value);
 	~Food() = default;
-	void use() override;
+	void use(std::shared_ptr<Character> consumer) override;
 };
 

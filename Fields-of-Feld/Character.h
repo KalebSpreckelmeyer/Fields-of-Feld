@@ -11,6 +11,7 @@
 #include "optional"
 #include "Defense.h"
 #include <unordered_map>
+#include "IDManager.h"
 
 //forward declaration to avoid circular dependency
 class Human;
@@ -22,11 +23,9 @@ class Ammunition;
 class ThrownConsumable;
 class Character : public std::enable_shared_from_this<Character>
 {
-protected:
-	static int nextId;
+public:
 	int id;
 
-public:
 	//Base defensive values for those that don't wear armor or for hardier creatures
 	std::unordered_map<Defense, float> defenseValues;
 	Defense defenseType = Defense::NONE;
@@ -38,28 +37,28 @@ public:
 	bool alert = false;
 	std::string name = "CHARACTER NAME PLS CHANGE";
 	std::string description = "DESCRIPTION PLS CHANGE";
-	float confidenceLevel = 0.0f;
+	float confidenceLevel = 100.0f;
 	float healthPoints = 100.0f;
 	float maxHealthPoints = 100.0f;
 	float fatiguePoints = 50.0f;
 	float maxFatiguePoints = 50.0f;
-	float speed = 1.0f;
-	float critChance = 5.0f;
-	float dodgeChance = 5.0f;
+	float speed = 100.0f;
+	float critChance = 0.0f;
+	float dodgeChance = 0.0f;
 	float blockChance = 0.0f;
 	//Status effect variables
-	float bleedPoints = 0.0f;
-	float maxBleedPoints = 0.0f;
-	float burnPoints = 0.0f;
-	float maxBurnPoints = 0.0f;
-	float poisonPoints = 0.0f;
-	float maxPoisonPoints = 0.0f;
-	float frostPoints = 0.0f;
-	float maxFrostPoints = 0.0f;
-	float shockPoints = 0.0f;
-	float maxShockPoints = 0.0f;
-	float sleepPoints = 0.0f;
-	float maxSleepPoints = 0.0f;
+	float bleedPoints = 100.0f;
+	float maxBleedPoints = 100.0f;
+	float burnPoints = 100.0f;
+	float maxBurnPoints = 100.0f;
+	float poisonPoints = 100.0f;
+	float maxPoisonPoints = 100.0f;
+	float frostPoints = 100.0f;
+	float maxFrostPoints = 100.0f;
+	float shockPoints = 100.0f;
+	float maxShockPoints = 100.0f;
+	float sleepPoints = 100.0f;
+	float maxSleepPoints = 100.0f;
 	std::unordered_map<int, float> position;
 	float level = 1.0f;
 
@@ -159,13 +158,6 @@ public:
 	//POST: target will take damage, ammo choice will be passed to consume ammo method and decremeneted or removed
 	void fireRangedWeapon(std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon, std::shared_ptr<Ammunition> ammo);
 
-	//DESC: Virtual function whose implementation is handled in the creature and human classes
-	//PRE: All parameters for the situation must be provided ex: attacking with a bow will need the weapon, ammunition, and target
-	//POST: Target will take damage, any effects will be applied, and ammunition will be decremented if necessary
-	virtual void takeDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon, std::shared_ptr<Ammunition> ammunition,
-		std::shared_ptr<ThrownConsumable> consumable, Spell* spell, std::optional<std::vector<std::shared_ptr<Character>>>& allies,
-		std::optional<std::vector<std::shared_ptr<Character>>>& enemyAllies) = 0;
-
 	//DESC: Fires a ranged weapon at a provided target, decrementing or removing ammunition as necessary
 	//PRE: chooseAmmunition shoud be properly called and used to select the ammunition to be used and call this function
 	//POST: Ammunition will be decremented or removed from the inventory, damage values will be sent to the takeDamage function to apply to target
@@ -203,34 +195,15 @@ public:
 
 	void attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target);
 
-	/*void setArmorValues(std::vector<Item> items);
+	//DESC: A consumable is used on the character, applying its effects
+	//PRE: The consumable must be valid and have effects
+	//POST: The consumable's effects will be applied to the character, quantity will be decremented and item removed if necessary
+	void useConsumable(std::shared_ptr<Consumable> consumable);
 
-	void takeDamage(Item weapon, Character attacker, Item ammunition = Item());
-
-	void receiveHealing(float healing);
-
-	void gainExperience(Character enemy);
-
-	void levelUp(float extraExp);
-
-	void killCharacter();
-
-	void openLootInterface(Character& container);
-
-	void printCharacterStats(Character& character);
-
-	void checkPlayer();
-
-	void checkCharacterIntro(Character player);
-
-	void checkCharacter(Character player);
-
-	void openPotionDialogue(bool& turnOver);
-
-	void drinkPotion(Potion& potion);
-
-	void sellItem(Item& item);*/
-
+	//DESC: A consumable is used on the target, applying its effects
+	//PRE: The consumable must be valid and have effects
+	//POST: The consumable's effects will be applied to the target, quantity will be decremented and item removed if necessary
+	void shareConsumable(std::shared_ptr<Consumable> consumable, std::shared_ptr<Character> target);
 };
 #endif // !Character_h
 

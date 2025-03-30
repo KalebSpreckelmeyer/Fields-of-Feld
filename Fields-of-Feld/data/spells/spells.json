@@ -1,0 +1,20 @@
+[
+    {
+        "type": "Spell",
+        "id": 0,
+        "name": "Base Fire Bolt",
+        "description": "Base Fire Bolt Description",
+        "range": 0.0,
+        "useOnSelf": false,
+        "useOnAlly": false,
+        "useOnEnemy": false,
+        "fatigueCost": 0.0,
+        "arcaneScaling": 0.0,
+        "intelligenceScaling": 0.0,
+        "faithScaling": 0.0,
+        "charismaScaling": 0.0,
+        "luckScaling": 0.0,
+        "attackSpeed": 0.0,
+        "effects": []
+    }
+]

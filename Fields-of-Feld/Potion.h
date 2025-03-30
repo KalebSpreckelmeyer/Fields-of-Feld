@@ -7,7 +7,8 @@
 
 class Potion : public Consumable {
 public:
-	enum effect { 
+	int id;
+	enum PotionEffect { 
 		NONE, 
 		HEALING, 
 		FATIGUE, 
@@ -45,19 +46,23 @@ public:
 		RESURRECT,
 		RANDOM,
 	};
+	
+	PotionEffect potionEffect = PotionEffect::NONE;
+
+	std::vector<std::shared_ptr<Effect>> effects;
 
 	nlohmann::json toJson() const override;
 
 	static std::shared_ptr<Item> fromJson(const nlohmann::json& j);
 
-	Potion() = default;
+	Potion();
 
 	Potion(std::string name, std::string description,
-		float magnitude, float weight, float quantity, float value);
+		float magnitude, float weight, float quantity, float value, PotionEffect effect);
 
 	~Potion() = default;
 
-	void use() override;
+	void use(std::shared_ptr<Character> consumer) override;
 };
 
 #endif // !Potion_h

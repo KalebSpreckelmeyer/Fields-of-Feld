@@ -1,0 +1,21 @@
+#ifndef DAMAGETYPES_H
+#define DAMAGETYPES_H
+
+enum class DamageTypes {
+	NONE,
+	MAGIC,
+	FIRE,
+	FROST,
+	SHOCK,
+	WIND,
+	POISON,
+	BLEED,
+	SLEEP,
+	DARK,
+	HOLY,
+	BLUNT,
+	SLASH,
+	PIERCE,
+	CHOP
+};
+#endif // !DAMAGETYPES_H

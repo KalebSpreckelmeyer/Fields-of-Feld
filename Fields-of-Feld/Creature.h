@@ -2,10 +2,12 @@
 #define CREATURE_H
 
 #include "Character.h"
+#include "IDManager.h"
 
 class Creature : public Character
 {
 public:
+	int id;
 	float damage = 0.0f;
 	float reach = 0.0f;
 
@@ -25,9 +27,7 @@ public:
 	nlohmann::json toJson() const override;
 	static std::shared_ptr<Character> fromJson(const nlohmann::json& j);
 
-	void takeDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon, std::shared_ptr<Ammunition> ammunition,
-		std::shared_ptr<ThrownConsumable> consumable, Spell* spell, std::optional<std::vector<std::shared_ptr<Character>>>& allies,
-		std::optional<std::vector<std::shared_ptr<Character>>>& enemyAllies) override;
+	void printCreatureStats();
 };
 #endif // !CREATURE_H
 

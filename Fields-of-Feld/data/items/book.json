@@ -1,0 +1,13 @@
+[
+    {
+        "type": "Book",
+        "id": 0,
+        "name": "Testing Book",
+        "description": "Testing description",
+        "value": 10.0,
+        "weight": 1.0,
+        "quantity": 1.0,
+        "magnitude": 10,
+        "effects": []
+    }
+]

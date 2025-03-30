@@ -1,70 +1,98 @@
 #include "Ammunition.h"
 #include <iostream>
 #include "PhysicalDamageType.h"
-#include "MagicDamageType.h"
+#include "DamageTypes.h"
 #include "Human.h"
+#include "HelperFunctions.h"
 
-Ammunition::Ammunition(bool specialDamage, bool hasBeenInitialized, std::string name, std::string description, float value, float weight,
+Ammunition::Ammunition(bool specialDamage, std::string name, std::string description, float value, float weight,
 	float quantity, EquipSlots slot, float range, AmmoType ammoType)
-	: Item(hasBeenInitialized, name, description, value, weight, quantity, slot), specialDamage(specialDamage), 
-	range(range), ammoType(ammoType)
+	: Item(name, description, value, weight, quantity, slot), specialDamage(specialDamage), 
+	range(range), ammoType(ammoType), id(IDManager::getNextId())
 {
 }
 
 nlohmann::json Ammunition::toJson() const
 {
-	return{
-		{"id", id },
-		{ "type", "Ammunition"},
-		{ "hasBeenInitialized", hasBeenInitialized },
-		{ "name", name },
-		{ "description", description },
-		{ "value", value },
-		{ "weight", weight },
-		{ "quantity", quantity },
-		{ "slot", static_cast<int>(slot) },
-		{ "specialDamage", specialDamage },
-		{ "range", range },
-		{ "ammoType", static_cast<int>(ammoType) }
-	};
+	json j;
+	j["id"] = id;
+	j["type"] = "Ammunition";
+	j["name"] = name;
+	j["description"] = description;
+	j["value"] = value;
+	j["weight"] = weight;
+	j["quantity"] = quantity;
+	j["slot"] = equipSlotToString(slot);
+	j["specialDamage"] = specialDamage;
+	j["range"] = range;
+	j["ammoType"] = ammoTypeToString(ammoType);
+
+	// Convert physicalDamage
+	json dmgJson;
+	for (const auto& [type, val] : damageTypes) {
+		dmgJson[damageTypesToString(type)] = val;
+	}
+	j["damageTypes"] = dmgJson;
+
+	// Enchantments
+	j["enchantments"] = json::array();
+	for (const auto& ench : enchantments) {
+		j["enchantments"].push_back(ench->toJson());
+	}
+
+	return j;
+
 }
 
 std::shared_ptr<Ammunition> Ammunition::fromJson(const nlohmann::json& j)
 {
-	auto ammo = std::make_shared<Ammunition>(
-		j.at("specialDamage"),
-		j.at("hasBeenInitialized"),
-		j.at("name"),
-		j.at("description"),
-		j.at("value"),
-		j.at("weight"),
-		j.at("quantity"),
-		j.at("slot"),
-		j.at("range"),
-		j.at("ammoType"));
-	ammo->id = j.at("id");
+	auto ammo = std::make_shared<Ammunition>();
+
+	try {
+		// Basic fields
+		if (j.contains("id"))            ammo->id = j["id"];
+		if (j.contains("name"))          ammo->name = j["name"];
+		if (j.contains("description"))   ammo->description = j["description"];
+		if (j.contains("value"))         ammo->value = j["value"];
+		if (j.contains("weight"))        ammo->weight = j["weight"];
+		if (j.contains("quantity"))      ammo->quantity = j["quantity"];
+		if (j.contains("slot"))          ammo->slot = stringToEquipSlot(j["slot"]);
+		if (j.contains("specialDamage")) ammo->specialDamage = j["specialDamage"];
+		if (j.contains("range"))         ammo->range = j["range"];
+		if (j.contains("ammoType"))      ammo->ammoType = stringToAmmoType(j["ammoType"]);
+
+		// Physical Damage Map
+		if (j.contains("damageTypes") && j["damageTypes"].is_object()) {
+			for (const auto& [key, value] : j["damageTypes"].items()) {
+				ammo->damageTypes[stringToDamageTypes(key)] = value;
+			}
+		}
+
+		// Enchantments
+		if (j.contains("enchantments") && j["enchantments"].is_array()) {
+			for (const auto& enchantJson : j["enchantments"]) {
+				ammo->enchantments.push_back(Enchantment::fromJson(enchantJson));
+			}
+		}
+	}
+	catch (const nlohmann::json::exception& e) {
+		std::cerr << "[ERROR] Failed to load Ammunition from JSON: " << e.what() << std::endl;
+		return nullptr;
+	}
+
 	return ammo;
 }
 
-void Ammunition::setPhysicalDamage(PhysicalDamageType physType, float physDamage)
+void Ammunition::setDamage(DamageTypes damageType, float damageValue)
 {
-	physicalDamage[physType] = physDamage;
+	damageTypes[damageType] = damageValue;
 }
 
-void Ammunition::setMagicDamage(MagicDamageType magType, float magDamage)
+float Ammunition::getDamage(DamageTypes damageType)
 {
-	magicDamage[magType] = magDamage;
+	return damageTypes[damageType];
 }
 
-float Ammunition::getPhysicalDamage(PhysicalDamageType physType)
-{
-	return physicalDamage[physType];
-}
-
-float Ammunition::getMagicDamage(MagicDamageType magType)
-{
-	return magicDamage[magType];
-}
 
 float Ammunition::getAmmoDamage(std::shared_ptr<Character> target, std::shared_ptr<Ammunition> ammo)
 {
@@ -93,20 +121,20 @@ float Ammunition::getAmmoDamage(std::shared_ptr<Character> target, std::shared_p
 		{
 			auto armor = std::dynamic_pointer_cast<Armor>(item);
 			if (!armor) continue;
-			cumulativeSlashResist += armor->getPhysicalResistance(PhysicalDamageType::SLASH);
-			cumulativePierceResist += armor->getPhysicalResistance(PhysicalDamageType::PIERCE);
-			cumulativeBluntResist += armor->getPhysicalResistance(PhysicalDamageType::BLUNT);
-			cumulativeChopResist += armor->getPhysicalResistance(PhysicalDamageType::CHOP);
-			cumulativeMagicResist += armor->getMagicResistance(MagicDamageType::MAGIC);
-			cumulativeFireResist += armor->getMagicResistance(MagicDamageType::FIRE);
-			cumulativeIceResist += armor->getMagicResistance(MagicDamageType::FROST);
-			cumulativeShockResist += armor->getMagicResistance(MagicDamageType::SHOCK);
-			cumulativeWindResist += armor->getMagicResistance(MagicDamageType::WIND);
-			cumulativePoisonResist += armor->getMagicResistance(MagicDamageType::POISON);
-			cumulativeBleedResist += armor->getMagicResistance(MagicDamageType::BLEED);
-			cumulativeSleepResist += armor->getMagicResistance(MagicDamageType::SLEEP);
-			cumulativeDarkResist += armor->getMagicResistance(MagicDamageType::DARK);
-			cumulativeHolyResist += armor->getMagicResistance(MagicDamageType::HOLY);
+			cumulativeSlashResist += armor->getDefenses(Defense::SLASH);
+			cumulativePierceResist += armor->getDefenses(Defense::PIERCE);
+			cumulativeBluntResist += armor->getDefenses(Defense::BLUNT);
+			cumulativeChopResist += armor->getDefenses(Defense::CHOP);
+			cumulativeMagicResist += armor->getDefenses(Defense::MAGIC);
+			cumulativeFireResist += armor->getDefenses(Defense::FIRE);
+			cumulativeIceResist += armor->getDefenses(Defense::FROST);
+			cumulativeShockResist += armor->getDefenses(Defense::SHOCK);
+			cumulativeWindResist += armor->getDefenses(Defense::WIND);
+			cumulativePoisonResist += armor->getDefenses(Defense::POISON);
+			cumulativeBleedResist += armor->getDefenses(Defense::BLEED);
+			cumulativeSleepResist += armor->getDefenses(Defense::SLEEP);
+			cumulativeDarkResist += armor->getDefenses(Defense::DARK);
+			cumulativeHolyResist += armor->getDefenses(Defense::HOLY);
 		}
 
 		cumulativeSlashResist = std::max(cumulativeSlashResist, 0.0f);
@@ -126,34 +154,34 @@ float Ammunition::getAmmoDamage(std::shared_ptr<Character> target, std::shared_p
 		cumulativeWindResist = std::max(cumulativeWindResist, 0.0f);
 
 		//damage = damage - (damage * (resistance / 500)) - max won't let it go below 0
-		float cumulativeSlashDamage = ammo->getPhysicalDamage(PhysicalDamageType::SLASH) - (ammo->getPhysicalDamage(PhysicalDamageType::SLASH) * (cumulativeSlashResist / 500));
+		float cumulativeSlashDamage = ammo->getDamage(DamageTypes::SLASH) - (ammo->getDamage(DamageTypes::SLASH) * (cumulativeSlashResist / 500));
 		cumulativeSlashDamage = std::max(cumulativeSlashDamage, 0.0f);
-		float cumulativePierceDamage = ammo->getPhysicalDamage(PhysicalDamageType::PIERCE) - (ammo->getPhysicalDamage(PhysicalDamageType::PIERCE) * (cumulativePierceResist / 500));
+		float cumulativePierceDamage = ammo->getDamage(DamageTypes::PIERCE) - (ammo->getDamage(DamageTypes::PIERCE) * (cumulativePierceResist / 500));
 		cumulativePierceDamage = std::max(cumulativePierceDamage, 0.0f);
-		float cumulativeBluntDamage = ammo->getPhysicalDamage(PhysicalDamageType::BLUNT) - (ammo->getPhysicalDamage(PhysicalDamageType::BLUNT) * (cumulativeBluntResist / 500));
+		float cumulativeBluntDamage = ammo->getDamage(DamageTypes::BLUNT) - (ammo->getDamage(DamageTypes::BLUNT) * (cumulativeBluntResist / 500));
 		cumulativeBluntDamage = std::max(cumulativeBluntDamage, 0.0f);
-		float cumulativeChopDamage = ammo->getPhysicalDamage(PhysicalDamageType::CHOP) - (ammo->getPhysicalDamage(PhysicalDamageType::CHOP) * (cumulativeChopResist / 500));
+		float cumulativeChopDamage = ammo->getDamage(DamageTypes::CHOP) - (ammo->getDamage(DamageTypes::CHOP) * (cumulativeChopResist / 500));
 		cumulativeChopDamage = std::max(cumulativeChopDamage, 0.0f);
 
-		float cumulativeMagicDamage = ammo->getMagicDamage(MagicDamageType::MAGIC) - (ammo->getMagicDamage(MagicDamageType::MAGIC) * (cumulativeMagicResist / 500));
+		float cumulativeMagicDamage = ammo->getDamage(DamageTypes::MAGIC) - (ammo->getDamage(DamageTypes::MAGIC) * (cumulativeMagicResist / 500));
 		cumulativeMagicDamage = std::max(cumulativeMagicDamage, 0.0f);
-		float cumulativeFireDamage = ammo->getMagicDamage(MagicDamageType::FIRE) - (ammo->getMagicDamage(MagicDamageType::FIRE) * (cumulativeFireResist / 500));
+		float cumulativeFireDamage = ammo->getDamage(DamageTypes::FIRE) - (ammo->getDamage(DamageTypes::FIRE) * (cumulativeFireResist / 500));
 		cumulativeFireDamage = std::max(cumulativeFireDamage, 0.0f);
-		float cumulativeIceDamage = ammo->getMagicDamage(MagicDamageType::FROST) - (ammo->getMagicDamage(MagicDamageType::FROST) * (cumulativeIceResist / 500));
+		float cumulativeIceDamage = ammo->getDamage(DamageTypes::FROST) - (ammo->getDamage(DamageTypes::FROST) * (cumulativeIceResist / 500));
 		cumulativeIceDamage = std::max(cumulativeIceDamage, 0.0f);
-		float cumulativeShockDamage = ammo->getMagicDamage(MagicDamageType::SHOCK) - (ammo->getMagicDamage(MagicDamageType::SHOCK) * (cumulativeShockResist / 500));
+		float cumulativeShockDamage = ammo->getDamage(DamageTypes::SHOCK) - (ammo->getDamage(DamageTypes::SHOCK) * (cumulativeShockResist / 500));
 		cumulativeShockDamage = std::max(cumulativeShockDamage, 0.0f);
-		float cumulativePoisonDamage = ammo->getMagicDamage(MagicDamageType::POISON) - (ammo->getMagicDamage(MagicDamageType::POISON) * (cumulativePoisonResist / 500));
+		float cumulativePoisonDamage = ammo->getDamage(DamageTypes::POISON) - (ammo->getDamage(DamageTypes::POISON) * (cumulativePoisonResist / 500));
 		cumulativePoisonDamage = std::max(cumulativePoisonDamage, 0.0f);
-		float cumulativeBleedDamage = ammo->getMagicDamage(MagicDamageType::BLEED) - (ammo->getMagicDamage(MagicDamageType::BLEED) * (cumulativeBleedResist / 500));
+		float cumulativeBleedDamage = ammo->getDamage(DamageTypes::BLEED) - (ammo->getDamage(DamageTypes::BLEED) * (cumulativeBleedResist / 500));
 		cumulativeBleedDamage = std::max(cumulativeBleedDamage, 0.0f);
-		float cumulativeSleepDamage = ammo->getMagicDamage(MagicDamageType::SLEEP) - (ammo->getMagicDamage(MagicDamageType::SLEEP) * (cumulativeSleepResist / 500));
+		float cumulativeSleepDamage = ammo->getDamage(DamageTypes::SLEEP) - (ammo->getDamage(DamageTypes::SLEEP) * (cumulativeSleepResist / 500));
 		cumulativeSleepDamage = std::max(cumulativeSleepDamage, 0.0f);
-		float cumulativeDarkDamage = ammo->getMagicDamage(MagicDamageType::DARK) - (ammo->getMagicDamage(MagicDamageType::DARK) * (cumulativeDarkResist / 500));
+		float cumulativeDarkDamage = ammo->getDamage(DamageTypes::DARK) - (ammo->getDamage(DamageTypes::DARK) * (cumulativeDarkResist / 500));
 		cumulativeDarkDamage = std::max(cumulativeDarkDamage, 0.0f);
-		float cumulativeHolyDamage = ammo->getMagicDamage(MagicDamageType::HOLY) - (ammo->getMagicDamage(MagicDamageType::HOLY) * (cumulativeHolyResist / 500));
+		float cumulativeHolyDamage = ammo->getDamage(DamageTypes::HOLY) - (ammo->getDamage(DamageTypes::HOLY) * (cumulativeHolyResist / 500));
 		cumulativeHolyDamage = std::max(cumulativeHolyDamage, 0.0f);
-		float cumulativeWindDamage = ammo->getMagicDamage(MagicDamageType::WIND) - (ammo->getMagicDamage(MagicDamageType::WIND) * (cumulativeWindResist / 500));
+		float cumulativeWindDamage = ammo->getDamage(DamageTypes::WIND) - (ammo->getDamage(DamageTypes::WIND) * (cumulativeWindResist / 500));
 		cumulativeWindDamage = std::max(cumulativeWindDamage, 0.0f);
 
 		//DAMAGE AFTER RESISTANCES = damage of all damages after resistances applied added together	

@@ -1,0 +1,494 @@
+[
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Cheap Beer",
+    "description": "Cheep beer likely sourced from your average tavern. Restores fatigue when drank.",
+    "value": 3.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 60,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 60
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Water Flask",
+    "description": "Clean water in a cheap metal flask. Restores a small amount of fatigue when drank.",
+    "value": 2.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 40,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 40
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Water Jug",
+    "description": "Clean water in a ceramic jug. Restores a small amount of fatigue when drank.",
+    "value": 3.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 80,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 80
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Berry Water",
+    "description": "Clean water flavored with crushed berries. Restores a large amount of fatigue when drank.",
+    "value": 3.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 80,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 80
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Orange Water",
+    "description": "Clean water flavored with oranges. Restores a large amount of fatigue when drank.",
+    "value": 3.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 80,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 80
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Cheap Ale",
+    "description": "A bottle of cheap ale likely sourced from a tavern or inn. Restores a small amount fatigue when drank.",
+    "value": 3.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 60,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 60
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Cheap Mead",
+    "description": "A bottle of cheap mead likely sourced from a tavern or inn. Restores a small amount fatigue when drank.",
+    "value": 3.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 60,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 60
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Quality Ale",
+    "description": "A bottle of quality ale that would satisfy any warrior. Restores a large amount fatigue when drank.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 90,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 90
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Quality Wine",
+    "description": "A bottle of quality wine that would satisfy any noble. Restores a large amount fatigue when drank.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 90,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 90
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Quality Beer",
+    "description": "A bottle of quality ale that would satisfy any peasant. Restores a large amount fatigue when drank.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 90,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 90
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Quality Mead",
+    "description": "A bottle of quality mead that would satisfy any warrior. Restores a large amount fatigue when drank.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 90,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 90
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "High Quality Mead",
+    "description": "A bottle of high quality mead. It would fetch a good price for its weight, if one could stand giving it away. Restores a vast amount fatigue when drank.",
+    "value": 10.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 130,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 130
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "High Quality Ale",
+    "description": "A bottle of high quality ale. It would fetch a good price for its weight, if one could stand giving it away. Restores a vast amount fatigue when drank.",
+    "value": 10.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 130,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 130
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "High Quality Beer",
+    "description": "A bottle of high quality beer. It would fetch a good price for its weight, if one could stand giving it away. Restores a vast amount fatigue when drank.",
+    "value": 10.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 130,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 130
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "High Quality Wine",
+    "description": "A bottle of high quality wine. It would fetch a good price for its weight, if one could stand giving it away. Restores a vast amount fatigue when drank.",
+    "value": 10.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 130,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 130
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Cheap Bottle of Wine",
+    "description": "A bottle of cheap wine likely sourced from a tavern or inn. Restores a small amount fatigue when drank.",
+    "value": 3.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 60,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 60
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Bubbly Orange Water",
+    "description": "A bottle of orange flavored water that has been enchanted by an Aeromancer to be bubbly and delicious. Restores a vast amount of fatigue when drank.",
+    "value": 12.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 130,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 130
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Bubbly Berry Water",
+    "description": "A bottle of berry flavored water that has been enchanted by an Aeromancer to be bubbly and delicious. Restores a vast amount of fatigue when drank.",
+    "value": 12.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 130,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 130
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Bubbly Beer",
+    "description": "A bottle of beer that has been enchanted by an Aeromancer to be bubbly and delicious. Restores a vast amount of fatigue when drank.",
+    "value": 12.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 150,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 150
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Bubbly Mead",
+    "description": "A bottle of mead that has been enchanted by an Aeromancer to be bubbly and delicious. Restores a vast amount of fatigue when drank.",
+    "value": 12.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 150,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 150
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Bubbly Ale",
+    "description": "A bottle of ale that has been enchanted by an Aeromancer to be bubbly and delicious. Restores a vast amount of fatigue when drank.",
+    "value": 12.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 150,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 150
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Bubbly Wine",
+    "description": "A bottle of wine that has been enchanted by an Aeromancer to be bubbly and delicious. Restores a vast amount of fatigue when drank.",
+    "value": 12.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 150,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 150
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Battle Brew",
+    "description": "A flask of bear flavored with magical spices and peppers. Spicy beyond belief, it boosts one's attack speed and restores fatigue.",
+    "value": 20.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 50,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 50
+      },
+      {
+        "type": "AttackSpeed",
+        "duration": 5,
+        "magnitude": 50,
+        "stackable": false,
+        "stacks": 1,
+        "maxStacks": 1
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Mage's Brew",
+    "description": "A flask of blackened liquid from a distant land that energizes its consumer. Bitter beyond belief, it increases cast speed and restores fatigue.",
+    "value": 20.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 50,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 50
+      },
+      {
+        "type": "CastSpeed",
+        "duration": 5,
+        "magnitude": 50,
+        "stackable": false,
+        "stacks": 1,
+        "maxStacks": 1
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Weak Tea",
+    "description": "A flask of tea brewed from a sparing amount medicinal leaves. Restores a small amount of fatigue and a pittance of health.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 50,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 50
+      },
+      {
+        "type": "RestoreHealth",
+        "magnitude": 20
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Strong Tea",
+    "description": "A flask of tea brewed from medicinal leaves. Restores a large amount of fatigue and a small amount of health.",
+    "value": 5.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 100,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 100
+      },
+      {
+        "type": "RestoreHealth",
+        "magnitude": 50
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Archer's Brew",
+    "description": "A flask of high quality tea brewed from medicinal leaves. Calms the nerves, increasing crit chance along with restoring a large amount of fatigue and a small amount of health.",
+    "value": 20.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 50,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 50
+      },
+      {
+        "type": "RestoreHealth",
+        "magnitude": 50
+      },
+      {
+        "type": "CritChance",
+        "duration": 5,
+        "magnitude": 20,
+        "stackable": false,
+        "stacks": 1,
+        "maxStacks": 1
+      }
+    ]
+  },
+  {
+    "id": 0,
+    "type": "Drink",
+    "name": "Lightning in a Bottle",
+    "description": "A bottle of blackened liquid that has been further enchanted by a Fulguramancer to contain the essence of lightning. Bitter beyond belief, it increases movement speed and restores a large amount of fatigue.",
+    "value": 20.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 50,
+    "effects": [
+      {
+        "type": "RestoreFatigue",
+        "magnitude": 50
+      },
+      {
+        "type": "Speed",
+        "duration": 5,
+        "magnitude": 100,
+        "stackable": false,
+        "stacks": 1,
+        "maxStacks": 1
+      }
+    ]
+  }
+]

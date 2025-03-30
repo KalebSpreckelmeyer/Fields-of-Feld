@@ -4,8 +4,9 @@
 #include <vector>
 #include "Enchantment.h"
 #include "PhysicalDamageType.h"
-#include "MagicDamageType.h"
+#include "DamageTypes.h"
 #include <unordered_map>
+#include "Potion.h"
 
 class Enchantment;
 
@@ -13,12 +14,10 @@ class Ammunition :
     public Item
 {
 public:
+	int id;
+	std::unordered_map<DamageTypes, float> damageTypes;
 
-	std::unordered_map<PhysicalDamageType, float> physicalDamage;
-	std::unordered_map<MagicDamageType, float> magicDamage;
-
-	PhysicalDamageType physType = PhysicalDamageType::BLUNT;
-	MagicDamageType magType = MagicDamageType::NONE;
+	DamageTypes physType = DamageTypes::BLUNT;
 
 	bool specialDamage = false; //bonus damage to ghosts, skeletons, etc... used for silver arrows, holy water arrows, etc...
 	float range = 0.0f;
@@ -27,13 +26,9 @@ public:
 
 	std::vector<std::shared_ptr<Enchantment>> enchantments;
 
-	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
+	void setDamage(DamageTypes damageType, float damageValue);
 
-	void setMagicDamage(MagicDamageType magType, float magDamage);
-
-	float getPhysicalDamage(PhysicalDamageType physType);
-
-	float getMagicDamage(MagicDamageType magType);
+	float getDamage(DamageTypes damageType);
 
 	float getAmmoDamage(std::shared_ptr<Character> target, std::shared_ptr<Ammunition> ammo);
 
@@ -44,7 +39,7 @@ public:
 
 	Ammunition() = default;
 
-	Ammunition(bool specialDamage, bool hasBeenInitialized, std::string name, std::string description,
+	Ammunition(bool specialDamage, std::string name, std::string description,
 		 float value, float weight, float quantity, 
 		EquipSlots slot, float range, AmmoType ammoType);
 

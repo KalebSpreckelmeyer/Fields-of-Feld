@@ -93,7 +93,7 @@ public:
 class MaxFatigueEffect : public Effect
 {
 public:
-	MaxFatigueEffect(float magnitude);
+	MaxFatigueEffect(float magnitude, float duration);
 
 	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
 	void tick(std::shared_ptr<Character> target) override;
@@ -265,7 +265,7 @@ public:
 		DARK,
 		HOLY
 	};
-	ResistanceType resistance;
+	ResistanceType resistance = ResistanceType::BLUNT;
 	ResistanceEffect(ResistanceType resistance, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 	
 	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;

@@ -1,37 +1,42 @@
 #pragma once
 #include "Item.h"
 #include <unordered_map>
-#include "PhysicalDamageType.h"
-#include "MagicDamageType.h"
+#include "Defense.h"
 #include "Enchantment.h"
 #include <vector>
-
+#include "Ammunition.h"
 class Armor :
     public Item
 {
 public:
+	int id;
+    std::unordered_map<Defense, float> defenses;
 
-    std::unordered_map<PhysicalDamageType, float> physicalResistance;
-	std::unordered_map<MagicDamageType, float> magicResistance;
-
-	PhysicalDamageType physType = PhysicalDamageType::BLUNT;
-	MagicDamageType magType = MagicDamageType::NONE;
-
+	//PhysicalDamageType physType = PhysicalDamageType::BLUNT;
+	//DamageTypes magType = DamageTypes::NONE;
+	bool isHead = false;
+	bool isChest = false;
+	bool isArms = false;
+	bool isLegs = false;
     bool isLight = false;
     bool isMedium = false;
 	bool isHeavy = false;
-    enum class ArmorDescriptor { LEATHER, PADDED, STUDDEDLEATHER, CHAIN, LAMELLAR, SCALE, CHAINPLATE, BEASTSCALE, FULLPLATE };
+    enum class ArmorDescriptor { CLOTH, LEATHER, PADDED, STUDDEDLEATHER, CHAIN, LAMELLAR, SCALE, CHAINPLATE, BEASTSCALE, FULLPLATE };
 	ArmorDescriptor armorDescriptor = ArmorDescriptor::LEATHER;
 
 	std::vector<std::shared_ptr<Enchantment>> enchantments;
 
-	void setPhysicalResistance(PhysicalDamageType physType, float physResistance);
+	void setDefenses(Defense physType, float physResistance);
 
-	void setMagicResistance(MagicDamageType magType, float magResistance);
+	//void setMagicResistance(Defense magType, float magResistance);
 
-	float getPhysicalResistance(PhysicalDamageType physType);
+	float getDefenses(Defense physType);
 
-	float getMagicResistance(MagicDamageType magType);
+	float getArmorDefenseBase(std::shared_ptr<Armor> armor);
+
+	float getArmorDefenses(std::shared_ptr<Character> target, std::shared_ptr<Armor> armor);
+
+	//float getMagicResistance(Defense magType);
 
 	nlohmann::json toJson() const override;
 
@@ -39,8 +44,8 @@ public:
 
 	Armor();
 
-	Armor(std::string name, std::string description, float weight, float value, bool isLight, 
-        bool isMedium, bool isHeavy, ArmorDescriptor armorDescriptor);
+	Armor(std::string name, std::string description, float weight, float value, bool isHead, bool isChest, bool isArms, bool isLegs, bool isLight, 
+        bool isMedium, bool isHeavy, ArmorDescriptor armorDescriptor, Item::EquipSlots slot);
 
     ~Armor();
 };

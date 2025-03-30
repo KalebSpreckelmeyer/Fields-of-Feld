@@ -13,11 +13,10 @@ class ThrownConsumable :
     public Item
 {
 public:
-	std::unordered_map<PhysicalDamageType, float>physicalDamages;
-	std::unordered_map<MagicDamageType, float> magicDamages;
+	int id;
+	std::unordered_map<DamageTypes, float>damageTypes;
 
-	PhysicalDamageType physType = PhysicalDamageType::BLUNT;
-	MagicDamageType magType = MagicDamageType::NONE;
+	DamageTypes damage = DamageTypes::NONE;
 
 	//Weapon Scaling Stats
 	std::unordered_map<StatScaling, float> scalingStats;
@@ -30,8 +29,6 @@ public:
 	bool specialDamage = false;
 	float reach = 0.0f;
 	float attackSpeed = 0.0f;
-	float minRange = 0.0f;
-	float maxRange = 0.0f;
 
 	std::vector<std::shared_ptr<Enchantment>> enchantments;
 
@@ -41,13 +38,9 @@ public:
 
 	float getThrownConsumableDamage(std::shared_ptr<Character> target, ThrownConsumable consumable);
 
-	void setPhysicalDamage(PhysicalDamageType physType, float physDamage);
+	void setDamage(DamageTypes damageType, float damageValue);
 
-	void setMagicDamage(MagicDamageType magType, float magDamage);
-
-	float getPhysicalDamage(PhysicalDamageType physType);
-
-	float getMagicDamage(MagicDamageType magType);
+	float getDamage(DamageTypes damageType);
 
 	float getThrownConsumableScalingValue(StatScaling);
 
@@ -57,7 +50,7 @@ public:
 
 	void setThrownConsumableRequirementValue(StatScaling, float requirementValue);
 
-	ThrownConsumable() = default;
+	ThrownConsumable();
 
 	ThrownConsumable(bool specialDamage, std::string name, std::string description, float reach, float attackSpeed, float weight, float quantity, float value);
 
