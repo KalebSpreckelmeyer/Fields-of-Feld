@@ -21,7 +21,7 @@ nlohmann::json LootItem::toJson() const {
 std::shared_ptr<Item> LootItem::fromJson(const nlohmann::json& j) {
     auto loot = std::make_shared<LootItem>();
 
-    if (j.contains("id")) loot->id = j["id"];
+    if (j.contains("id")) loot->id = IDManager::getNextId();
     if (j.contains("name")) loot->name = j["name"];
     if (j.contains("description")) loot->description = j["description"];
     if (j.contains("value")) loot->value = j["value"];

@@ -348,6 +348,33 @@ void mainMenu()
 		}
 	}
 
+	// Load ammo from file
+	std::ifstream ammoFile("data/items/ammunition.json");
+	if (!ammoFile) {
+		std::cerr << "Failed to open ammunition.json" << std::endl;
+	}
+
+	nlohmann::json ammoJson;
+	ammoFile >> ammoJson;
+
+	// Check that the file contains an array
+	if (!ammoJson.is_array()) {
+		std::cerr << "Expected an array of ammo in ammunition.json" << std::endl;
+	}
+	else
+	{
+		// Parse each item and push into the vector
+		for (const auto& j : ammoJson) {
+			shared_ptr<Ammunition> item = std::dynamic_pointer_cast<Ammunition>(Ammunition::fromJson(j));
+			if (item) {
+				allItems.push_back(item);
+			}
+			else {
+				std::cerr << "Failed to parse armor from JSON." << std::endl;
+			}
+		}
+	}
+
 	//Load spells from file ----------------------------------<
 	vector<shared_ptr<Spell>> allSpells;
 
@@ -515,8 +542,8 @@ void mainMenu()
 				playerLoaded = true;
 				DialogueManager dialogueManager;
 
-				dialogueManager.loadDialogueNodesFromFolder("data/dialogues/allDialogues/Raw");
-				dialogueManager.playDialogue("Inspect Surroundings", game);
+				//dialogueManager.loadDialogueNodesFromFolder("data/dialogues/allDialogues/Raw");
+				//dialogueManager.playDialogue("Inspect Surroundings", game);
 			}
 			break;
 		}
@@ -671,25 +698,9 @@ void mainMenu()
 		}
 		case 8: // DEBUG MENU
 		{
-			shared_ptr<Weapon> sword = make_shared < Weapon>(true, "NAME", "DESC", 1, 1, 1, 1, 1, false, false, Weapon::WeaponType::STRAIGHTSWORD, Item::EquipSlots::MAINHAND);
-			sword->setDamage(DamageTypes::BLUNT, 1);
 
-			sword->setDefense(Defense::BLEED, 1);
-			sword->setDefense(Defense::BLUNT, 1);
-
-			sword->setWeaponRequirementValue(StatScaling::STRENGTH, 1);
-			sword->setWeaponScalingValue(StatScaling::STRENGTH, 1);
-
-			sword->enchantments.push_back(make_shared<Enchantment>("Enchantment", "Desc", false, false, false));
-			sword->enchantments[0]->effects.push_back(make_shared<DamageEffect>(DamageTypes::BLEED, 1));
-
-			json j;
-			j = sword->toJson();
-			ofstream outFile("templates/weaponTemplate.json");
-			outFile << j.dump(4);
-
-			//DialogueBuilder dialogueBuilder;
-			//dialogueBuilder.processDialogueTree("data/dialogues/allDialogues/Raw/HunterCabin.json");
+			DialogueBuilder dialogueBuilder;
+			dialogueBuilder.processDialogueTree("data/dialogues/allDialogues/Raw/HunterCabin.json");
 			int choice = 0;
 			std::cin >> choice;
 			break;

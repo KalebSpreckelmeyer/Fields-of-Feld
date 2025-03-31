@@ -67,7 +67,7 @@ std::shared_ptr<Spell> Spell::fromJson(const nlohmann::json& j) {
 	auto spell = std::make_shared<Spell>();
 
 	try {
-		if (j.contains("id")) spell->id = j.at("id");
+		if (j.contains("id")) spell->id = IDManager::getNextId();
 		if (j.contains("name")) spell->name = j.at("name");
 		if (j.contains("description")) spell->description = j.at("description");
 		if (j.contains("range")) spell->range = j.at("range");

@@ -1,0 +1,190 @@
+{
+    "Bandit Crossbowman": [
+        {
+            "weapons": [
+                {
+                    "name": "Wooden Crossbow",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                },
+                {
+                    "name": "Iron Dagger",
+                    "slot": "RESERVE1",
+                    "quantity": 1
+                }
+            ],
+            "ammunition": [
+                {
+                    "name": "Iron Bolt",
+                    "slot": "QUIVER1",
+                    "quantity": 20
+                }
+            ],
+            "armor": [
+                {
+                    "name": "Leather Vest",
+                    "slot": "CHEST",
+                    "quantity": 1
+                },
+                {
+                    "name": "Leather Gloves",
+                    "slot": "ARMS",
+                    "quantity": 1
+                },
+                {
+                    "name": "Leather Boots",
+                    "slot": "LEGS",
+                    "quantity": 1
+                },
+                {
+                    "name": "Traveler's Hood",
+                    "slot": "HEAD",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "Bandit Longbowman": [
+        {
+            "weapons": [
+                {
+                    "name": "Wooden Longbow",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                },
+                {
+                    "name": "Iron Dagger",
+                    "slot": "RESERVE1",
+                    "quantity": 1
+                }
+            ],
+            "ammunition": [
+                {
+                    "name": "Iron Arrow",
+                    "slot": "QUIVER1",
+                    "quantity": 20
+                }
+            ],
+            "armor": [
+                {
+                    "name": "Leather Vest",
+                    "slot": "CHEST",
+                    "quantity": 1
+                },
+                {
+                    "name": "Leather Gloves",
+                    "slot": "ARMS",
+                    "quantity": 1
+                },
+                {
+                    "name": "Leather Boots",
+                    "slot": "LEGS",
+                    "quantity": 1
+                },
+                {
+                    "name": "Traveler's Hood",
+                    "slot": "HEAD",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "Bandit Sword and Board": [
+        {
+            "weapons": [
+                {
+                    "name": "Iron Shortsword",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                },
+                {
+                    "name": "Wooden Round Shield",
+                    "slot": "OFFHAND",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "Bandit Brawler": [
+        {
+            "weapons": [
+                {
+                    "name": "Iron Reinforced Caestus",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "Bandit Berserker": [
+        {
+            "weapons": [
+                {
+                    "name": "Iron Great Axe",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "Bandit Swordsman": [
+        {
+            "weapons": [
+                {
+                    "name": "Iron Scimitar",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "Bandit Highlander": [
+        {
+            "weapons": [
+                {
+                    "name": "Iron Claymore",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "Bandit Spearman": [
+        {
+            "weapons": [
+                {
+                    "name": "Iron Short Spear",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "Bandit Crusher": [
+        {
+            "weapons": [
+                {
+                    "name": "Iron Great Mace",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "Bandit Bruiser": [
+        {
+            "weapons": [
+                {
+                    "name": "Iron Morningstar",
+                    "slot": "MAINHAND",
+                    "quantity": 1
+                },
+                {
+                    "name": "Iron Kite Shield",
+                    "slot": "OFFHAND",
+                    "quantity": 1
+                }
+            ]
+        }
+    ]
+}

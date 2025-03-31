@@ -2,13 +2,103 @@
     {
         "type": "Potion",
         "id": 0,
-        "name": "Testing Potion",
-        "description": "Testing Potion",
-        "value": 10.0,
-        "weight": 1.0,
+        "name": "Minor Healing Potion",
+        "description": "A weak healing potion. Restores the health of the consumer when drank.",
+        "value": 15.0,
+        "weight": 0.5,
         "quantity": 1.0,
-        "magnitude": 10,
-        "potionEffect": "NONE",
-        "effects": []
+        "magnitude": 100,
+        "potionEffect": "HEALING",
+        "effects": [
+            {
+                "type": "RestoreHealth",
+                "magnitude": 100.0
+            }
+        ]
+    },
+    {
+        "type": "Potion",
+        "id": 0,
+        "name": "Modest Healing Potion",
+        "description": "A modest healing potion. Restores the health of the consumer when drank.",
+        "value": 30.0,
+        "weight": 0.5,
+        "quantity": 1.0,
+        "magnitude": 160,
+        "potionEffect": "HEALING",
+        "effects": [
+            {
+                "type": "RestoreHealth",
+                "magnitude": 160.0
+            }
+        ]
+    },
+    {
+        "type": "Potion",
+        "id": 0,
+        "name": "Healing Potion",
+        "description": "A healing potion. Restores the health of the consumer when drank.",
+        "value": 40.0,
+        "weight": 0.5,
+        "quantity": 1.0,
+        "magnitude": 240,
+        "potionEffect": "HEALING",
+        "effects": [
+            {
+                "type": "RestoreHealth",
+                "magnitude": 240.0
+            }
+        ]
+    },
+    {
+        "type": "Potion",
+        "id": 0,
+        "name": "Potent Healing Potion",
+        "description": "A potent healing potion. Restores the health of the consumer when drank.",
+        "value": 60.0,
+        "weight": 0.5,
+        "quantity": 1.0,
+        "magnitude": 360,
+        "potionEffect": "HEALING",
+        "effects": [
+            {
+                "type": "RestoreHealth",
+                "magnitude": 360.0
+            }
+        ]
+    },
+    {
+        "type": "Potion",
+        "id": 0,
+        "name": "Great Healing Potion",
+        "description": "A great healing potion. Restores the health of the consumer when drank.",
+        "value": 80.0,
+        "weight": 0.5,
+        "quantity": 1.0,
+        "magnitude": 500,
+        "potionEffect": "HEALING",
+        "effects": [
+            {
+                "type": "RestoreHealth",
+                "magnitude": 500.0
+            }
+        ]
+    },
+    {
+        "type": "Potion",
+        "id": 0,
+        "name": "Ultimate Healing Potion",
+        "description": "An ultimate healing potion. Restores the health of the consumer when drank.",
+        "value": 100.0,
+        "weight": 0.5,
+        "quantity": 1.0,
+        "magnitude": 800,
+        "potionEffect": "HEALING",
+        "effects": [
+            {
+                "type": "RestoreHealth",
+                "magnitude": 800.0
+            }
+        ]
     }
 ]

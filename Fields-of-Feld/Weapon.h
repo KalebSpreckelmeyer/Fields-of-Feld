@@ -33,6 +33,7 @@ public:
 	bool twoHanded = 0.0f;
 	bool needsAmmo = 0.0f;
 	float stability = 0.0f;
+	float magicAdjust;
 	enum class WeaponType {
 		DAGGER, STRAIGHTSWORD, GREATSWORD, FIST, MACE, GREATMACE,
 		HATCHET, AXE, GREATAXE, THRUSTINGSWORD, SPEAR, GREATSPEAR, HALBERD, POLEHAMMER,
@@ -72,7 +73,7 @@ public:
 	Weapon();
 
 	Weapon(bool specialDamage, std::string name, std::string description, float stability, float reach, float attackSpeed, float weight, float value,
-		bool twohanded, bool needsAmmo, WeaponType weaponType, EquipSlots slot);
+		bool twohanded, bool needsAmmo, float magicAdjust, WeaponType weaponType, EquipSlots slot);
 
 	~Weapon() = default;
 };

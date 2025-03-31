@@ -1,68 +1,43 @@
 {
     "attackSpeed": 1.0,
     "damageTypes": {
-        "CHOP": 0.0,
-        "NONE": 0.0,
-        "MAGIC": 0.0,
-        "FIRE": 0.0,
-        "FROST": 0.0,
-        "SHOCK": 0.0,
-        "WIND": 0.0,
-        "POISON": 0.0,
-        "BLEED": 0.0,
-        "SLEEP": 0.0,
-        "DARK": 0.0,
-        "HOLY": 0.0,
-        "BLUNT": 0.0,
-        "SLASH": 0.0,
-        "PIERCE": 0.0
+        "BLUNT": 1.0
     },
     "defenseTypes": {
-        "CHOP": 0.0,
-        "NONE": 0.0,
-        "MAGIC": 0.0,
-        "FIRE": 0.0,
-        "FROST": 0.0,
-        "SHOCK": 0.0,
-        "WIND": 0.0,
-        "POISON": 0.0,
-        "BLEED": 0.0,
-        "SLEEP": 0.0,
-        "DARK": 0.0,
-        "HOLY": 0.0,
-        "BLUNT": 0.0,
-        "SLASH": 0.0,
-        "PIERCE": 0.0
+        "BLEED": 1.0,
+        "BLUNT": 1.0
     },
     "description": "DESC",
-    "enchantments": [],
-    "id": 0,
+    "enchantments": [
+        {
+            "description": "Desc",
+            "effects": [
+                {
+                    "damageMagnitude": 1.0,
+                    "damageTypes": "BLEED",
+                    "type": "Damage"
+                }
+            ],
+            "name": "Enchantment",
+            "type": "Enchantment",
+            "useOnAlly": false,
+            "useOnEnemy": false,
+            "useOnSelf": false
+        }
+    ],
+    "id": 1250,
     "name": "NAME",
     "needsAmmo": false,
     "quantity": 1.0,
     "reach": 1.0,
     "scalingStats": {
-        "NONE": 0.0,
-        "STRENGTH": 0.0,
-        "AGILITY": 0.0,
-        "CHARISMA": 0.0,
-        "INTELLIGENCE": 0.0,
-        "ARCANE": 0.0,
-        "FAITH": 0.0,
-        "LUCK": 0.0
+        "STRENGTH": 1.0
     },
-    "slot": "BACKPACK",
-    "specialDamage": false,
+    "slot": "MAINHAND",
+    "specialDamage": true,
     "stability": 1.0,
     "statRequirements": {
-        "NONE": 0.0,
-        "STRENGTH": 0.0,
-        "AGILITY": 0.0,
-        "CHARISMA": 0.0,
-        "INTELLIGENCE": 0.0,
-        "ARCANE": 0.0,
-        "FAITH": 0.0,
-        "LUCK": 0.0
+        "STRENGTH": 1.0
     },
     "twoHanded": false,
     "type": "Weapon",

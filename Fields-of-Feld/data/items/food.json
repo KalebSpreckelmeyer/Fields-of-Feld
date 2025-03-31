@@ -814,5 +814,21 @@
             "magnitude": 80
         }
     ]
+  },
+  {
+    "id": 0,
+    "type": "Food",
+    "name": "Leek Soup",
+    "description": "A powerful soup that looks unassuming and is unusually salty. Restores a large amount of fatigue when eaten.",
+    "value": 8.0,
+    "weight": 0.2,
+    "quantity": 1,
+    "magnitude": 80,
+    "effects": [
+        {
+            "type": "RestoreFatigue",
+            "magnitude": 80
+        }
+    ]
   }
 ]

@@ -101,7 +101,7 @@ std::shared_ptr<Character> Creature::fromJson(const nlohmann::json& j) {
 
 	try {
 		// Base character info
-		if (j.contains("id")) creature->id = j["id"];
+		if (j.contains("id")) creature->id = IDManager::getNextId();
 		if (j.contains("isAlly")) creature->isAlly = j["isAlly"];
 		if (j.contains("namedCharacter")) creature->namedCharacter = j["namedCharacter"];
 		if (j.contains("isAlive")) creature->isAlive = j["isAlive"];

@@ -1,0 +1,641 @@
+[
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Iron Arrow",
+        "description": "A basic arrow with a hammered iron tip and a wooden shaft.",
+        "value": 1.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 50.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 50.0
+        },
+        "enchantments": []
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Iron Bolt",
+        "description": "A basic bolt with a hammered iron tip and a wooden shaft.",
+        "value": 1.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 40.0,
+        "ammoType": "BOLT",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 120.0
+        },
+        "enchantments": []
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Iron Great Arrow",
+        "description": "A basic great arrow with a hammered iron tip and a wooden shaft.",
+        "value": 2.0,
+        "weight": 0.5,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 60.0,
+        "ammoType": "GREATARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 160.0
+        },
+        "enchantments": []
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Silver Arrow",
+        "description": "An arrow with a tip of silver. Deals special damage that is highly effective to ghosts and the undead.",
+        "value": 5.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": true,
+        "range": 50.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 50.0
+        },
+        "enchantments": []
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Silver Bolt",
+        "description": "A bolt with a tip of silver. Deals special damage that is highly effective to ghosts and the undead.",
+        "value": 5.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": true,
+        "range": 40.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 120.0
+        },
+        "enchantments": []
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Silver Great Arrow",
+        "description": "A great arrow with a tip of silver. Deals special damage that is highly effective to ghosts and the undead.",
+        "value": 7.0,
+        "weight": 0.5,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": true,
+        "range": 60.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 160.0
+        },
+        "enchantments": []
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Iron Fire Arrow",
+        "description": "An arrow with a modest fire enchantment. Deals burning damage upon impact.",
+        "value": 10.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 50.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 50.0
+        },
+        "enchantments": [
+            {
+                "type": "Enchantment",
+                "name": "Modest Fire Damage",
+                "description": "Deals modest fire damage",
+                "useOnEnemy": true,
+                "useOnAlly": false,
+                "useOnSelf": false,
+                "effects": [
+                    {
+                        "type": "Burn",
+                        "duration": 1,
+                        "magnitude": 50,
+                        "stackable": false,
+                        "stacks": 1,
+                        "maxStacks": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Iron Fire Bolt",
+        "description": "A bolt with a modest fire enchantment. Deals burning damage upon impact.",
+        "value": 10.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 40.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 120.0
+        },
+        "enchantments": [
+            {
+                "type": "Enchantment",
+                "name": "Modest Fire Damage",
+                "description": "Deals modest fire damage",
+                "useOnEnemy": true,
+                "useOnAlly": false,
+                "useOnSelf": false,
+                "effects": [
+                    {
+                        "type": "Burn",
+                        "duration": 1,
+                        "magnitude": 50,
+                        "stackable": false,
+                        "stacks": 1,
+                        "maxStacks": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Iron Fire Great Arrow",
+        "description": "A great arrow with a modest fire enchantment. Deals burning damage upon impact.",
+        "value": 15.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 60.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 160.0
+        },
+        "enchantments": [
+            {
+                "type": "Enchantment",
+                "name": "Modest Fire Damage",
+                "description": "Deals modest fire damage",
+                "useOnEnemy": true,
+                "useOnAlly": false,
+                "useOnSelf": false,
+                "effects": [
+                    {
+                        "type": "Burn",
+                        "duration": 1,
+                        "magnitude": 50,
+                        "stackable": false,
+                        "stacks": 1,
+                        "maxStacks": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Frost Arrow",
+        "description": "An arrow with a modest frost enchantment. Deals freezing damage upon impact.",
+        "value": 10.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 50.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 50.0
+        },
+        "enchantments": [
+            {
+                "type": "Enchantment",
+                "name": "Modest Frost Damage",
+                "description": "Deals modest frost damage",
+                "useOnEnemy": true,
+                "useOnAlly": false,
+                "useOnSelf": false,
+                "effects": [
+                    {
+                        "type": "FrostBurst",
+                        "duration": 1,
+                        "magnitude": 50,
+                        "stackable": false,
+                        "stacks": 1,
+                        "maxStacks": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Frost Bolt",
+        "description": "A bolt with a modest frost enchantment. Deals freezing damage upon impact.",
+        "value": 10.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 40.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 120.0
+        },
+        "enchantments": [
+            {
+                "type": "Enchantment",
+                "name": "Modest Frost Damage",
+                "description": "Deals modest frost damage",
+                "useOnEnemy": true,
+                "useOnAlly": false,
+                "useOnSelf": false,
+                "effects": [
+                    {
+                        "type": "FrostBurst",
+                        "duration": 1,
+                        "magnitude": 50,
+                        "stackable": false,
+                        "stacks": 1,
+                        "maxStacks": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Frost Great Arrow",
+        "description": "A great arrow with a modest frost enchantment. Deals freezing damage upon impact.",
+        "value": 15.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 60.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 160.0
+        },
+        "enchantments": [
+            {
+                "type": "Enchantment",
+                "name": "Modest Frost Damage",
+                "description": "Deals modest frost damage",
+                "useOnEnemy": true,
+                "useOnAlly": false,
+                "useOnSelf": false,
+                "effects": [
+                    {
+                        "type": "FrostBurst",
+                        "duration": 1,
+                        "magnitude": 50,
+                        "stackable": false,
+                        "stacks": 1,
+                        "maxStacks": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Shock Arrow",
+        "description": "An arrow with a modest shock enchantment. Deals electric damage upon impact.",
+        "value": 10.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 50.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 50.0
+        },
+        "enchantments": [
+            {
+                "type": "Enchantment",
+                "name": "Modest Shock Damage",
+                "description": "Deals modest shock damage",
+                "useOnEnemy": true,
+                "useOnAlly": false,
+                "useOnSelf": false,
+                "effects": [
+                    {
+                        "type": "Shock",
+                        "duration": 1,
+                        "magnitude": 50,
+                        "stackable": false,
+                        "stacks": 1,
+                        "maxStacks": 1,
+                        "burstTriggered": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Shock Bolt",
+        "description": "A bolt with a modest shock enchantment. Deals electric damage upon impact.",
+        "value": 10.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 40.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 120.0
+        },
+        "enchantments": [
+            {
+                "type": "Enchantment",
+                "name": "Modest Shock Damage",
+                "description": "Deals modest shock damage",
+                "useOnEnemy": true,
+                "useOnAlly": false,
+                "useOnSelf": false,
+                "effects": [
+                    {
+                        "type": "Shock",
+                        "duration": 1,
+                        "magnitude": 50,
+                        "stackable": false,
+                        "stacks": 1,
+                        "maxStacks": 1,
+                        "burstTriggered": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 0,
+        "type": "Ammunition",
+        "name": "Shock Great Arrow",
+        "description": "A great arrow with a modest shock enchantment. Deals electric damage upon impact.",
+        "value": 15.0,
+        "weight": 0.1,
+        "quantity": 1.0,
+        "slot": "BACKPACK",
+        "specialDamage": false,
+        "range": 60.0,
+        "ammoType": "ARROW",
+        "damageTypes": {
+            "CHOP": 0.0,
+            "NONE": 0.0,
+            "MAGIC": 0.0,
+            "FIRE": 0.0,
+            "FROST": 0.0,
+            "SHOCK": 0.0,
+            "WIND": 0.0,
+            "POISON": 0.0,
+            "BLEED": 0.0,
+            "SLEEP": 0.0,
+            "DARK": 0.0,
+            "HOLY": 0.0,
+            "BLUNT": 0.0,
+            "SLASH": 0.0,
+            "PIERCE": 160.0
+        },
+        "enchantments": [
+            {
+                "type": "Enchantment",
+                "name": "Modest Shock Damage",
+                "description": "Deals modest shock damage",
+                "useOnEnemy": true,
+                "useOnAlly": false,
+                "useOnSelf": false,
+                "effects": [
+                    {
+                        "type": "Shock",
+                        "duration": 1,
+                        "magnitude": 50,
+                        "stackable": false,
+                        "stacks": 1,
+                        "maxStacks": 1,
+                        "burstTriggered": false
+                    }
+                ]
+            }
+        ]
+    }
+]

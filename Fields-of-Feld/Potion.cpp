@@ -61,7 +61,7 @@ std::shared_ptr<Item> Potion::fromJson(const nlohmann::json& j)
 {
 	auto potion = std::make_shared<Potion>();
 
-	if (j.contains("id")) potion->id = j["id"];
+	if (j.contains("id")) potion->id = IDManager::getNextId();
 	if (j.contains("name")) potion->name = j["name"];
 	if (j.contains("description")) potion->description = j["description"];
 	if (j.contains("value")) potion->value = j["value"];

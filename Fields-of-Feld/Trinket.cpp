@@ -39,7 +39,7 @@ nlohmann::json Trinket::toJson() const {
 std::shared_ptr<Item> Trinket::fromJson(const nlohmann::json& j) {
 	auto trinket = std::make_shared<Trinket>();
 
-	if (j.contains("id")) trinket->id = j["id"];
+	if (j.contains("id")) trinket->id = IDManager::getNextId();
 	if (j.contains("name")) trinket->name = j["name"];
 	if (j.contains("description")) trinket->description = j["description"];
 	if (j.contains("value")) trinket->value = j["value"];

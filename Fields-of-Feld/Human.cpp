@@ -344,6 +344,7 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 	std::vector<std::shared_ptr<Food>> foods;
 	std::vector<std::shared_ptr<Drink>> drinks;
 	std::vector<std::shared_ptr<Spell>> spells;
+	std::vector<std::shared_ptr<Ammunition>> ammunition;
 	for (const auto& item : allItems)
 	{
 		if (auto weapon = std::dynamic_pointer_cast<Weapon>(item))
@@ -353,6 +354,10 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 		if (auto armor = std::dynamic_pointer_cast<Armor>(item))
 		{
 			armors.push_back(armor);
+		}
+		if (auto ammo = std::dynamic_pointer_cast<Ammunition>(item))
+		{
+			ammunition.push_back(ammo);
 		}
 		if (auto trinket = std::dynamic_pointer_cast<Trinket>(item))
 		{
@@ -481,6 +486,14 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 			geomancer->inventory.backpackItems.push_back(drink);
 		}
 	}
+	for (auto potion : potions)
+	{
+		if (potion->name == "Minor Healing Potion")
+		{
+			potion->quantity = 5;
+			geomancer->inventory.backpackItems.push_back(potion);
+		}
+	}
 	geomancer->setInitialHumanStats();
 	classes.push_back(geomancer);
 
@@ -594,6 +607,14 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 			cleric->inventory.backpackItems.push_back(drink);
 		}
 	}
+	for (auto potion : potions)
+	{
+		if (potion->name == "Minor Healing Potion")
+		{
+			potion->quantity = 5;
+			cleric->inventory.backpackItems.push_back(potion);
+		}
+	}
 
 	cleric->setInitialHumanStats();
 	classes.push_back(cleric);
@@ -678,6 +699,14 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 		{
 			drink->quantity = 3;
 			pyromancer->inventory.backpackItems.push_back(drink);
+		}
+	}
+	for (auto potion : potions)
+	{
+		if (potion->name == "Minor Healing Potion")
+		{
+			potion->quantity = 5;
+			pyromancer->inventory.backpackItems.push_back(potion);
 		}
 	}
 
@@ -780,6 +809,14 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 			fulguramancer->inventory.backpackItems.push_back(drink);
 		}
 	}
+	for (auto potion : potions)
+	{
+		if (potion->name == "Minor Healing Potion")
+		{
+			potion->quantity = 5;
+			fulguramancer->inventory.backpackItems.push_back(potion);
+		}
+	}
 
 	fulguramancer->setInitialHumanStats();
 	classes.push_back(fulguramancer);
@@ -853,357 +890,412 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 			weapon->slot = Weapon::EquipSlots::OFFHAND;
 			knight->inventory.equippedItems.push_back(weapon);
 		}
-	}
-	for (auto armor : armors)
-	{
-		if (armor->name == "Iron Knight's Helmet")
-		{
-			armor->slot = Armor::EquipSlots::HEAD;
-			knight->inventory.equippedItems.push_back(armor);
-		}
-		if (armor->name == "Iron Knight's Cuirass")
-		{
-			armor->slot = Armor::EquipSlots::CHEST;
-			knight->inventory.equippedItems.push_back(armor);
-		}
-		if (armor->name == "Iron Knight's Gauntlets")
-		{
-			armor->slot = Armor::EquipSlots::ARMS;
-			knight->inventory.equippedItems.push_back(armor);
-		}
-		if (armor->name == "Iron Knight's Greaves")
-		{
-			armor->slot = Armor::EquipSlots::LEGS;
-			knight->inventory.equippedItems.push_back(armor);
-		}
-	}
-	for (auto food : foods)
-	{
-		if (food->name == "Bread Loaf")
-		{
-			food->quantity = 3;
-			knight->inventory.backpackItems.push_back(food);
-		}
-		if (food->name == "Wedge of Cheese")
-		{
-			food->quantity = 3;
-			knight->inventory.backpackItems.push_back(food);
-		}
-		if (food->name == "Raw Garlic")
-		{
-			food->quantity = 3;
-			knight->inventory.backpackItems.push_back(food);
-		}
-		if (food->name == "Hard-Boiled Egg")
-		{
-			food->quantity = 3;
-			knight->inventory.backpackItems.push_back(food);
-		}
-	}
-	for (auto drink : drinks)
-	{
-		if (drink->name == "Water Flask")
-		{
-			drink->quantity = 3;
-			knight->inventory.backpackItems.push_back(drink);
-		}
-	}
-
-	knight->setInitialHumanStats();
-	classes.push_back(knight);
-
-	//HUNTER
-	std::shared_ptr<Human> hunter = std::make_shared<Human>();;
-	hunter->health = 20.0f;
-	hunter->fatigue = 15.0f;
-	hunter->strength = 14.0f;
-	hunter->agility = 25.0f;
-	hunter->charisma = 12.0f;
-	hunter->intelligence = 8.0f;
-	hunter->arcane = 8.0f;
-	hunter->faith = 5.0f;
-	hunter->luck = 10.0f;
-	hunter->classChoice = "Hunter";
-	hunter->level = 10;
-
-	//Get the starting gear
-	for (auto weapon : weapons)
-	{
-		if (weapon->name == "Hunting Bow")
-		{
-			weapon->slot = Weapon::EquipSlots::MAINHAND;
-			hunter->inventory.equippedItems.push_back(weapon);
-		}
-		if (weapon->name == "Iron Dagger")
+		if (weapon->name == "Wooden Crossbow")
 		{
 			weapon->slot = Weapon::EquipSlots::RESERVE1;
-			hunter->inventory.equippedItems.push_back(weapon);
+			knight->inventory.equippedItems.push_back(weapon);
 		}
 	}
-	for (auto armor : armors)
+	for (auto ammo : ammunition)
 	{
-		if (armor->name == "Leather Vest")
+		if (ammo->name == "Iron Bolt")
 		{
-			armor->slot = Armor::EquipSlots::CHEST;
-			hunter->inventory.equippedItems.push_back(armor);
+			ammo->quantity = 30;
+			ammo->slot = Weapon::EquipSlots::QUIVER1;
+			knight->inventory.backpackItems.push_back(ammo);
 		}
-		if (armor->name == "Leather Gloves")
+		for (auto armor : armors)
 		{
-			armor->slot = Armor::EquipSlots::ARMS;
-			hunter->inventory.equippedItems.push_back(armor);
+			if (armor->name == "Iron Knight's Helmet")
+			{
+				armor->slot = Armor::EquipSlots::HEAD;
+				knight->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Iron Knight's Cuirass")
+			{
+				armor->slot = Armor::EquipSlots::CHEST;
+				knight->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Iron Knight's Gauntlets")
+			{
+				armor->slot = Armor::EquipSlots::ARMS;
+				knight->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Iron Knight's Greaves")
+			{
+				armor->slot = Armor::EquipSlots::LEGS;
+				knight->inventory.equippedItems.push_back(armor);
+			}
 		}
-		if (armor->name == "Leather Boots")
+		for (auto food : foods)
 		{
-			armor->slot = Armor::EquipSlots::LEGS;
-			hunter->inventory.equippedItems.push_back(armor);
+			if (food->name == "Bread Loaf")
+			{
+				food->quantity = 3;
+				knight->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Wedge of Cheese")
+			{
+				food->quantity = 3;
+				knight->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Raw Garlic")
+			{
+				food->quantity = 3;
+				knight->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Hard-Boiled Egg")
+			{
+				food->quantity = 3;
+				knight->inventory.backpackItems.push_back(food);
+			}
 		}
-	}
-	for (auto food : foods)
-	{
-		if (food->name == "Bread Loaf")
+		for (auto drink : drinks)
 		{
-			food->quantity = 3;
-			hunter->inventory.backpackItems.push_back(food);
+			if (drink->name == "Water Flask")
+			{
+				drink->quantity = 3;
+				knight->inventory.backpackItems.push_back(drink);
+			}
 		}
-		if (food->name == "Deer Jerky")
+		for (auto potion : potions)
 		{
-			food->quantity = 3;
-			hunter->inventory.backpackItems.push_back(food);
+			if (potion->name == "Minor Healing Potion")
+			{
+				potion->quantity = 5;
+				knight->inventory.backpackItems.push_back(potion);
+			}
 		}
-		if (food->name == "Duck Leg")
-		{
-			food->quantity = 1;
-			hunter->inventory.backpackItems.push_back(food);
-		}
-		if (food->name == "Hard-Boiled Egg")
-		{
-			food->quantity = 3;
-			hunter->inventory.backpackItems.push_back(food);
-		}
-	}
-	for (auto drink : drinks)
-	{
-		if (drink->name == "Water Flask")
-		{
-			drink->quantity = 3;
-			hunter->inventory.backpackItems.push_back(drink);
-		}
-	}
 
-	hunter->setInitialHumanStats();
-	classes.push_back(hunter);
+		knight->setInitialHumanStats();
+		classes.push_back(knight);
 
-	////HIGHLANDER
-	//std::shared_ptr<Human> highlander;
-	//highlander->health = 10.0f;
-	//highlander->fatigue = 10.0f;
-	//highlander->strength = 10.0f;
-	//highlander->agility = 10.0f;
-	//highlander->charisma = 10.0f;
-	//highlander->intelligence = 10.0f;
-	//highlander->arcane = 10.0f;
-	//highlander->faith = 10.0f;
-	//highlander->luck = 10.0f;
+		//HUNTER
+		std::shared_ptr<Human> hunter = std::make_shared<Human>();;
+		hunter->health = 20.0f;
+		hunter->fatigue = 15.0f;
+		hunter->strength = 14.0f;
+		hunter->agility = 25.0f;
+		hunter->charisma = 12.0f;
+		hunter->intelligence = 8.0f;
+		hunter->arcane = 8.0f;
+		hunter->faith = 5.0f;
+		hunter->luck = 10.0f;
+		hunter->classChoice = "Hunter";
+		hunter->level = 10;
 
-	//classes.push_back(highlander);
-
-	//BARBARIAN
-	std::shared_ptr<Human> barbarian = std::make_shared<Human>();;
-	barbarian->health = 30.0f;
-	barbarian->fatigue = 15.0f;
-	barbarian->strength = 25.0f;
-	barbarian->agility = 10.0f;
-	barbarian->charisma = 4.0f;
-	barbarian->intelligence = 4.0f;
-	barbarian->arcane = 9.0f;
-	barbarian->faith = 10.0f;
-	barbarian->luck = 10.0f;
-	barbarian->classChoice = "Barbarian";
-	barbarian->level = 10;
-
-	for (auto weapon : weapons)
-	{
-		if (weapon->name == "Crude War Axe")
+		//Get the starting gear
+		for (auto weapon : weapons)
 		{
-			weapon->slot = Weapon::EquipSlots::MAINHAND;
-			barbarian->inventory.equippedItems.push_back(weapon);
+			if (weapon->name == "Hunting Bow")
+			{
+				weapon->slot = Weapon::EquipSlots::MAINHAND;
+				hunter->inventory.equippedItems.push_back(weapon);
+			}
+			if (weapon->name == "Iron Dagger")
+			{
+				weapon->slot = Weapon::EquipSlots::RESERVE1;
+				hunter->inventory.equippedItems.push_back(weapon);
+			}
 		}
-		if (weapon->name == "Wooden Round Shield")
+		for (auto ammo : ammunition)
 		{
-			weapon->slot = Weapon::EquipSlots::OFFHAND;
-			barbarian->inventory.equippedItems.push_back(weapon);
+			if (ammo->name == "Iron Arrow")
+			{
+				ammo->quantity = 30;
+				ammo->slot = Weapon::EquipSlots::QUIVER1;
+				hunter->inventory.backpackItems.push_back(ammo);
+			}
 		}
+		for (auto armor : armors)
+		{
+			if (armor->name == "Leather Vest")
+			{
+				armor->slot = Armor::EquipSlots::CHEST;
+				hunter->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Leather Gloves")
+			{
+				armor->slot = Armor::EquipSlots::ARMS;
+				hunter->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Leather Boots")
+			{
+				armor->slot = Armor::EquipSlots::LEGS;
+				hunter->inventory.equippedItems.push_back(armor);
+			}
+		}
+		for (auto food : foods)
+		{
+			if (food->name == "Bread Loaf")
+			{
+				food->quantity = 3;
+				hunter->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Deer Jerky")
+			{
+				food->quantity = 3;
+				hunter->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Duck Leg")
+			{
+				food->quantity = 1;
+				hunter->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Hard-Boiled Egg")
+			{
+				food->quantity = 3;
+				hunter->inventory.backpackItems.push_back(food);
+			}
+		}
+		for (auto drink : drinks)
+		{
+			if (drink->name == "Water Flask")
+			{
+				drink->quantity = 3;
+				hunter->inventory.backpackItems.push_back(drink);
+			}
+		}
+		for (auto potion : potions)
+		{
+			if (potion->name == "Minor Healing Potion")
+			{
+				potion->quantity = 5;
+				hunter->inventory.backpackItems.push_back(potion);
+			}
+		}
+
+		hunter->setInitialHumanStats();
+		classes.push_back(hunter);
+
+		////HIGHLANDER
+		//std::shared_ptr<Human> highlander;
+		//highlander->health = 10.0f;
+		//highlander->fatigue = 10.0f;
+		//highlander->strength = 10.0f;
+		//highlander->agility = 10.0f;
+		//highlander->charisma = 10.0f;
+		//highlander->intelligence = 10.0f;
+		//highlander->arcane = 10.0f;
+		//highlander->faith = 10.0f;
+		//highlander->luck = 10.0f;
+
+		//classes.push_back(highlander);
+
+		//BARBARIAN
+		std::shared_ptr<Human> barbarian = std::make_shared<Human>();;
+		barbarian->health = 30.0f;
+		barbarian->fatigue = 15.0f;
+		barbarian->strength = 25.0f;
+		barbarian->agility = 10.0f;
+		barbarian->charisma = 4.0f;
+		barbarian->intelligence = 4.0f;
+		barbarian->arcane = 9.0f;
+		barbarian->faith = 10.0f;
+		barbarian->luck = 10.0f;
+		barbarian->classChoice = "Barbarian";
+		barbarian->level = 10;
+
+		for (auto weapon : weapons)
+		{
+			if (weapon->name == "Crude War Axe")
+			{
+				weapon->slot = Weapon::EquipSlots::MAINHAND;
+				barbarian->inventory.equippedItems.push_back(weapon);
+			}
+			if (weapon->name == "Wooden Round Shield")
+			{
+				weapon->slot = Weapon::EquipSlots::OFFHAND;
+				barbarian->inventory.equippedItems.push_back(weapon);
+			}
+		}
+		for (auto armor : armors)
+		{
+			if (armor->name == "Leather Barbarian's Helmet")
+			{
+				armor->slot = Armor::EquipSlots::HEAD;
+				barbarian->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Reinforced Bandolier")
+			{
+				armor->slot = Armor::EquipSlots::CHEST;
+				barbarian->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Leather Barbarian's Bracers")
+			{
+				armor->slot = Armor::EquipSlots::ARMS;
+				barbarian->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Leather Barbarian's Boots")
+			{
+				armor->slot = Armor::EquipSlots::LEGS;
+				barbarian->inventory.equippedItems.push_back(armor);
+			}
+		}
+		for (auto food : foods)
+		{
+			if (food->name == "Duck Leg")
+			{
+				food->quantity = 2;
+				barbarian->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Chicken Leg")
+			{
+				food->quantity = 2;
+				barbarian->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Beef Steak")
+			{
+				food->quantity = 1;
+				barbarian->inventory.backpackItems.push_back(food);
+			}
+		}
+		for (auto drink : drinks)
+		{
+			if (drink->name == "Cheap Beer")
+			{
+				drink->quantity = 3;
+				barbarian->inventory.backpackItems.push_back(drink);
+			}
+		}
+		for (auto potion : potions)
+		{
+			if (potion->name == "Minor Healing Potion")
+			{
+				potion->quantity = 5;
+				barbarian->inventory.backpackItems.push_back(potion);
+			}
+		}
+
+		barbarian->setInitialHumanStats();
+		classes.push_back(barbarian);
+
+		//SAMURAI
+		std::shared_ptr<Human> samurai = std::make_shared<Human>();;
+		samurai->health = 20.0f;
+		samurai->fatigue = 16.0f;
+		samurai->strength = 14.0f;
+		samurai->agility = 25.0f;
+		samurai->charisma = 12.0f;
+		samurai->intelligence = 8.0f;
+		samurai->arcane = 6.0f;
+		samurai->faith = 6.0f;
+		samurai->luck = 10.0f;
+		samurai->classChoice = "Samurai";
+		samurai->level = 10;
+
+		for (auto weapon : weapons)
+		{
+			if (weapon->name == "Iron Odachi")
+			{
+				weapon->slot = Weapon::EquipSlots::MAINHAND;
+				samurai->inventory.equippedItems.push_back(weapon);
+			}
+		}
+		for (auto armor : armors)
+		{
+			if (armor->name == "Samurai's Iron Kabuto Helmet")
+			{
+				armor->slot = Armor::EquipSlots::HEAD;
+				samurai->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Samurai's Iron Lamellar Armor")
+			{
+				armor->slot = Armor::EquipSlots::CHEST;
+				samurai->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Samurai's Iron Scaled Gauntlets")
+			{
+				armor->slot = Armor::EquipSlots::ARMS;
+				samurai->inventory.equippedItems.push_back(armor);
+			}
+			if (armor->name == "Samurai's Iron Greaves")
+			{
+				armor->slot = Armor::EquipSlots::LEGS;
+				samurai->inventory.equippedItems.push_back(armor);
+			}
+		}
+		for (auto food : foods)
+		{
+			if (food->name == "Duck Leg")
+			{
+				food->quantity = 1;
+				samurai->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Rice Ball")
+			{
+				food->quantity = 4;
+				samurai->inventory.backpackItems.push_back(food);
+			}
+			if (food->name == "Smoked Fish")
+			{
+				food->quantity = 2;
+				samurai->inventory.backpackItems.push_back(food);
+			}
+		}
+		for (auto drink : drinks)
+		{
+			if (drink->name == "Water Flask")
+			{
+				drink->quantity = 3;
+				samurai->inventory.backpackItems.push_back(drink);
+			}
+		}
+		for (auto potion : potions)
+		{
+			if (potion->name == "Minor Healing Potion")
+			{
+				potion->quantity = 5;
+				samurai->inventory.backpackItems.push_back(potion);
+			}
+		}
+
+		samurai->setInitialHumanStats();
+		classes.push_back(samurai);
+
+		//Display the classes:
+		for (int i = 0; i < classes.size(); i++)
+		{
+			std::cout << "=--->" << std::endl;
+			std::cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(classes[i]->classChoice + ": ") << std::endl;
+			std::cout << "=--->" << std::endl;
+			std::cout << " Health: " << classes[i]->health << std::endl;
+			std::cout << " Fatigue: " << classes[i]->fatigue << std::endl;
+			std::cout << " Strength: " << classes[i]->strength << std::endl;
+			std::cout << " Agility: " << classes[i]->agility << std::endl;
+			std::cout << " Charisma: " << classes[i]->charisma << std::endl;
+			std::cout << " Intelligence: " << classes[i]->intelligence << std::endl;
+			std::cout << " Arcane: " << classes[i]->arcane << std::endl;
+			std::cout << " Faith: " << classes[i]->faith << std::endl;
+			std::cout << " Luck: " << classes[i]->luck << std::endl;
+			std::cout << "=--->" << std::endl;
+			std::cout << " Speed: " << classes[i]->speed << std::endl;
+			std::cout << " Crit Chance: " << classes[i]->critChance << std::endl;
+			std::cout << " Dodge Chance: " << classes[i]->dodgeChance << std::endl;
+			std::cout << " Block Chance: " << classes[i]->blockChance << std::endl;
+			std::cout << " Weight Burden: " << classes[i]->weightBurden << "/" << classes[i]->maxWeightBurden << std::endl;
+			std::cout << "=--->" << std::endl;
+			std::cout << " Health Points: " << classes[i]->healthPoints << "/" << classes[i]->maxHealthPoints << std::endl;
+			std::cout << " Fatigue Points: " << classes[i]->fatiguePoints << "/" << classes[i]->maxFatiguePoints << std::endl;
+			std::cout << " Level: " << classes[i]->level << std::endl;
+			std::cout << "=--->" << std::endl;
+			for (const auto& spell : classes[i]->attunedSpells)
+			{
+				std::cout << " Attuned Spell: " << spell->name << std::endl;
+			}
+			if (classes[i]->attunedSpells.size() > 0) std::cout << "=--->" << std::endl;
+			for (const auto& item : classes[i]->inventory.equippedItems)
+			{
+				std::cout << " Equipped Item: " << item->name << std::endl;
+			}
+		}
+		std::cout << "=--->\n" << std::endl;
+		std::cout << " Please choose a class: ";
+
+		int choice = validateInput(1, classes.size());
+
+		return(classes[choice - 1]);
 	}
-	for (auto armor : armors)
-	{
-		if (armor->name == "Leather Barbarian's Helmet")
-		{
-			armor->slot = Armor::EquipSlots::HEAD;
-			barbarian->inventory.equippedItems.push_back(armor);
-		}
-		if (armor->name == "Reinforced Bandolier")
-		{
-			armor->slot = Armor::EquipSlots::CHEST;
-			barbarian->inventory.equippedItems.push_back(armor);
-		}
-		if (armor->name == "Leather Barbarian's Bracers")
-		{
-			armor->slot = Armor::EquipSlots::ARMS;
-			barbarian->inventory.equippedItems.push_back(armor);
-		}
-		if (armor->name == "Leather Barbarian's Boots")
-		{
-			armor->slot = Armor::EquipSlots::LEGS;
-			barbarian->inventory.equippedItems.push_back(armor);
-		}
-	}
-	for (auto food : foods)
-	{
-		if (food->name == "Duck Leg")
-		{
-			food->quantity = 2;
-			barbarian->inventory.backpackItems.push_back(food);
-		}
-		if (food->name == "Chicken Leg")
-		{
-			food->quantity = 2;
-			barbarian->inventory.backpackItems.push_back(food);
-		}
-		if (food->name == "Beef Steak")
-		{
-			food->quantity = 1;
-			barbarian->inventory.backpackItems.push_back(food);
-		}
-	}
-	for (auto drink : drinks)
-	{
-		if (drink->name == "Cheap Beer")
-		{
-			drink->quantity = 3;
-			barbarian->inventory.backpackItems.push_back(drink);
-		}
-	}
-
-	barbarian->setInitialHumanStats();
-	classes.push_back(barbarian);
-
-	//SAMURAI
-	std::shared_ptr<Human> samurai = std::make_shared<Human>();;
-	samurai->health = 20.0f;
-	samurai->fatigue = 16.0f;
-	samurai->strength = 14.0f;
-	samurai->agility = 25.0f;
-	samurai->charisma = 12.0f;
-	samurai->intelligence = 8.0f;
-	samurai->arcane = 6.0f;
-	samurai->faith = 6.0f;
-	samurai->luck = 10.0f;
-	samurai->classChoice = "Samurai";
-	samurai->level = 10;
-
-	for (auto weapon : weapons)
-	{
-		if (weapon->name == "Iron Odachi")
-		{
-			weapon->slot = Weapon::EquipSlots::MAINHAND;
-			samurai->inventory.equippedItems.push_back(weapon);
-		}
-	}
-	for (auto armor : armors)
-	{
-		if (armor->name == "Samurai's Iron Kabuto Helmet")
-		{
-			armor->slot = Armor::EquipSlots::HEAD;
-			samurai->inventory.equippedItems.push_back(armor);
-		}
-		if (armor->name == "Samurai's Iron Lamellar Armor")
-		{
-			armor->slot = Armor::EquipSlots::CHEST;
-			samurai->inventory.equippedItems.push_back(armor);
-		}
-		if (armor->name == "Samurai's Iron Scaled Gauntlets")
-		{
-			armor->slot = Armor::EquipSlots::ARMS;
-			samurai->inventory.equippedItems.push_back(armor);
-		}
-		if (armor->name == "Samurai's Iron Greaves")
-		{
-			armor->slot = Armor::EquipSlots::LEGS;
-			samurai->inventory.equippedItems.push_back(armor);
-		}
-	}
-	for (auto food : foods)
-	{
-		if (food->name == "Duck Leg")
-		{
-			food->quantity = 1;
-			samurai->inventory.backpackItems.push_back(food);
-		}
-		if (food->name == "Rice Ball")
-		{
-			food->quantity = 4;
-			samurai->inventory.backpackItems.push_back(food);
-		}
-		if (food->name == "Smoked Fish")
-		{
-			food->quantity = 2;
-			samurai->inventory.backpackItems.push_back(food);
-		}
-	}
-	for (auto drink : drinks)
-	{
-		if (drink->name == "Water Flask")
-		{
-			drink->quantity = 3;
-			samurai->inventory.backpackItems.push_back(drink);
-		}
-	}
-
-	samurai->setInitialHumanStats();
-	classes.push_back(samurai);
-
-	//Display the classes:
-	for (int i = 0; i < classes.size(); i++)
-	{
-		std::cout << "=--->" << std::endl;
-		std::cout << " " << dye::light_yellow(i + 1) << " " << dye::light_yellow(classes[i]->classChoice + ": ") << std::endl;
-		std::cout << "=--->" << std::endl;
-		std::cout << " Health: " << classes[i]->health << std::endl;
-		std::cout << " Fatigue: " << classes[i]->fatigue << std::endl;
-		std::cout << " Strength: " << classes[i]->strength << std::endl;
-		std::cout << " Agility: " << classes[i]->agility << std::endl;
-		std::cout << " Charisma: " << classes[i]->charisma << std::endl;
-		std::cout << " Intelligence: " << classes[i]->intelligence << std::endl;
-		std::cout << " Arcane: " << classes[i]->arcane << std::endl;
-		std::cout << " Faith: " << classes[i]->faith << std::endl;
-		std::cout << " Luck: " << classes[i]->luck << std::endl;
-		std::cout << "=--->" << std::endl;
-		std::cout << " Speed: " << classes[i]->speed << std::endl;
-		std::cout << " Crit Chance: " << classes[i]->critChance << std::endl;
-		std::cout << " Dodge Chance: " << classes[i]->dodgeChance << std::endl;
-		std::cout << " Block Chance: " << classes[i]->blockChance << std::endl;
-		std::cout << " Weight Burden: " << classes[i]->weightBurden << "/" << classes[i]->maxWeightBurden << std::endl;
-		std::cout << "=--->" << std::endl;
-		std::cout << " Health Points: " << classes[i]->healthPoints << "/" << classes[i]->maxHealthPoints << std::endl;
-		std::cout << " Fatigue Points: " << classes[i]->fatiguePoints << "/" << classes[i]->maxFatiguePoints << std::endl;
-		std::cout << " Level: " << classes[i]->level << std::endl;
-		std::cout << "=--->" << std::endl;
-		for (const auto& spell : classes[i]->attunedSpells)
-		{
-			std::cout << " Attuned Spell: " << spell->name << std::endl;
-		}
-		if (classes[i]->attunedSpells.size() > 0) std::cout << "=--->" << std::endl;
-		for (const auto& item : classes[i]->inventory.equippedItems)
-		{
-			std::cout << " Equipped Item: " << item->name << std::endl;
-		}
-	}
-	std::cout << "=--->\n" << std::endl;
-	std::cout << " Please choose a class: ";
-
-	int choice = validateInput(1, classes.size());
-
-	return(classes[choice - 1]);
 }
 void Human::setInitialHumanStats() {
 

@@ -62,7 +62,7 @@ std::shared_ptr<Item> Book::fromJson(const nlohmann::json& j)
         if (j.contains("weight"))      book->weight = j["weight"];
         if (j.contains("quantity"))    book->quantity = j["quantity"];
         if (j.contains("magnitude"))   book->magnitude = j["magnitude"];
-        if (j.contains("id"))          book->id = j["id"];
+        if (j.contains("id"))          book->id = IDManager::getNextId();
 
         // Load effects
         if (j.contains("effects") && j["effects"].is_array()) {

@@ -53,7 +53,7 @@ nlohmann::json Drink::toJson() const
 
 std::shared_ptr<Item> Drink::fromJson(const nlohmann::json& j)
 {
-	auto drink = std::make_shared<Drink>();
+	std::shared_ptr<Drink> drink = std::make_shared<Drink>();
 
 	try {
 		if (j.contains("name"))        drink->name = j["name"];
@@ -62,7 +62,7 @@ std::shared_ptr<Item> Drink::fromJson(const nlohmann::json& j)
 		if (j.contains("weight"))      drink->weight = j["weight"];
 		if (j.contains("quantity"))    drink->quantity = j["quantity"];
 		if (j.contains("magnitude"))   drink->magnitude = j["magnitude"];
-		if (j.contains("id"))          drink->id = j["id"];
+		if (j.contains("id"))          drink->id = IDManager::getNextId();
 
 		if (j.contains("effects") && j["effects"].is_array()) {
 			for (const auto& eff : j["effects"]) {

@@ -7,10 +7,10 @@
 #include "HelperFunctions.h"
 
 Weapon::Weapon(bool specialDamage, std::string name, std::string description, float stability, float reach, 
-	float attackSpeed, float weight, float value, bool twohanded, bool needsAmmo, 
+	float attackSpeed, float weight, float value, bool twohanded, bool needsAmmo, float magicAdjust,
 	WeaponType weaponType, EquipSlots slot) : Item(name, description, value, weight, 1.0f, slot), id(IDManager::getNextId()),
 		specialDamage(specialDamage), reach(reach), 
-		attackSpeed(attackSpeed), twoHanded(twohanded), needsAmmo(needsAmmo),
+		attackSpeed(attackSpeed), twoHanded(twohanded), needsAmmo(needsAmmo), magicAdjust(magicAdjust),
 	weaponType(weaponType), stability(stability)
 {
 }
@@ -36,6 +36,7 @@ nlohmann::json Weapon::toJson() const {
 	j["twoHanded"] = twoHanded;
 	j["needsAmmo"] = needsAmmo;
 	j["weaponType"] = weaponTypeToString(weaponType);
+	j["magicAdjust"] = magicAdjust;
 
 	// Damage and resistances
 	nlohmann::json dmg, def, scale, reqs;
@@ -63,7 +64,7 @@ nlohmann::json Weapon::toJson() const {
 std::shared_ptr<Item> Weapon::fromJson(const nlohmann::json& j) {
 	std::shared_ptr<Weapon> weapon = std::make_shared<Weapon>();
 
-	if (j.contains("id")) weapon->id = j["id"];
+	if (j.contains("id")) weapon->id = IDManager::getNextId();
 	if (j.contains("name")) weapon->name = j["name"];
 	if (j.contains("description")) weapon->description = j["description"];
 	if (j.contains("value")) weapon->value = j["value"];
@@ -78,6 +79,7 @@ std::shared_ptr<Item> Weapon::fromJson(const nlohmann::json& j) {
 	if (j.contains("twoHanded")) weapon->twoHanded = j["twoHanded"];
 	if (j.contains("needsAmmo")) weapon->needsAmmo = j["needsAmmo"];
 	if (j.contains("weaponType")) weapon->weaponType = stringToWeaponType(j["weaponType"]);
+	if (j.contains("magicAdjust")) weapon->magicAdjust = j["magicAdjust"];
 
 	if (j.contains("damageTypes") && j["damageTypes"].is_object()) {
 		for (auto& [key, value] : j["damageTypes"].items()) {
@@ -105,7 +107,6 @@ std::shared_ptr<Item> Weapon::fromJson(const nlohmann::json& j) {
 			weapon->enchantments.push_back(Enchantment::fromJson(enchantJson));
 		}
 	}
-
 	return weapon;
 }
 

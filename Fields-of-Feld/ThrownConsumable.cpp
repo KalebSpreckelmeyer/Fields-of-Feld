@@ -49,7 +49,7 @@ nlohmann::json ThrownConsumable::toJson() const {
 std::shared_ptr<Item> ThrownConsumable::fromJson(const nlohmann::json& j) {
 	auto thrownConsumable = std::make_shared<ThrownConsumable>();
 
-	if (j.contains("id")) thrownConsumable->id = j["id"];
+	if (j.contains("id")) thrownConsumable->id = IDManager::getNextId();
 	if (j.contains("name")) thrownConsumable->name = j["name"];
 	if (j.contains("description")) thrownConsumable->description = j["description"];
 	if (j.contains("value")) thrownConsumable->value = j["value"];

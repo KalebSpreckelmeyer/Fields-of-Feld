@@ -56,7 +56,7 @@ std::shared_ptr<Item> Food::fromJson(const nlohmann::json& j)
 	auto food = std::make_shared<Food>();
 
 	try {
-		if (j.contains("id"))          food->id = j["id"];
+		if (j.contains("id"))          food->id = IDManager::getNextId();
 		if (j.contains("name"))        food->name = j["name"];
 		if (j.contains("description")) food->description = j["description"];
 		if (j.contains("value"))       food->value = j["value"];

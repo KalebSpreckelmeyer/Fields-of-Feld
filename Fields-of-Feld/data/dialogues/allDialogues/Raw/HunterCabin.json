@@ -1,1 +1,604 @@
-null
+{
+    "Approach Cabin": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Try Knocking",
+            "Break In",
+            "Knock Again",
+            "Leave"
+        ],
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "The door to the cabin seems sturdy enough at a glance and you can hear movement inside. Breaking in would be difficult and surely agitate whoever dwells within. What will you do?",
+        "thisNodeName": "Approach Cabin",
+        "weight": 1
+    },
+    "Break In": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Destroy with ForceBurst",
+            "Destroy with FireBolt",
+            "Destroy with Thunderbolt",
+            "Destroy with Chop Weapon",
+            "Try to tear it off its Hinges",
+            "Tear it off its Hinges",
+            "Change your Mind"
+        ],
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You get ready to break the door down, no matter what is inside. What will you use to accomplish this?",
+        "thisNodeName": "Break In",
+        "weight": 1
+    },
+    "Change your Mind": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player Man",
+        "nodes": [
+            "Leave",
+            "Try Knocking"
+        ],
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "On second thought, breaking and entering isn't what you would like to do today.",
+        "thisNodeName": "Change your Mind",
+        "weight": 1
+    },
+    "Destroy with Chop Weapon": {
+        "condition": "hasChopWeapon",
+        "eventName": "",
+        "listenerName": "Player",
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You look down at your weapon and smile. It has just the right edge for chopping and would make short work of the door. \n\nYour weapon makes contact with the wood with a boom that sends nearby birds flying from their nests. You hear movement from inside, best not to stop now. Another chop sends splinters flying into the dirt. One more, and you can see inside. A final hit, and the wood surrounding the doorknob is hacked clean off, leaving the door to slide lazily on its hinges.\n\nThe man inside draws a knife from his belt and gets ready for combat. With a grin, you do the same.",
+        "thisNodeName": "Destroy with Chop Weapon",
+        "weight": 1
+    },
+    "Destroy with FireBolt": {
+        "condition": "hasFireBoltSpell",
+        "eventName": "",
+        "listenerName": "Player",
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "Wood is meant to be burned, right? With a modicum of concentration, flames erupt from your open palm. Concentrating the fire down into a small orb, you stand back and lob the projectile at the door. The fireball explodes on impact, creating a small hole in the wood that smoulders with latent embers. \n\nYou can easily reach the other side of the doorknob now. You reach in, unlocking the door and swing it open to reveal its terrified occupant. He readies a knife he had holstered on his hip and takes a step forward. You ready yourself for combat.",
+        "thisNodeName": "Destroy with FireBolt",
+        "weight": 1
+    },
+    "Destroy with ForceBurst": {
+        "condition": "hasForceBurstSpell",
+        "eventName": "",
+        "listenerName": "Player",
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "The door is sturdy enough, but with an adequate amount of force one can break down any door, and you happen to have quite the forceful spell memorized. You chant a quiet prayer under your breath, and gather the winds of Beltyr. All at once you release the pent up energy in a massive burst, sending the door flying off of its hinges and into the cabin. \n\nThe man inside draws a knife from his waist and readies himself for combat. You do the same.",
+        "thisNodeName": "Destroy with ForceBurst",
+        "weight": 1
+    },
+    "Destroy with Thunderbolt": {
+        "condition": "hasThunderBoltSpell",
+        "eventName": "",
+        "listenerName": "Player",
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "An image springs to your mind as you gaze upon the door, one of a tree cleaved clean in half by a bolt of lightning. You smile, and begin to charge up electricity in your fingertips. Pointing them at your target, you release a bolt of lightning at the door causing the very fibers of the material to explode in a thousand directions. The smell of ozone is in the air.\n\nThe man inside hastily draws a knife from his waist and readies himself for combat. You do the same.",
+        "thisNodeName": "Destroy with Thunderbolt",
+        "weight": 1
+    },
+    "Don't Hurt Me": {
+        "condition": "charisma >= 6",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Take the Furs"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "Wait, there's no need to be hasty! I've got a few things lying around that I don't really need... that much... Here, take this bundle of furs I've been saving. They should fetch a good price!",
+        "thisNodeName": "Don't Hurt Me",
+        "weight": 1
+    },
+    "East": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You follow the direction the signage points to. If nothing else, the elevation of the mountain will make naviation easier.",
+        "thisNodeName": "East",
+        "weight": 1
+    },
+    "Food?": {
+        "condition": "intelligence <= 4",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "Have you tried shooting it?"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "Meat? I'm hungry and I want meat. Every time I try to catch an animal it runs away. Can I have some of yours?",
+        "thisNodeName": "Food?",
+        "weight": 1
+    },
+    "Give me whatever you have": {
+        "condition": "strength >= 6",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "Don't Hurt Me"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "But you're still breathing, which means you still have something left to live for. Hand it over.",
+        "thisNodeName": "Give me whatever you have",
+        "weight": 1
+    },
+    "Good Luck": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Now Leave"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "That's a good joke lad. Now, I've done enough talking for the day. You best be on your way.",
+        "thisNodeName": "Good Luck",
+        "weight": 1
+    },
+    "Have you tried shooting it?": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Haven't Shot at Them",
+            "Tried to Shoot at Them"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "Well kid, have you tried shooting at them? You know, using something with range? That's typically how hunting works.",
+        "thisNodeName": "Have you tried shooting it?",
+        "weight": 1
+    },
+    "Haven't Shot at Them": {
+        "condition": "intelligence <= 4",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "Please go Away"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "Yea but they move too quick. It's not fair, they should stand still like the straw targets do.",
+        "thisNodeName": "Haven't Shot at Them",
+        "weight": 1
+    },
+    "He does This": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Knock Again",
+            "Leave"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "The man slams the door in your face so hard it rocks on its hinges and you can hear the faint clunk of the lock engaging once again.",
+        "thisNodeName": "He does This",
+        "weight": 1
+    },
+    "How Many": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Where are the Bandits",
+            "I'll take them out for you"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "I haven't ever been to their camp myself to see, but they always send at least five men over every time they want to extort me. And given how they've burned so many homes and an entire town to the ground, I would say that there's a sizable amount of them",
+        "thisNodeName": "How Many",
+        "weight": 1
+    },
+    "How about no": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "He does This"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "Or, hypothetically, I could instead do this:",
+        "thisNodeName": "How about no",
+        "weight": 1
+    },
+    "How many are there": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "How Many"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "How many of them do you think there are?",
+        "thisNodeName": "How many are there",
+        "weight": 1
+    },
+    "I want your stuff": {
+        "condition": " strength < 6",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "How about no"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "Oh yea, well I want your stuff and I'm gonna take it if you don't give it to me!",
+        "thisNodeName": "I want your stuff",
+        "weight": 1
+    },
+    "I'll take them out for you": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "Good Luck"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "Those bandits need to go. I'll take them out for you, don't worry.",
+        "thisNodeName": "I'll take them out for you",
+        "weight": 1
+    },
+    "Inspect Surroundings": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Leave",
+            "Approach Cabin"
+        ],
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "The forest surrounds you, blotting out most details of the surroundings, though you can make out the shape of some tower to the south. Thankfully, there are several paths cutting through the forest you can take from here. The cabin in front of you seems occupied with smoke rising from its chimney and animal skins left out to dry in a shed besides the main structure. Approach the cabin or move on?",
+        "thisNodeName": "Inspect Surroundings",
+        "weight": 1
+    },
+    "Knock": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Food?",
+            "What do you mean?",
+            "Threaten Success",
+            "Threaten Failure"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "I thought I told ya'll that I have no meat left to spare! I can barely keep myself fed let alone make a living like this!",
+        "thisNodeName": "Knock",
+        "weight": 1
+    },
+    "Knock Again": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Leave"
+        ],
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "There is no response from the door when you knock.",
+        "thisNodeName": "Knock Again",
+        "weight": 1
+    },
+    "Leave": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "East",
+            "North",
+            "South",
+            "West"
+        ],
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You've seen enough. Where will you go next? \n\n=-North-> A path leads deep into the forest\n=-East--> Signage along this path indicates that it leads to Mt. Spartan.\n=-South-> A path winds its way towards a lone tower in the distance.\n=-West--> A path leads deep into the forest",
+        "thisNodeName": "Leave",
+        "weight": 1
+    },
+    "North": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You trudge along the barely visible path deeper into the forest.",
+        "thisNodeName": "North",
+        "weight": 1
+    },
+    "Now Leave": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Knock Again",
+            "Leave"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You step back outside of the doorframe and he closes the door behind you. You hear the lock clunk into place as you step away.",
+        "thisNodeName": "Now Leave",
+        "weight": 1
+    },
+    "Please go Away": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Yay food"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "By the 7... Look kid. How about this, I give you some food, some nice tasty meat, and you go along and have a good time out in the nice forest far away from me. Would you do that?",
+        "thisNodeName": "Please go Away",
+        "weight": 1
+    },
+    "South": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "That tower in the distance intrigues you. What could it contain, and what else is around it?",
+        "thisNodeName": "South",
+        "weight": 1
+    },
+    "Take the Furs": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Break In",
+            "Knock Again",
+            "Leave"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You grab the bundle of furs from the man, running your hands over them in the process. They're of some kind of small game animal and are as soft as silk. Before you can appreciate the many more however, the man shoves you out of the doorframe and back outside. The door slams shut before you can react.",
+        "thisNodeName": "Take the Furs",
+        "weight": 1
+    },
+    "Tear it off its Hinges": {
+        "condition": "strength >= 8",
+        "eventName": "",
+        "listenerName": "Player",
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You assume an agressive stance and charge at the door, slamming into it with the might of a bull. It rocks on its hinges once, twice, then gives way to its terrified occupant.\n\nHe draws a short knife from his waist and gets ready for combat. With no other option left, you join him.",
+        "thisNodeName": "Tear it off its Hinges",
+        "weight": 1
+    },
+    "The Bandits": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Where are the Bandits",
+            "How many are there",
+            "I want your stuff",
+            "Give me whatever you have"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "Who else would I be referring to stone-brain? I'm talking about that bandit gang to the west. They've been bleeding me dry of any game I kill to the point I'm having trouble feeding myself, let alone enough to make a living.",
+        "thisNodeName": "The Bandits",
+        "weight": 1
+    },
+    "Threaten Failure": {
+        "condition": " charisma < 6",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "How about no"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "And we’re… uh… very hungry and want food. Give us the food or we will… hurt you!",
+        "thisNodeName": "Threaten Failure",
+        "weight": 1
+    },
+    "Threaten Success": {
+        "condition": "charisma >= 6",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "Don't Hurt Me"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "And we’ve got a lot of people to feed over there. Either you give us what we need or things could happen to someone.",
+        "thisNodeName": "Threaten Success",
+        "weight": 1
+    },
+    "Tried to Shoot at Them": {
+        "condition": "intelligence <= 4",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "Please go Away"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "No, bows hurt my arm and crossbows are too hard to load.",
+        "thisNodeName": "Tried to Shoot at Them",
+        "weight": 1
+    },
+    "Try Knocking": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Knock"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You knock on the door. After a moment of silence the door swings open to reveal a rugged man of middle age. Before you can take in any more details he barks out:",
+        "thisNodeName": "Try Knocking",
+        "weight": 1
+    },
+    "Try to tear it off its Hinges": {
+        "condition": "strength < 8",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Leave"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "Try as you might, the door just won't seem to budge. Worse still, the noise you made seems to have alerted the occupant of the cabin. You hear another bolt click into place as another lock on the door latches shut. Whatever hope you had of breaking down the door before is gone now.",
+        "thisNodeName": "Try to tear it off its Hinges",
+        "weight": 1
+    },
+    "West": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "playOnce": false,
+        "playedBefore": false,
+        "speakerName": "Narrator",
+        "text": "You trudge along the barely visible path deeper into the forest.",
+        "thisNodeName": "West",
+        "weight": 1
+    },
+    "What do you mean?": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "You aren't with Them"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "What do you mean?",
+        "thisNodeName": "What do you mean?",
+        "weight": 1
+    },
+    "Where are the Bandits": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "Where they are"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "Where are these bandits located?",
+        "thisNodeName": "Where are the Bandits",
+        "weight": 1
+    },
+    "Where they are": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "How many are there",
+            "I'll take them out for you"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "They're held up in the ruins of old Lamba, a small town they overrun and destroyed. It's to the west, just past the ruins of Fort Randal.",
+        "thisNodeName": "Where they are",
+        "weight": 1
+    },
+    "Who?": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "The Bandits"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "Who are you talking about?",
+        "thisNodeName": "Who?",
+        "weight": 1
+    },
+    "Yay food": {
+        "condition": "intelligence <= 4",
+        "eventName": "",
+        "listenerName": "Rugged Man",
+        "nodes": [
+            "Leave"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Player",
+        "text": "Ok!",
+        "thisNodeName": "Yay food",
+        "weight": 1
+    },
+    "You aren't with Them": {
+        "condition": "null",
+        "eventName": "",
+        "listenerName": "Player",
+        "nodes": [
+            "Who?"
+        ],
+        "playOnce": true,
+        "playedBefore": false,
+        "speakerName": "Rugged Man",
+        "text": "You aren't with them, are you? Those conniving, back-stabbing, chunks of horse excrement!",
+        "thisNodeName": "You aren't with Them",
+        "weight": 1
+    }
+}
