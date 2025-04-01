@@ -18,7 +18,7 @@ void Food::use(std::shared_ptr<Character> consumer)
 	std::cout << dye::light_yellow(" " + consumer->name) << " eats a " << name << std::endl;
 	for (auto& effect : effects)
 	{
-		effect->apply(consumer, consumer);
+		effect->apply(consumer, consumer, 1.0f);
 	}
 	this->quantity--;
 	if (this->quantity <= 0)

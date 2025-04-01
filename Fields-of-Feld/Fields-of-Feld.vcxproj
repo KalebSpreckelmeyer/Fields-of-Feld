@@ -183,6 +183,8 @@
     <ClCompile Include="Trigger.cpp" />
     <ClCompile Include="Trinket.cpp" />
     <ClCompile Include="Weapon.cpp" />
+    <ClCompile Include="WeaponArt.cpp" />
+    <ClCompile Include="WeaponArtEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ammunition.h" />
@@ -226,6 +228,8 @@
     <ClInclude Include="Trigger.h" />
     <ClInclude Include="Trinket.h" />
     <ClInclude Include="Weapon.h" />
+    <ClInclude Include="WeaponArt.h" />
+    <ClInclude Include="WeaponArtEffect.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

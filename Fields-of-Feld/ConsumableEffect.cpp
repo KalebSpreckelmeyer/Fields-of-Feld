@@ -7,7 +7,7 @@ RestoreHealthEffect::RestoreHealthEffect(float magnitude)
 		1, false){
 }
 
-void RestoreHealthEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void RestoreHealthEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -47,7 +47,7 @@ RestoreFatigueEffect::RestoreFatigueEffect(float magnitude)
 		1, false) {
 }
 
-void RestoreFatigueEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void RestoreFatigueEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -87,7 +87,7 @@ MaxHealthEffect::MaxHealthEffect(float magnitude, float duration)
 		1, false) {
 }
 
-void MaxHealthEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void MaxHealthEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -129,7 +129,7 @@ MaxFatigueEffect::MaxFatigueEffect(float magnitude, float duration)
 		1, false) {
 }
 
-void MaxFatigueEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void MaxFatigueEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -169,7 +169,7 @@ HealthRegenEffect::HealthRegenEffect(int duration, float magnitude, bool stackab
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void HealthRegenEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void HealthRegenEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -215,7 +215,7 @@ FatigueRegenEffect::FatigueRegenEffect(int duration, float magnitude, bool stack
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void FatigueRegenEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void FatigueRegenEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -261,7 +261,7 @@ AttackSpeedEffect::AttackSpeedEffect(int duration, float magnitude, bool stackab
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void AttackSpeedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void AttackSpeedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -307,7 +307,7 @@ CastSpeedEffect::CastSpeedEffect(int duration, float magnitude, bool stackable, 
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void CastSpeedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void CastSpeedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -353,7 +353,7 @@ SpeedEffect::SpeedEffect(int duration, float magnitude, bool stackable, int stac
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void SpeedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void SpeedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -399,7 +399,7 @@ BlockChanceEffect::BlockChanceEffect(int duration, float magnitude, bool stackab
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void BlockChanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void BlockChanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -445,7 +445,7 @@ DodgeChanceEffect::DodgeChanceEffect(int duration, float magnitude, bool stackab
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void DodgeChanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void DodgeChanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -491,7 +491,7 @@ CritChanceEffect::CritChanceEffect(int duration, float magnitude, bool stackable
 	: TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void CritChanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void CritChanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -537,7 +537,7 @@ ResistanceEffect::ResistanceEffect(ResistanceType type, int duration, float magn
 	TimedEffect(duration, magnitude, stackable, stacks, maxStacks), resistance(resistance) {
 }
 
-void ResistanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void ResistanceEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -584,7 +584,7 @@ std::string ResistanceEffect::getType() const {
 EscapeEffect::EscapeEffect(int duration) : TimedEffect(duration, 0, false, 0, 0) {
 }
 
-void EscapeEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void EscapeEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -623,7 +623,7 @@ ResurrectEffect::ResurrectEffect() : Effect(false, false, "Resurrection", "Bring
 	1, false) {
 }
 
-void ResurrectEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void ResurrectEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -659,7 +659,7 @@ AttributeEffect::AttributeEffect(Attribute attribute, int duration, float magnit
 	TimedEffect(duration, magnitude, stackable, stacks, maxStacks), attribute(attribute){
 }
 
-void AttributeEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void AttributeEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 
@@ -707,7 +707,7 @@ RandomEffect::RandomEffect(int duration, float magnitude, bool stackable, int st
 	TimedEffect(duration, magnitude, stackable, stacks, maxStacks) {
 }
 
-void RandomEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) {
+void RandomEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) {
 	// Implement the apply method
 }
 

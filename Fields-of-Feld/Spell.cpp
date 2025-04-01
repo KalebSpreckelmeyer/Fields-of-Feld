@@ -111,6 +111,7 @@ std::unordered_map<std::string, int> Spell::getStatRequirements()
 	}
 	return statRequirementsStrings;
 }
+
 bool Spell::checkSpellRequirements(std::shared_ptr<Spell> spell, std::shared_ptr<Character> caster)
 {
 	bool hasRequirements = true;
@@ -139,6 +140,92 @@ std::string Spell::getScalingGrade(float scalingValue)
 	else if (scalingValue >= 30) return "D";
 	else return "F";
 }
+
+void Spell::evolveSpell(std::shared_ptr<Character> caster, std::shared_ptr<Spell> spellToEvolve)
+{
+	std::shared_ptr<Spell> evolvedSpell;
+	if (spellToEvolve->name == "Base Summon Animal Ally" || spellToEvolve->name == "Summon Wolf" || spellToEvolve->name == "Summon Vulture" 
+		|| spellToEvolve->name == "Summon Bear")
+	{
+		evolvedSpell = getSummonAnimalAllyEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+	else if (spellToEvolve->name == "Base Bonetrousle" || spellToEvolve->name == "Bonetrousle I" || spellToEvolve->name == "Bonetrousle II" 
+		|| spellToEvolve->name == "Bonetrousle III")
+	{
+		evolvedSpell = getBonetrousleEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+	else if (spellToEvolve->name == "Base Oaken Armor" || spellToEvolve->name == "Oaken Armor I" || spellToEvolve->name == "Oaken Armor II"
+		|| spellToEvolve->name == "Oaken Armor III")
+	{
+		evolvedSpell = getOakenArmorEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+	else if (spellToEvolve->name == "Base Fruit of the Earth" || spellToEvolve->name == "Fruit of the Earth I" || spellToEvolve->name == "Fruit of the Earth II"
+		|| spellToEvolve->name == "Fruit of the Earth III")
+	{
+		evolvedSpell = getFruitOfTheEarthEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+	else if (spellToEvolve->name == "Base Endothermic Grasp" || spellToEvolve->name == "Endothermic Nudge" || spellToEvolve->name == "Endothermic Touch"
+		|| spellToEvolve->name == "Endothermic Grasp")
+	{
+		evolvedSpell = getEndothermicGraspEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+	else if (spellToEvolve->name == "Base Force Burst" || spellToEvolve->name == "Holy Gust" || spellToEvolve->name == "Holy Gale"
+		|| spellToEvolve->name == "Holy Burst")
+	{
+		evolvedSpell = getForceBurstEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+	else if (spellToEvolve->name == "Base Warmth of the Gods" || spellToEvolve->name == "Hearth of the Home" || spellToEvolve->name == "Hearth of the Church"
+		|| spellToEvolve->name == "Hearth of the Gods")
+	{
+		evolvedSpell = getWarmthOfTheGodsEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+	else if (spellToEvolve->name == "Base Fireball" || spellToEvolve->name == "Fire bolt" || spellToEvolve->name == "Fire ball"
+		|| spellToEvolve->name == "Captive Sun")
+	{
+		evolvedSpell = getFireBallEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+	else if (spellToEvolve->name == "Base Thunderbolt" || spellToEvolve->name == "Lightning Bolt" || spellToEvolve->name == "Thunder Bolt"
+		|| spellToEvolve->name == "Plasma Bolt")
+	{
+		evolvedSpell = getThunderboltEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+	else if (spellToEvolve->name == "Base Lightning Armament" || spellToEvolve->name == "Electrify Armament I" || spellToEvolve->name == "Electrify Armament II"
+		|| spellToEvolve->name == "Electrify Armament III")
+	{
+		evolvedSpell = getLightningArmamentEffect(*caster);
+		caster->removeSpell(spellToEvolve);
+		caster->knownSpells.push_back(evolvedSpell);
+		return;
+	}
+}
+
 //SORCERIES
 //NECROMANCY
 std::shared_ptr<Spell> Spell::getBonetrousleEffect(Character& caster)
@@ -154,7 +241,7 @@ std::shared_ptr<Spell> Spell::getBonetrousleEffect(Character& caster)
 	if (statInvestment < 30)
 	{
 		bonetrousle = std::make_shared<Spell>("Bonetrousle I", "A flurry of sharpened bone fragments pelt the target",
-			false, false, true, 0, 0, 100, 0, 0, 50, 70, 75);
+			false, false, true, 0, 0, 100, 0, 0, 50, 300, 75);
 		bonetrousle->effects.push_back(std::make_shared<BleedEffect>(1, bonetrousleBleed, false, 1, 1));
 		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::BLUNT, bonetrousleDamage * 0.8));
 		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::DARK, bonetrousleDamage * 0.2));
@@ -165,7 +252,7 @@ std::shared_ptr<Spell> Spell::getBonetrousleEffect(Character& caster)
 	else if (statInvestment < 60)
 	{
 		bonetrousle = std::make_shared<Spell>("Bonetrousle II", "A flurry of sharpened bone pieces pelt the target", 
-			false, false, true, 0, 0, 100, 0, 0, 60, 80, 75);
+			false, false, true, 0, 0, 100, 0, 0, 60, 400, 75);
 		bonetrousle->effects.push_back(std::make_shared<BleedEffect>(1, bonetrousleBleed, false, 1, 1));
 		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::BLUNT, bonetrousleDamage * 0.8));
 		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::DARK, bonetrousleDamage * 0.2));
@@ -174,7 +261,7 @@ std::shared_ptr<Spell> Spell::getBonetrousleEffect(Character& caster)
 	else
 	{
 		bonetrousle = std::make_shared<Spell>("Bonetrousle III", "A flurry of sharpened bone chunks pelt the target", 
-			false, false, true, 0, 0, 100, 0, 0, 70, 90, 75);
+			false, false, true, 0, 0, 100, 0, 0, 70, 500, 75);
 		bonetrousle->effects.push_back(std::make_shared<BleedEffect>(1, bonetrousleBleed, false, 1, 1));
 		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::BLUNT, bonetrousleDamage * 0.8));
 		bonetrousle->effects.push_back(std::make_shared<DamageEffect>(DamageTypes::DARK, bonetrousleDamage * 0.2));

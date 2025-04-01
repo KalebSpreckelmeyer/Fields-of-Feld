@@ -13,7 +13,7 @@ class FatigueBuff : public TimedEffect
 {
 public:
 	FatigueBuff(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 
@@ -28,7 +28,7 @@ class HealthBuff : public TimedEffect
 {
 public:
 	HealthBuff(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 
@@ -42,7 +42,7 @@ class CastSpeed : public TimedEffect
 {
 public:
 	CastSpeed(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 
@@ -57,7 +57,7 @@ class Summon : public TimedEffect
 public:
 	std::shared_ptr<Character> summon;
 	Summon(std::shared_ptr<Character> summon, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 
@@ -73,7 +73,7 @@ public:
 	Defense defense;
 	ArmorBuff() = default;
 	ArmorBuff(Defense defense, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 
@@ -87,7 +87,7 @@ class Healing : public TimedEffect
 {
 public:
 	Healing(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 
@@ -103,7 +103,7 @@ public:
 	float range = 0.0f;
 	AreaOfEffectHealing(float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 	
@@ -116,7 +116,7 @@ class FatigueRestore : public TimedEffect
 {
 public:
 	FatigueRestore(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 	
@@ -131,7 +131,7 @@ class ArmamentBuff : public TimedEffect
 public:
 	DamageTypes damageType = DamageTypes::NONE;
 	ArmamentBuff(DamageTypes damageType, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 

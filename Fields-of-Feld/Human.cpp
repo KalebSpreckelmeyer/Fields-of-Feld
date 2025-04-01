@@ -431,7 +431,7 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 			weapon->slot = Weapon::EquipSlots::MAINHAND;
 			geomancer->inventory.equippedItems.push_back(weapon);
 		}
-		if (weapon->name == "Arcane Candle")
+		if (weapon->name == "Wooden Staff")
 		{
 			weapon->slot = Weapon::EquipSlots::OFFHAND;
 			geomancer->inventory.equippedItems.push_back(weapon);
@@ -547,7 +547,7 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 			weapon->slot = Weapon::EquipSlots::MAINHAND;
 			cleric->inventory.equippedItems.push_back(weapon);
 		}
-		if (weapon->name == "Faded Cloth Talisman")
+		if (weapon->name == "Wooden Wand")
 		{
 			weapon->slot = Weapon::EquipSlots::OFFHAND;
 			cleric->inventory.equippedItems.push_back(weapon);
@@ -636,7 +636,7 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 	//Get the starting gear
 	for (auto weapon : weapons)
 	{
-		if (weapon->name == "Iron Scimitar")
+		if (weapon->name == "Wooden Wand")
 		{
 			weapon->slot = Weapon::EquipSlots::MAINHAND;
 			pyromancer->inventory.equippedItems.push_back(weapon);
@@ -749,7 +749,7 @@ std::shared_ptr<Human> Human::setCharacterClass(std::vector<std::shared_ptr<Item
 			weapon->slot = Weapon::EquipSlots::MAINHAND;
 			fulguramancer->inventory.equippedItems.push_back(weapon);
 		}
-		if (weapon->name == "Wooden Wand")
+		if (weapon->name == "Wooden Staff")
 		{
 			weapon->slot = Weapon::EquipSlots::OFFHAND;
 			fulguramancer->inventory.equippedItems.push_back(weapon);

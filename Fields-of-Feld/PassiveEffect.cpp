@@ -17,7 +17,7 @@ std::string FatigueBuff::getType() const
 	return "FatigueBuff";
 }
 
-void FatigueBuff::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void FatigueBuff::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	target->maxFatiguePoints += magnitude;
 	target->fatiguePoints += magnitude;
@@ -83,7 +83,7 @@ std::string HealthBuff::getType() const
 	return "HealthBuff";
 }
 
-void HealthBuff::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void HealthBuff::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	target->maxHealthPoints += magnitude;
 	target->healthPoints += magnitude;
@@ -148,7 +148,7 @@ std::string CastSpeed::getType() const
 	return "CastSpeed";
 }
 
-void CastSpeed::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void CastSpeed::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	if (std::dynamic_pointer_cast<Human>(target))
 	{
@@ -218,7 +218,7 @@ Summon::Summon(std::shared_ptr<Character> summon, int duration, float magnitude,
 	this->summon = summon;
 }
 
-void Summon::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void Summon::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	target->allies.push_back(summon);
 	if (target->namedCharacter) std::cout << dye::light_yellow(" " + target->name) << " summons " << summon->name << " to their aid!" << std::endl;
@@ -290,7 +290,7 @@ std::string ArmorBuff::getType() const
 	return "ArmorBuff";
 }
 
-void ArmorBuff::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void ArmorBuff::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	std::string defenseTypes[] {"None", "Slash", "Pierce", "Blunt", "Chop", "Magic", "Fire", "Frost", "Shock", "Wind", "Poison", "Bleed", "Sleep", "Dark", "Holy"};
 	target->setDefenseValue(defense, target->getDefenseValue(defense) + magnitude);
@@ -357,7 +357,7 @@ std::string Healing::getType() const
 	return "Healing";
 }
 
-void Healing::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void Healing::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	target->effects.push_back(shared_from_this());
 }
@@ -421,7 +421,7 @@ std::string AreaOfEffectHealing::getType() const
 	return "AreaOfEffectHealing";
 }
 
-void AreaOfEffectHealing::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void AreaOfEffectHealing::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	target->effects.push_back(shared_from_this());
 	target->healthPoints += magnitude;
@@ -513,7 +513,7 @@ std::string FatigueRestore::getType() const
 	return "FatigueRestore";
 }
 
-void FatigueRestore::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void FatigueRestore::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	target->fatiguePoints += magnitude;
 	if (target->fatiguePoints > target->maxFatiguePoints) target->fatiguePoints = target->maxFatiguePoints;
@@ -571,7 +571,7 @@ std::string ArmamentBuff::getType() const
 	return "ArmamentBuff";
 }
 
-void ArmamentBuff::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void ArmamentBuff::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	std::string DamageTypess[]{ "None", "Magic", "Fire", "Frost", "Shock", "Wind", "Poison", "Bleed", "Sleep", "Dark", "Holy" };
 	// add incoming effect

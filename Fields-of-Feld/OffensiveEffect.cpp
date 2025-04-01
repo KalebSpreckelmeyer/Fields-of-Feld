@@ -16,7 +16,7 @@ std::string DamageEffect::getType() const
 	return "Damage";
 }
 
-void DamageEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void DamageEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	target->healthPoints -= this->getEffectDamage(target, shared_from_this());
 	if (target->namedCharacter) std::cout << dye::light_yellow(target->name) << " takes " << this->getEffectDamage(target, shared_from_this()) << " points of damage!" << std::endl;
@@ -61,7 +61,7 @@ std::string BleedEffect::getType() const
 	return "Bleed";
 }
 
-void BleedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void BleedEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	float bleedPoints = magnitude;
 	this->setDamage(DamageTypes::BLEED, bleedPoints);
@@ -126,7 +126,7 @@ std::string BurnEffect::getType() const
 	return "Burn";
 }
 
-void BurnEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void BurnEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	float burnPoints = magnitude;
 	this->setDamage(DamageTypes::FIRE, burnPoints);
@@ -178,8 +178,8 @@ void BurnEffect::burst(std::shared_ptr<Character> target)
 	//applies burning and fear status effects
 	std::shared_ptr<BurnDamageEffect> burnDamageEffect = std::make_shared<BurnDamageEffect>(4, burnDamage, false, 1, 1);
 	std::shared_ptr<FearEffect> fearEffect = std::make_shared<FearEffect>(1, 0.0f, false, 1, 1);
-	burnDamageEffect->apply(target, target);
-	fearEffect->apply(target, target);
+	burnDamageEffect->apply(target, target, 1.0f);
+	fearEffect->apply(target, target, 1.0f);
 }
 //bool BurnEffect::isExpired()
 
@@ -217,7 +217,7 @@ std::string BurnDamageEffect::getType() const
 	return "BurnDamage";
 }
 
-void BurnDamageEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void BurnDamageEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	//add incoming effect to target
 	target->effects.push_back(shared_from_this());
@@ -284,7 +284,7 @@ std::string PoisonEffect::getType() const
 	return "Poison";
 }
 
-void PoisonEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void PoisonEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	float poisonBuildup = magnitude;
 	this->setDamage(DamageTypes::POISON, poisonBuildup);
@@ -336,7 +336,7 @@ void PoisonEffect::burst(std::shared_ptr<Character> target)
 		if (!hasPoison)
 		{
 			std::shared_ptr<PoisonDamageEffect> poisonDamageEffect = std::make_shared<PoisonDamageEffect>(duration, poisonDamage, stackable, 1, maxStacks);
-			poisonDamageEffect->apply(target, target);
+			poisonDamageEffect->apply(target, target, 1.0f);
 		}
 	}
 }
@@ -375,7 +375,7 @@ std::string PoisonDamageEffect::getType() const
 	return "PoisonDamage";
 }
 
-void PoisonDamageEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void PoisonDamageEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	//add incoming effect to target if they don't already have the maximum poison stacks
 	if(stacks < maxStacks) target->effects.push_back(shared_from_this());
@@ -445,7 +445,7 @@ std::string FrostBurstEffect::getType() const
 	return "FrostBurst";
 }
 
-void FrostBurstEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void FrostBurstEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	//Apply frost points
 	float frostBuildup = magnitude;
@@ -497,7 +497,7 @@ void FrostBurstEffect::burst(std::shared_ptr<Character> target)
 		if (!target->namedCharacter) std::cout << "The " << dye::light_yellow(target->name) << "'s physical defenses have been lowered!" << std::endl;
 		if (target->healthPoints <= 0) target->killCharacter();
 		std::shared_ptr<ArmorPenetrationEffect> armorPen = std::make_shared<ArmorPenetrationEffect>(3, armorLoss, false, 1, 1);
-		armorPen->apply(target, target);
+		armorPen->apply(target, target, 1.0f);
 	}
 }
 
@@ -535,7 +535,7 @@ std::string ShockEffect::getType() const
 	return "Shock";
 }
 
-void ShockEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void ShockEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	float shockBuildup = magnitude;
 	this->setDamage(DamageTypes::SHOCK, shockBuildup);
@@ -619,7 +619,7 @@ std::string LightningArcEffect::getType() const
 	return "LightningArc";
 }
 
-void LightningArcEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void LightningArcEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	//Chance to arc to allies. Chance is increased by wielder's luck and by the provided arcChance
 	//Each arc does less and less damage
@@ -685,7 +685,7 @@ std::string SleepEffect::getType() const
 	return "Sleep";
 }
 
-void SleepEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void SleepEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	float sleepBuildup = magnitude;
 	this->setDamage(DamageTypes::SLEEP, sleepBuildup);
@@ -783,7 +783,7 @@ std::string StunEffect::getType() const
 	return "Stun";
 }
 
-void StunEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void StunEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	//Add incoming effect to target
 	target->effects.push_back(shared_from_this());
@@ -857,7 +857,7 @@ std::string FreezeEffect::getType() const
 	return "Freeze";
 }
 
-void FreezeEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void FreezeEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	//Add incoming effect to target
 	target->effects.push_back(shared_from_this());
@@ -940,7 +940,7 @@ std::string KnockbackEffect::getType() const
 	return "Knockback";
 }
 
-void KnockbackEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void KnockbackEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	target->position[wielder->getId()] += magnitude;
 	if (target->namedCharacter) std::cout << dye::light_yellow(target->name) << " is" << dye::light_blue(" KNOCKED BACK") << " by " << magnitude << " units!" << std::endl;
@@ -987,7 +987,7 @@ std::string FearEffect::getType() const
 	return "Fear";
 }
 
-void FearEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void FearEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	//Add incoming effect to target
 	target->effects.push_back(shared_from_this());
@@ -1049,7 +1049,7 @@ std::string ArmorPenetrationEffect::getType() const
 	return "ArmorPenetration";
 }
 
-void ArmorPenetrationEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void ArmorPenetrationEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	//Add incoming effect to target
 	target->effects.push_back(shared_from_this());
@@ -1117,7 +1117,7 @@ std::string ExplosionEffect::getType() const
 	return "Explosion";
 }
 
-void ExplosionEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void ExplosionEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	float explosionDamge = this->getDamage(damageType) + this->getDamage(damageType);
 	float splashDamage = explosionDamge * 0.3f;
@@ -1185,7 +1185,7 @@ std::string SlowEffect::getType() const
 	return "Slow";
 }
 
-void SlowEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void SlowEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	//Add incoming effect to target
 	target->effects.push_back(shared_from_this());
@@ -1247,7 +1247,7 @@ std::string FieryExplosionEffect::getType() const
 	return "FieryExplosion";
 }
 
-void FieryExplosionEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void FieryExplosionEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	float explosionDamage = this->getDamage(DamageTypes::FIRE);
 	float splashDamage = explosionDamage * 0.3f;
@@ -1301,10 +1301,10 @@ void FieryExplosionEffect::burst(std::shared_ptr<Character> target)
 {
 	//Burn target
 	std::shared_ptr<BurnDamageEffect> burnDamageEffect = std::make_shared<BurnDamageEffect>(1, magnitude, false, 1, 1);
-	burnDamageEffect->apply(target, target);
+	burnDamageEffect->apply(target, target, 1.0f);
 	//Fear target
 	std::shared_ptr<FearEffect> fearEffect = std::make_shared<FearEffect>(1, magnitude, false, 1, 1);
-	fearEffect->apply(target, target);
+	fearEffect->apply(target, target, 1.0f);
 }
 nlohmann::json FieryExplosionEffect::toJson() const
 {

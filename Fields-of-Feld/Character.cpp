@@ -18,6 +18,7 @@
 #include "Drink.h"
 #include "Book.h"
 #include "Potion.h"
+#include <cmath>
 
 Character::Character(bool isAlly, bool namedCharacter, bool isAlive, bool active, bool alert,
 	std::string name, std::string description, float confidenceLevel,
@@ -200,193 +201,183 @@ bool Character::chooseAmmunition(std::shared_ptr<Weapon> weapon, std::shared_ptr
 
 void Character::fireRangedWeapon(std::shared_ptr<Character> target, std::shared_ptr<Weapon> weapon, std::shared_ptr<Ammunition> ammo)
 {
-	//target is a human
-	if (std::dynamic_pointer_cast<Human>(target))
-	{
-		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
-		std::shared_ptr<Human> humanTarget = std::dynamic_pointer_cast<Human>(target);
+	std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
 
-		//APPLY DEFENSIVE EFFECTS OF TARGET IF IN RANGE
-		//get enchantments of target
-		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
+	//APPLY DEFENSIVE EFFECTS OF TARGET IF IN RANGE
+	//get enchantments of target
+	for (std::shared_ptr<Item> item : target->inventory.equippedItems)
+	{
+		auto armor = std::dynamic_pointer_cast<Armor>(item);
+		if (!armor) continue;
+		for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
 		{
-			auto armor = std::dynamic_pointer_cast<Armor>(item);
-			if (!armor) continue;
-				for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+			for (std::shared_ptr<Effect> effect : enchantment->effects)
+			{
+				effect->apply(target, shared_from_this(), 1.0f);
+			}
+		}
+	}
+
+	if (weapon->weaponType == Weapon::WeaponType::LONGBOW || weapon->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
+		weapon->weaponType == Weapon::WeaponType::GREATBOW || weapon->weaponType == Weapon::WeaponType::MINICROSSBOW ||
+		weapon->weaponType == Weapon::WeaponType::CROSSBOW || weapon->weaponType == Weapon::WeaponType::BALLISTA)
+	{
+		//archery specific sanity check
+		if (ammo == nullptr)
+		{
+			std::cout << dye::light_red("ERROR: No ammunition provided for dealDamage method") << std::endl;
+			return;
+		}
+
+		//Damage modifier will be changed to 0.7 if the player lacks requirements for the weapon, increases for every point of the stat it the weapon scales with
+		float damageModifier = 1.0f;
+		bool lacksRequirements = false;
+		//Get the stat scaling values of the weapon, adjust damage values as needed
+		float strengthRequirement = weapon->getWeaponRequirementValue(StatScaling::STRENGTH);
+		if (strengthRequirement > this->getStrength()) lacksRequirements = true;
+		float agilityRequirment = weapon->getWeaponRequirementValue(StatScaling::AGILITY);
+		if (agilityRequirment > this->getAgility()) lacksRequirements = true;
+		float intelligenceRequirement = weapon->getWeaponRequirementValue(StatScaling::INTELLIGENCE);
+		if (intelligenceRequirement > this->getIntelligence()) lacksRequirements = true;
+		float faithRequirement = weapon->getWeaponRequirementValue(StatScaling::FAITH);
+		if (faithRequirement > this->getFaith()) lacksRequirements = true;
+		float luckRequirement = weapon->getWeaponRequirementValue(StatScaling::LUCK);
+		if (luckRequirement > this->getLuck()) lacksRequirements = true;
+		float arcaneRequirement = weapon->getWeaponRequirementValue(StatScaling::ARCANE);
+		if (arcaneRequirement > this->getArcane()) lacksRequirements = true;
+		float charismaRequirement = weapon->getWeaponRequirementValue(StatScaling::CHARISMA);
+		if (charismaRequirement > this->getCharisma()) lacksRequirements = true;
+
+		//get random number for crit chance influenced by luck slightly
+		int randomNum = (rand() % 100 - this->getLuck()) + 1;
+		//This is just Overwatch's damage falloff formula lmao
+
+		//Stat scaling variables
+		float strengthScaling = weapon->getWeaponScalingValue(StatScaling::STRENGTH);
+		float agilityScaling = weapon->getWeaponScalingValue(StatScaling::AGILITY);
+		float intelligenceScaling = weapon->getWeaponScalingValue(StatScaling::INTELLIGENCE);
+		float faithScaling = weapon->getWeaponScalingValue(StatScaling::FAITH);
+		float luckScaling = weapon->getWeaponScalingValue(StatScaling::LUCK);
+		float arcaneScaling = weapon->getWeaponScalingValue(StatScaling::ARCANE);
+		float charismaScaling = weapon->getWeaponScalingValue(StatScaling::CHARISMA);
+
+		float scalingModifier = max(((strengthScaling / 2) * this->getStrength() + (agilityScaling / 2) * this->getAgility() + (intelligenceScaling / 2) * this->getIntelligence()
+			+ (faithScaling / 2) * this->getFaith() + (luckScaling / 2) * this->getLuck() + (arcaneScaling / 2) * this->getArcane() + (charismaScaling / 2) * this->getCharisma() / 5000), 0);
+
+		damageModifier += scalingModifier;
+
+		if (lacksRequirements) damageModifier = 0.7f;
+
+		//Inform player of their lack of requirements
+		if (lacksRequirements == true) std::cout << dye::light_red(" You lack the requirements to wield ")
+			<< weapon->name << dye::light_red(" effectively! Normal damage is reduced by 30%!") << std::endl;
+
+		//damage falloff variables
+		float minDamage = ammo->getAmmoDamage(target, ammo) * .3;
+		float maxDamage = ammo->getAmmoDamage(target, ammo) * 1.3;
+		float nearRange = ammo->range * 0.1;
+
+		float farRange = weapon->reach + ammo->range;
+
+		//normalized distance of the attacker from their target
+		float normalizedDistance = std::clamp((target->position[this->id] - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
+
+		//raw damage of the arrow
+		float arrowDamage = max((maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage) * damageModifier), 1.0f);
+
+		//crit damage modifier
+		float critDamage = arrowDamage * 1.5;
+
+		//final damage taken, either crit or non crit
+		float critDamageTaken = critDamage;
+		float damageTaken = arrowDamage;
+
+		//ensures that the damage will never be negative 
+		if (critDamageTaken < 0) critDamageTaken = 0;
+		if (damageTaken < 0) damageTaken = 0;
+
+		//Critical Hit
+		if (randomNum <= this->critChance)
+		{
+			//Player landed critical hit
+			if (humanAttacker->isPlayer)
+			{
+				target->healthPoints -= critDamageTaken;
+				humanAttacker->consumeAmmo(ammo);
+				std::cout << dye::light_red(" Critical Hit!") << std::endl;
+				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << critDamageTaken << " points of damage from "
+					<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->apply(target, shared_from_this());
+						effect->apply(shared_from_this(), target, 1.0f);
 					}
 				}
-		}
-
-		if (weapon->weaponType == Weapon::WeaponType::LONGBOW || weapon->weaponType == Weapon::WeaponType::COMPOUNDBOW ||
-			weapon->weaponType == Weapon::WeaponType::GREATBOW || weapon->weaponType == Weapon::WeaponType::MINICROSSBOW ||
-			weapon->weaponType == Weapon::WeaponType::CROSSBOW || weapon->weaponType == Weapon::WeaponType::BALLISTA)
-		{
-			//archery specific sanity check
-			if (ammo == nullptr)
-			{
-				std::cout << dye::light_red("ERROR: No ammunition provided for dealDamage method") << std::endl;
 				return;
 			}
-
-			//Damage modifier will be changed to 0.7 if the player lacks requirements for the weapon, increases for every point of the stat it the weapon scales with
-			float damageModifier = 1.0f;
-			bool lacksRequirements = false;
-			//Get the stat scaling values of the weapon, adjust damage values as needed
-			float strengthRequirement = weapon->getWeaponRequirementValue(StatScaling::STRENGTH);
-			if (strengthRequirement > this->getStrength()) lacksRequirements = true;
-			float agilityRequirment = weapon->getWeaponRequirementValue(StatScaling::AGILITY);
-			if (agilityRequirment > this->getAgility()) lacksRequirements = true;
-			float intelligenceRequirement = weapon->getWeaponRequirementValue(StatScaling::INTELLIGENCE);
-			if (intelligenceRequirement > this->getIntelligence()) lacksRequirements = true;
-			float faithRequirement = weapon->getWeaponRequirementValue(StatScaling::FAITH);
-			if (faithRequirement > this->getFaith()) lacksRequirements = true;
-			float luckRequirement = weapon->getWeaponRequirementValue(StatScaling::LUCK);
-			if (luckRequirement > this->getLuck()) lacksRequirements = true;
-			float arcaneRequirement = weapon->getWeaponRequirementValue(StatScaling::ARCANE);
-			if (arcaneRequirement > this->getArcane()) lacksRequirements = true;
-			float charismaRequirement = weapon->getWeaponRequirementValue(StatScaling::CHARISMA);
-			if (charismaRequirement > this->getCharisma()) lacksRequirements = true;
-
-			//get random number for crit chance influenced by luck slightly
-			int randomNum = (rand() % 100 - this->getLuck()) + 1;
-			//This is just Overwatch's damage falloff formula lmao
-
-			//Stat scaling variables
-			float strengthScaling = weapon->getWeaponScalingValue(StatScaling::STRENGTH);
-			float agilityScaling = weapon->getWeaponScalingValue(StatScaling::AGILITY);
-			float intelligenceScaling = weapon->getWeaponScalingValue(StatScaling::INTELLIGENCE);
-			float faithScaling = weapon->getWeaponScalingValue(StatScaling::FAITH);
-			float luckScaling = weapon->getWeaponScalingValue(StatScaling::LUCK);
-			float arcaneScaling = weapon->getWeaponScalingValue(StatScaling::ARCANE);
-			float charismaScaling = weapon->getWeaponScalingValue(StatScaling::CHARISMA);
-
-			float scalingModifier = max(((strengthScaling / 2) * this->getStrength() + (agilityScaling / 2) * this->getAgility() + (intelligenceScaling / 2) * this->getIntelligence()
-				+ (faithScaling / 2) * this->getFaith() + (luckScaling / 2) * this->getLuck() + (arcaneScaling / 2) * this->getArcane() + (charismaScaling / 2) * this->getCharisma() / 5000), 0);
-
-			damageModifier += scalingModifier;
-
-			if (lacksRequirements) damageModifier = 0.7f;
-
-			//Inform player of their lack of requirements
-			if (lacksRequirements == true) std::cout << dye::light_red(" You lack the requirements to wield ")
-				<< weapon->name << dye::light_red(" effectively! Normal damage is reduced by 30%!") << std::endl;
-
-			//damage falloff variables
-			float minDamage = ammo->getAmmoDamage(target, ammo) * .3;
-			float maxDamage = ammo->getAmmoDamage(target, ammo) * 1.3;
-			float nearRange = ammo->range * 0.1;
-
-			float farRange = weapon->reach + ammo->range;
-
-			//normalized distance of the attacker from their target
-			float normalizedDistance = std::clamp((target->position[this->id] - nearRange) / (farRange - nearRange), 0.0f, 1.0f);
-
-			//raw damage of the arrow
-			float arrowDamage = max((maxDamage * (1.0f - normalizedDistance) + (normalizedDistance * minDamage) * damageModifier), 1.0f);
-
-			//crit damage modifier
-			float critDamage = arrowDamage * 1.5;
-
-			//final damage taken, either crit or non crit
-			float critDamageTaken = critDamage;
-			float damageTaken = arrowDamage;
-
-			//ensures that the damage will never be negative 
-			if (critDamageTaken < 0) critDamageTaken = 0;
-			if (damageTaken < 0) damageTaken = 0;
-
-			//Critical Hit
-			if (randomNum <= this->critChance)
-			{
-				//Player landed critical hit
-				if (humanAttacker->isPlayer)
-				{
-					target->healthPoints -= critDamageTaken;
-					humanAttacker->consumeAmmo(ammo);
-					std::cout << dye::light_red(" Critical Hit!") << std::endl;
-					std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << critDamageTaken << " points of damage from "
-						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
-					if (target->healthPoints <= 0) target->killCharacter();
-					for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
-					{
-						for (std::shared_ptr<Effect> effect : enchantment->effects)
-						{
-							effect->apply(shared_from_this(), target);
-						}
-					}
-					return;
-				}
-				//NPC landed critical hit
-				else
-				{
-					target->healthPoints -= critDamageTaken;
-					humanAttacker->consumeAmmo(ammo);
-					std::cout << dye::light_red(" Critical Hit!") << std::endl;
-					std::cout << std::setprecision(2) << " You take " << critDamageTaken << " points of damage from the "
-						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
-					if (target->healthPoints <= 0) target->killCharacter();
-					for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
-					{
-						for (std::shared_ptr<Effect> effect : enchantment->effects)
-						{
-							effect->apply(shared_from_this(), target);
-						}
-					}
-					return;
-				}
-			}
-			//Normal Hit
+			//NPC landed critical hit
 			else
 			{
-				//Player landed normal hit
-				if (humanAttacker->isPlayer)
+				target->healthPoints -= critDamageTaken;
+				humanAttacker->consumeAmmo(ammo);
+				std::cout << dye::light_red(" Critical Hit!") << std::endl;
+				std::cout << std::setprecision(2) << " You take " << critDamageTaken << " points of damage from the "
+					<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
 				{
-					target->healthPoints -= damageTaken;
-					humanAttacker->consumeAmmo(ammo);
-					std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << damageTaken << " points of damage from "
-						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
-					if (target->healthPoints <= 0) target->killCharacter();
-					for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						for (std::shared_ptr<Effect> effect : enchantment->effects)
-						{
-							effect->apply(shared_from_this(), target);
-						}
+						effect->apply(shared_from_this(), target, 1.0f);
 					}
-					return;
 				}
-				//NPC landed normal hit
-				else
+				return;
+			}
+		}
+		//Normal Hit
+		else
+		{
+			//Player landed normal hit
+			if (humanAttacker->isPlayer)
+			{
+				target->healthPoints -= damageTaken;
+				humanAttacker->consumeAmmo(ammo);
+				std::cout << std::setprecision(2) << " " << dye::light_yellow(target->name) << " takes " << damageTaken << " points of damage from "
+					<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
 				{
-					target->healthPoints -= damageTaken;
-					humanAttacker->consumeAmmo(ammo);
-					std::cout << std::setprecision(2) << " You take " << damageTaken << " points of damage from the "
-						<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
-					if (target->healthPoints <= 0) target->killCharacter();
-					return;
-					for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						for (std::shared_ptr<Effect> effect : enchantment->effects)
-						{
-							effect->apply(shared_from_this(), target);
-						}
+						effect->apply(shared_from_this(), target, 1.0f);
+					}
+				}
+				return;
+			}
+			//NPC landed normal hit
+			else
+			{
+				target->healthPoints -= damageTaken;
+				humanAttacker->consumeAmmo(ammo);
+				std::cout << std::setprecision(2) << " You take " << damageTaken << " points of damage from the "
+					<< humanAttacker->name << "'s " << ammo->name << "!" << std::endl;
+				if (target->healthPoints <= 0) target->killCharacter();
+				return;
+				for (std::shared_ptr<Enchantment> enchantment : ammo->enchantments)
+				{
+					for (std::shared_ptr<Effect> effect : enchantment->effects)
+					{
+						effect->apply(shared_from_this(), target, 1.0f);
 					}
 				}
 			}
 		}
-		else
-		{
-			std::cout << dye::light_red("ERROR: Weapon is not a ranged weapon") << std::endl;
-		}
 	}
-	//target is a creature
 	else
 	{
-		//TODO
+		std::cout << dye::light_red("ERROR: Weapon is not a ranged weapon") << std::endl;
 	}
 }
 
@@ -417,28 +408,23 @@ void Character::consumeAmmo(std::shared_ptr<Ammunition> ammo)
 
 void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumable, std::shared_ptr<Character> target)
 {
-	//target is a human
-	if (std::dynamic_pointer_cast<Human>(target))
-	{
-
 		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
-		std::shared_ptr<Human> humanTarget = std::dynamic_pointer_cast<Human>(target);
 
 		//APPLY DEFENSIVE EFFECTS OF TARGET IF IN RANGE
 		//get enchantments of target
 		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
 		{
 			auto armor = std::dynamic_pointer_cast<Armor>(item);
-				for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+			for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
+			{
+				for (std::shared_ptr<Effect> effect : enchantment->effects)
 				{
-					for (std::shared_ptr<Effect> effect : enchantment->effects)
-					{
-						effect->apply(target, shared_from_this());
-					}
+					effect->apply(target, shared_from_this(), 1.0f);
 				}
+			}
 		}
 
-        //sanity check
+		//sanity check
 		if (consumable == nullptr)
 		{
 			std::cout << dye::light_red("ERROR: No ammunition provided for dealDamage method") << std::endl;
@@ -533,7 +519,7 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->apply(shared_from_this(), target);
+						effect->apply(shared_from_this(), target, 1.0f);
 					}
 				}
 				return;
@@ -551,7 +537,7 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->apply(shared_from_this(), target);
+						effect->apply(shared_from_this(), target, 1.0f);
 					}
 				}
 				return;
@@ -572,7 +558,7 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->apply(shared_from_this(), target);
+						effect->apply(shared_from_this(), target, 1.0f);
 					}
 				}
 				return;
@@ -589,18 +575,12 @@ void Character::throwThrownConsumable(std::shared_ptr<ThrownConsumable> consumab
 				{
 					for (std::shared_ptr<Effect> effect : enchantment->effects)
 					{
-						effect->apply(shared_from_this(), target);
+						effect->apply(shared_from_this(), target, 1.0f);
 					}
 				}
 				return;
 			}
 		}
-	}
-	//target is a creature
-	else
-	{
-		//TODO
-	}
 }
 
 void Character::consumeThrownConsumable(std::shared_ptr<ThrownConsumable> consumable)
@@ -640,12 +620,10 @@ void Character::killCharacter()
 }
 
 //SPELLS
-bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, std::shared_ptr<Spell>& spell)
+bool Character::chooseSpell(Weapon& weapon, std::vector<std::shared_ptr<Character>> enemyTargets, std::vector<std::shared_ptr<Character>> allyTargets, std::shared_ptr<Spell>& spell, std::shared_ptr<Character>& target)
 {
 	//checks if they're using an appropriate casting tool
-	if (weapon.weaponType == Weapon::WeaponType::WAND || weapon.weaponType == Weapon::WeaponType::STAFF ||
-		weapon.weaponType == Weapon::WeaponType::ORB || weapon.weaponType == Weapon::WeaponType::CHIME ||
-		weapon.weaponType == Weapon::WeaponType::TALISMAN || weapon.weaponType == Weapon::WeaponType::TOME)
+	if (weapon.weaponType == Weapon::WeaponType::WAND || weapon.weaponType == Weapon::WeaponType::STAFF || weapon.weaponType == Weapon::WeaponType::INSTRUMENT)
 	{
 		int choice = 0;
 		//keep looping until the player chooses a spell or chooses to go back
@@ -658,37 +636,57 @@ bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, s
 			std::cout << "\n=--->\n" << std::endl;
 			//used to keep track of the amount of used spell slots and to print empty slots for any spell not attuned
 			int numCategories = 0;
+			bool inRange = false;
 			for (int i = 0; i < this->attunedSpells.size(); i++)
 			{
-				//print the spell out as grey if the player doesn't have enough fatigue to cast it or if it is out of range of all targets
-				// also checks if the spell in question is used on an ally or self, in which case let it go through because those ones have a range of 0
-				if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints
-					&& this->attunedSpells[i]->range >= target->position[this->id]
-					&& !this->attunedSpells[i]->useOnSelf
-					&& !this->attunedSpells[i]->useOnAlly
-					&& this->attunedSpells[i]->checkSpellRequirements(this->attunedSpells[i], shared_from_this()))
+				std::shared_ptr<Spell> spell = this->attunedSpells[i];
+				if (spell->fatigueCost >= this->fatiguePoints)
 				{
-					std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
+					std::cout << dye::grey(" " + std::to_string(i + 1) + ") " + spell->name + "; costs " + std::to_string(spell->fatigueCost) + " fatigue") << std::endl;
 					numCategories++;
+					continue;
 				}
-				else if (this->attunedSpells[i]->fatigueCost <= this->fatiguePoints && this->attunedSpells[i]->useOnSelf
-					&& this->attunedSpells[i]->checkSpellRequirements(this->attunedSpells[i], shared_from_this()) || this->attunedSpells[i]->useOnAlly
-					&& this->attunedSpells[i]->checkSpellRequirements(this->attunedSpells[i], shared_from_this()))
+				if (spell->useOnEnemy)
 				{
-					std::cout << dye::light_yellow(" ") << dye::light_yellow(i + 1) << dye::light_yellow(") ") << this->attunedSpells[i]->name << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
-					numCategories++;
+					for (const auto& enemy : enemyTargets)
+					{
+						if (spell->range >= enemy->position[this->getId()])
+						{
+							inRange = true;
+							break;
+						}
+					}
+					if (inRange)
+					{
+						std::cout << dye::light_yellow(" " + std::to_string(i + 1) + ") ") << spell->name + "; costs " + std::to_string(spell->fatigueCost) + " fatigue" << std::endl;
+						numCategories++;
+						continue;
+					}
 				}
-				else if (this->attunedSpells[i]->fatigueCost > this->fatiguePoints && this->attunedSpells[i]->range < target->position[this->id]
-					&& !this->attunedSpells[i]->useOnSelf && !this->attunedSpells[i]->useOnAlly)
+				if (spell->useOnAlly)
 				{
-					std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
-					numCategories++;
+					for (const auto& ally : allyTargets)
+					{
+						if (spell->range >= ally->position[this->getId()])
+						{
+							inRange = true;
+							break;
+						}
+					}
+					if (inRange)
+					{
+						std::cout << dye::light_yellow(" " + std::to_string(i + 1) + ") ") << spell->name + "; costs " + std::to_string(spell->fatigueCost) + " fatigue" << std::endl;
+						numCategories++;
+						continue;
+					}
 				}
-				else {
-					std::cout << dye::grey(" ") << dye::grey(i + 1) << dye::grey(") ") << dye::grey(this->attunedSpells[i]->name) << "; cost: " << this->attunedSpells[i]->fatigueCost << std::endl;
+				if (spell->useOnSelf)
+				{
+					std::cout << dye::light_yellow(" " + std::to_string(i + 1) + ") ") << spell->name + "; costs " + std::to_string(spell->fatigueCost) + " fatigue" << std::endl;
 					numCategories++;
+					continue;
 				}
-			}
+			} 
 			for (int i = numCategories; i < 7; i++)
 			{
 				std::cout << " " << dye::grey(i + 1) << dye::grey(") Empty Slot") << std::endl;
@@ -712,46 +710,114 @@ bool Character::chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, s
 					std::cin.ignore(1000, '\n');
 				}
 			} while (choice < 1 || choice > this->attunedSpells.size());
-			//get fatigue cost of the spell, dont allow them to cast it if they can't
-			// return without progressing a turn if they can't cast the spell
-			if (fatiguePoints < this->attunedSpells[choice - 1]->fatigueCost)
+
+			std::shared_ptr<Spell> spellChoice = this->attunedSpells[choice - 1];
+
+			//used to check requirements of spell
+			std::unordered_map<std::string, int> requirements = spellChoice->getStatRequirements();
+			bool hasRequirements = true;
+			for (auto& [stat, value] : requirements)
 			{
-				//user does not have enough fatigue to cast the spell
-				std::cout << dye::light_red(" Not enough fatigue to cast spell!") << std::endl;
+				if (this->getStrength() < value && stat == "Strength") hasRequirements = false;
+				if (this->getAgility() < value && stat == "Agility") hasRequirements = false;
+				if (this->getIntelligence() < value && stat == "Intelligence") hasRequirements = false;
+				if (this->getFaith() < value && stat == "Faith") hasRequirements = false;
+				if (this->getArcane() < value && stat == "Arcane") hasRequirements = false;
+				if (this->getCharisma() < value && stat == "Charisma") hasRequirements = false;
+				if (this->getLuck() < value && stat == "Luck") hasRequirements = false;
+			}
+
+			//Checks if player can cast spell
+			if (spellChoice->fatigueCost > this->fatiguePoints)
+			{
+				std::cout << dye::light_red(" You do not have enough fatigue to cast this spell!") << std::endl;
 				return false;
 			}
-			//spell is a self cast, ignore range check
-			else if (this->attunedSpells[choice - 1]->checkSpellRequirements(this->attunedSpells[choice - 1], shared_from_this()) && this->attunedSpells[choice - 1]->useOnSelf)
+			if (!hasRequirements)
 			{
-				spell = this->attunedSpells[choice - 1];
-				return true;
-				break;
-			}
-			//spell is an ally cast, ignore range check
-			else if (this->attunedSpells[choice - 1]->checkSpellRequirements(this->attunedSpells[choice - 1], shared_from_this()) && this->attunedSpells[choice - 1]->useOnAlly)
-			{
-				spell = this->attunedSpells[choice - 1];
-				return true;
-				break;
-			}
-			//Spell is out of ransge
-			else if (this->attunedSpells[choice - 1]->range < target->position[this->getId()])
-			{
-				std::cout << " You are not in range of that target with " << this->attunedSpells[choice - 1]->name << std::endl;
+				std::cout << dye::light_red(" You do not meet the requirements to cast this spell!") << std::endl;
 				return false;
-				break;
 			}
-			else if (this->attunedSpells[choice - 1]->checkSpellRequirements(this->attunedSpells[choice - 1], shared_from_this()))
+			//Print all valid targets for spell type
+			if (spellChoice->useOnSelf)
 			{
-				spell = this->attunedSpells[choice - 1];
+				spell = spellChoice;
 				return true;
-				break;
+			}
+			if (spellChoice->useOnAlly && allyTargets.size() > 0)
+			{
+				int index = 1;
+				for (const auto& ally : allyTargets)
+				{
+					if (spellChoice->range >= ally->position[this->getId()] && ally->isAlive)
+					{
+						std::cout << dye::light_yellow(" ") << dye::light_yellow(index) << dye::light_yellow(") ") << ally->name << std::endl;
+						index++;
+					}
+				}
+				std::cout << dye::light_yellow(" " + index) << dye::light_yellow(") Go Back...") << std::endl;
+				int targetChoice = 0;
+				do
+				{
+					std::cout << dye::light_yellow(" Choose your target: ");
+					std::cin >> targetChoice;
+					if (targetChoice == index)
+					{
+						//user chose to go back without casting a spell
+						break;
+					}
+					if (std::cin.fail() || targetChoice < 1 || targetChoice > allyTargets.size())
+					{
+						std::cout << dye::white(" Invalid choice. Please enter 1 - ")
+							<< allyTargets.size() << " or " << index << " to go back..." << std::endl;
+						std::cin.clear();
+						std::cin.ignore(1000, '\n');
+					}
+				} while (targetChoice < 1 || targetChoice > allyTargets.size());
+
+				//user chose to go back without casting a spell
+				if (targetChoice == index)break;
+				else target = allyTargets[targetChoice - 1]; spell = spellChoice;
+			}
+			if (spellChoice->useOnEnemy && enemyTargets.size() > 0)
+			{
+				int index = 1;
+				for (const auto& ally : enemyTargets)
+				{
+					if (spellChoice->range >= ally->position[this->getId()] && ally->isAlive)
+					{
+						std::cout << dye::light_yellow(" ") << dye::light_yellow(index) << dye::light_yellow(") ") << ally->name << std::endl;
+						index++;
+					}
+				}
+				std::cout << dye::light_yellow(" " + index) << dye::light_yellow(") Go Back...") << std::endl;
+				int targetChoice = 0;
+				do
+				{
+					std::cout << dye::light_yellow(" Choose your target: ");
+					std::cin >> targetChoice;
+					if (targetChoice == index)
+					{
+						//user chose to go back without casting a spell
+						break;
+					}
+					if (std::cin.fail() || targetChoice < 1 || targetChoice > enemyTargets.size())
+					{
+						std::cout << dye::white(" Invalid choice. Please enter 1 - ")
+							<< enemyTargets.size() << " or " << index << " to go back..." << std::endl;
+						std::cin.clear();
+						std::cin.ignore(1000, '\n');
+					}
+				} while (targetChoice < 1 || targetChoice > enemyTargets.size());
+
+				//user chose to go back without casting a spell
+				if (targetChoice == index)break;
+				else target = enemyTargets[targetChoice - 1]; spell = spellChoice;
 			}
 			else
 			{
-				std::cout << dye::light_red(" You lack the requirements to cast that spell!") << std::endl;
+				std::cout << dye::light_red(" ERROR: CHOSEN SPELL DID NOT MEET ANY CONDITIONS IN CHOOSESPELL!") << std::endl;
 				return false;
-				break;
 			}
 		} while (!spell || choice == 8);
 	}
@@ -814,18 +880,20 @@ void Character::viewSpells()
 			std::cout << " " << stat << ": " << value << std::endl;
 		}
 		std::cout << " Scaling: " << std::endl;
-		if (this->attunedSpells[choice - 1]->arcaneScaling > 0) std::cout << " Arcane: " << this->attunedSpells[choice - 1]->arcaneScaling << std::endl;
-		if (this->attunedSpells[choice - 1]->charismaScaling > 0) std::cout << " Charisma: " << this->attunedSpells[choice - 1]->charismaScaling << std::endl;
-		if (this->attunedSpells[choice - 1]->faithScaling > 0) std::cout << " Faith: " << this->attunedSpells[choice - 1]->faithScaling << std::endl;
-		if (this->attunedSpells[choice - 1]->intelligenceScaling > 0) std::cout << " Intelligence: " << this->attunedSpells[choice - 1]->intelligenceScaling << std::endl;
-		if (this->attunedSpells[choice - 1]->luckScaling > 0) std::cout << " Luck: " << this->attunedSpells[choice - 1]->luckScaling << std::endl;
+		std::cout << " Arcane: " << this->attunedSpells[choice - 1]->getScalingGrade(this->attunedSpells[choice - 1]->arcaneScaling) << std::endl;
+		std::cout << " Charisma: " << this->attunedSpells[choice - 1]->getScalingGrade(this->attunedSpells[choice - 1]->charismaScaling) << std::endl;
+		std::cout << " Faith: " << this->attunedSpells[choice - 1]->getScalingGrade(this->attunedSpells[choice - 1]->faithScaling) << std::endl;
+		std::cout << " Intelligence: " << this->attunedSpells[choice - 1]->getScalingGrade(this->attunedSpells[choice - 1]->intelligenceScaling) << std::endl;
+		std::cout << " Luck: " << this->attunedSpells[choice - 1]->getScalingGrade(this->attunedSpells[choice - 1]->luckScaling) << std::endl;
 	} while (choice != 8);
 }
 
 void Character::viewSpellsBrief()
 {
 	int numCategories = 0;
-	std::cout << dye::light_yellow(" Your Attuned Spells...") << std::endl;
+	std::cout << "\n=--->\n" << std::endl;
+	std::cout << dye::light_green(" Fatigue ") << this->fatiguePoints << "/" << this->maxFatiguePoints << std::endl;
+	std::cout << "\n=--->\n" << std::endl;
 	for (int i = 0; i < this->attunedSpells.size(); i++)
 	{
 		//print the spell out as grey if the player doesn't have enough fatigue to cast it
@@ -838,95 +906,142 @@ void Character::viewSpellsBrief()
 		std::cout << " " << dye::grey(i + 1) << dye::grey(") Empty Slot") << std::endl;
 	}
 }
-void Character::castSpell(Spell& spell, std::shared_ptr<Character> target, float playerMovement)
+void Character::castSpell(Spell& spell, std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target)
 {
-	std::shared_ptr<Character> character = (shared_from_this());
-	
+	std::shared_ptr<Human> character = std::dynamic_pointer_cast<Human>(shared_from_this());
+	float spellBonus = 1.0f;
+	spellBonus += max(weapon->getWeaponScalingValue(StatScaling::ARCANE) * character->getArcane() / 50, 0.0f);
+	spellBonus += max(weapon->getWeaponScalingValue(StatScaling::CHARISMA) * character->getCharisma() / 50, 0.0f);
+	spellBonus += max(weapon->getWeaponScalingValue(StatScaling::FAITH) * character->getFaith() / 50, 0.0f);
+	spellBonus += max(weapon->getWeaponScalingValue(StatScaling::INTELLIGENCE) * character->getIntelligence() / 50, 0.0f);
+	spellBonus += max(weapon->getWeaponScalingValue(StatScaling::LUCK) * character->getLuck() / 50, 0.0f);
+	spellBonus += max(weapon->getWeaponScalingValue(StatScaling::STRENGTH) * character->getStrength() / 50, 0.0f);
+	spellBonus += max(weapon->getWeaponScalingValue(StatScaling::AGILITY) * character->getAgility() / 50, 0.0f);
 
-	if (std::dynamic_pointer_cast<Human>(target))
+	//check if the player has enough fatigue to cast the spell
+	if (this->fatiguePoints < spell.fatigueCost)
 	{
-		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
-		
-		//APPLY DEFENSIVE EFFECTS OF TARGET IF IN RANGE
-		//get enchantments of target
+		std::cout << dye::light_red(" Not enough fatigue to cast spell!") << std::endl;
+		return;
+	}
+
+	//Cast the spell for however many times they cast speed allows. Instruments have no cast speed modifier, staffs have a modifier of 0.8, wands have a modifier of 1.2
+	float numCasts = max(character->castSpeed / 100, 1);
+	numCasts += spell.attackSpeed / 100;
+	if (weapon->weaponType == Weapon::WeaponType::STAFF) numCasts *= 0.5f;
+	if (weapon->weaponType == Weapon::WeaponType::WAND) numCasts *= 2.0f;
+	if (weapon->weaponType == Weapon::WeaponType::INSTRUMENT) numCasts *= 1.0f;
+	//Round the spell casts down to the nearest whole number, ensuring it is always at least 1
+	numCasts = max(floor(numCasts), 1);
+
+	//Sets damage modifier based on the type of tool used to cast the spell
+	float toolModifier = 1.0f;
+	if (weapon->weaponType == Weapon::WeaponType::STAFF) toolModifier = 2.0f;
+	if (weapon->weaponType == Weapon::WeaponType::WAND) toolModifier = 0.5f;
+	if (weapon->weaponType == Weapon::WeaponType::INSTRUMENT) toolModifier = 1.0f;
+
+	//Final bonus damage derived from the scaling of the weapon and the character's stats plus the modifier of the tool used to cast the spell
+	spellBonus *= toolModifier;
+
+	std::cout << dye::light_yellow(" " + character->name) << " casts " << spell.name << "!" << std::endl;
+
+	for (int i = 0; i < numCasts; i++)
+	{
+		//Apply enemy enchantments that are meant to affect attackers (thorns) first
+		//Apply logic will check range and if the target is alive so that isn't needed here
 		for (std::shared_ptr<Item> item : target->inventory.equippedItems)
 		{
-			if (std::dynamic_pointer_cast<std::shared_ptr<Armor>>(item))
+			if (std::dynamic_pointer_cast<Armor>(item))
 			{
 				std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
 				for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
 				{
-					for (std::shared_ptr<Effect> effect : enchantment->effects)
+					if (enchantment->useOnEnemy)
 					{
-						effect->apply(target, shared_from_this());
+						for (std::shared_ptr<Effect> effect : enchantment->effects)
+						{
+							if (character->isAlive) effect->apply(target, character, 1.0f);
+						}
 					}
 				}
 			}
 		}
-		//Individual spell logic
-		//Electrify Armament has 2 effects, one applied to the caster and one to nearby enemies. This is to ensure they apply
-		// to the correct targets
-		if (spell.name == "Electrify Armament I" || spell.name == "Electrify Armament II" || spell.name == "Electrify Armament III")
+
+		//Appy tool enchantments that are meant to affect the enemies
+		for (std::shared_ptr<Item> item : character->inventory.equippedItems)
 		{
-			for (auto& eff : spell.effects)
+			if (std::dynamic_pointer_cast<Armor>(item))
 			{
-				if (eff->getType() == "ArmamentBuff")
+				std::shared_ptr<Armor> armor = std::dynamic_pointer_cast<Armor>(item);
+				for (std::shared_ptr<Enchantment> enchantment : armor->enchantments)
 				{
-					eff->apply(shared_from_this(), shared_from_this());
-				}
-				else
-				{
-					eff->apply(shared_from_this(), target);
-				}
-			}
-		}
-		//Check if the spell is a self-use spell
-		else if (spell.useOnSelf)
-		{
-			for (auto& eff : spell.effects)
-			{
-				eff->apply(shared_from_this(), shared_from_this());
-			}
-		}
-		//Check if the spell is an ally-use spell
-		else if (spell.useOnAlly)
-		{
-			for (auto& eff : spell.effects)
-			{
-				for (auto& ally : humanAttacker->allies)
-				{
-					eff->apply(shared_from_this(), ally);
+					if (enchantment->useOnEnemy)
+					{
+						for (std::shared_ptr<Effect> effect : enchantment->effects)
+						{
+							if (character->isAlive) effect->apply(character, target, 1.0f);
+						}
+					}
 				}
 			}
 		}
-		//Check if the spell is an enemy-use spell
-		else if (spell.useOnEnemy)
+
+		//Cast the spell on an enemy
+		if (spell.useOnEnemy)
 		{
-			for (auto& eff : spell.effects)
+			for (std::shared_ptr<Effect> effect : spell.effects)
 			{
-				eff->apply(shared_from_this(), target);
+				if (target->isAlive) effect->apply(character, target, spellBonus);
 			}
 		}
-		else
+		//Cast the spell on an ally
+		if (spell.useOnAlly)
 		{
-			std::cout << "ERROR: SPELL COULD NOT BE CAST BECAUSE IT DOES NOT MEET THE CONDITIONS SET IN CAST SPELL" << std::endl;
+			for (std::shared_ptr<Effect> effect : spell.effects)
+			{
+				if (character->isAlive) effect->apply(character, character, spellBonus);
+			}
+		}
+		//Cast the spell on self
+		if (spell.useOnSelf)
+		{
+			for (std::shared_ptr<Effect> effect : spell.effects)
+			{
+				if (character->isAlive) effect->apply(character, character, spellBonus);
+			}
+		}
+	}
+}
+
+void Character::removeSpell(std::shared_ptr<Spell> spellToRemove)
+{
+	for (auto& spell : attunedSpells)
+	{
+		if (spell = spell) {
+			attunedSpells.erase(std::remove(attunedSpells.begin(), attunedSpells.end(), spell), attunedSpells.end());
+			return;
+		}
+	}
+	for (auto& spell : knownSpells)
+	{
+		if (spell = spell) {
+			knownSpells.erase(std::remove(knownSpells.begin(), knownSpells.end(), spell), knownSpells.end());
+			return;
 		}
 	}
 }
 
 void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target)
 {
-	if (std::dynamic_pointer_cast<Human>(target))
-	{
+	
 		std::shared_ptr<Human> humanAttacker = std::dynamic_pointer_cast<Human>(shared_from_this());
-		std::shared_ptr<Human> humanTarget = std::dynamic_pointer_cast<Human>(target);
 
 		//Apply enchantment effects first:
 		for (std::shared_ptr<Enchantment> enchantment : weapon->enchantments)
 		{
 			for (std::shared_ptr<Effect> effect : enchantment->effects)
 			{
-				effect->apply(shared_from_this(), target);
+				effect->apply(shared_from_this(), target, 1.0f);
 			}
 		}
 
@@ -1001,7 +1116,7 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 						{
 							for (std::shared_ptr<Effect> effect : enchantment->effects)
 							{
-								if(humanAttacker->isAlive) effect->apply(target, shared_from_this());
+								if (humanAttacker->isAlive) effect->apply(target, shared_from_this(), 1.0f);
 							}
 						}
 					}
@@ -1025,7 +1140,7 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 						{
 							for (std::shared_ptr<Effect> effect : enchantment->effects)
 							{
-								if (humanAttacker->isAlive) effect->apply(target, shared_from_this());
+								if (humanAttacker->isAlive) effect->apply(target, shared_from_this(), 1.0f);
 							}
 						}
 					}
@@ -1053,7 +1168,7 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 						{
 							for (std::shared_ptr<Effect> effect : enchantment->effects)
 							{
-								if (humanAttacker->isAlive) effect->apply(target, shared_from_this());
+								if (humanAttacker->isAlive) effect->apply(target, shared_from_this(), 1.0f);
 							}
 						}
 					}
@@ -1077,7 +1192,7 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 						{
 							for (std::shared_ptr<Effect> effect : enchantment->effects)
 							{
-								if (humanAttacker->isAlive) effect->apply(target, shared_from_this());
+								if (humanAttacker->isAlive) effect->apply(target, shared_from_this(), 1.0f);
 							}
 						}
 					}
@@ -1085,12 +1200,31 @@ void Character::attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<
 				return;
 			}
 		}
-	}
-	else
-	{
-		//TODO
-	}
 
+}
+
+void Character::attackWithWeaponArt(std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target)
+{
+	for (const auto& art : weapon->weaponArts)
+	{
+		if (shared_from_this()->namedCharacter) std::cout << dye::light_yellow(" " + shared_from_this()->name) << " executes " << art->name + "!" << std::endl;
+		if (!shared_from_this()->namedCharacter) std::cout << " The " << dye::light_yellow(" " + shared_from_this()->name) << " executes " << art->name + "!" << std::endl;
+
+		if (art->useOnSelf)
+		{
+			for (const auto& eff : art->effects)
+			{
+				eff->apply(shared_from_this(), shared_from_this(), 1.0f);
+			}
+		}
+		if (art->useOnAlly || art->useOnEnemy)
+		{
+			for (const auto& eff : art->effects)
+			{
+				eff->apply(shared_from_this(), target, 1.0f);
+			}
+		}
+	}
 }
 
 void Character::useConsumable(std::shared_ptr<Consumable> consumable)

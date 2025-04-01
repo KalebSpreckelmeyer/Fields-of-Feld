@@ -26,7 +26,7 @@ public:
 	float luck = 10.0f;
 	float weightBurden = 0.0f;
 	float maxWeightBurden = 100.0f;
-	float castSpeed = 99.0f;
+	float castSpeed = 100.0f;
 	double experience = 0.0;
 	double experienceToNextLevel = 100.0;
 	int gold = 0;

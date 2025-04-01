@@ -12,7 +12,7 @@ ThornsEffect::ThornsEffect(DamageTypes damageType, float range, int duration, fl
 	this->setDamage(damageType, magnitude);
 }
 
-void ThornsEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void ThornsEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	if (target->position[wielder->getId()] <= this->range)
 	{
@@ -83,7 +83,7 @@ AuraEffect::AuraEffect(DamageTypes damageType, float range, int duration, float 
 	this->setDamage(damageType, magnitude);
 }
 
-void AuraEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target)
+void AuraEffect::apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier)
 {
 	if (target->position[wielder->getId()] <= range)
 	{

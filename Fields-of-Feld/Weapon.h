@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include "StatScaling.h"	
 #include "Defense.h"
+#include "WeaponArt.h"
 
 class Weapon :
     public Item
@@ -27,19 +28,23 @@ public:
 	std::unordered_map<StatScaling, float> statRequirements;
 	//StatScaling statRequirement = StatScaling::NONE;
 
+	//Weapon Arts
+	std::vector<std::shared_ptr<WeaponArt>> weaponArts;
+
 	bool specialDamage = false;
 	float reach = 0.0f;
 	float attackSpeed = 0.0f;
 	bool twoHanded = 0.0f;
 	bool needsAmmo = 0.0f;
 	float stability = 0.0f;
-	float magicAdjust;
+	float magicAdjust = 0.0f;
+	float distanceTraveled = 0.0f;
 	enum class WeaponType {
 		DAGGER, STRAIGHTSWORD, GREATSWORD, FIST, MACE, GREATMACE,
 		HATCHET, AXE, GREATAXE, THRUSTINGSWORD, SPEAR, GREATSPEAR, HALBERD, POLEHAMMER,
 		PARRYSHIELD, MEDIUMSHIELD, GREATSHIELD,
 		LONGBOW, COMPOUNDBOW, GREATBOW, MINICROSSBOW, CROSSBOW, BALLISTA,
-		TALISMAN, CHIME, TOME, WAND, STAFF, ORB, CANDLE, CANDLESTICK, TOTEM 
+		WAND, STAFF, INSTRUMENT
 	};
 	WeaponType weaponType = WeaponType::DAGGER;
 
@@ -67,13 +72,16 @@ public:
 	void setWeaponScalingValue(StatScaling scalingStat, float scalingValue);
 
 	void setWeaponRequirementValue(StatScaling statRequirement, float requirementValue);
+
+	float getWeaponRange();
+
 	//ENCHANTMENTS
 	std::vector<std::shared_ptr<Enchantment>> enchantments;
 	
 	Weapon();
 
 	Weapon(bool specialDamage, std::string name, std::string description, float stability, float reach, float attackSpeed, float weight, float value,
-		bool twohanded, bool needsAmmo, float magicAdjust, WeaponType weaponType, EquipSlots slot);
+		bool twohanded, bool needsAmmo, float magicAdjust, float distanceTraveled, WeaponType weaponType, EquipSlots slot);
 
 	~Weapon() = default;
 };

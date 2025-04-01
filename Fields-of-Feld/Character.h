@@ -185,13 +185,19 @@ public:
 	// and a valid target should be passed 
 	//POST: TakeDamage will be called with all relevant parameters to cast a spell and
 	// apply its effects
-	bool chooseSpell(Weapon& weapon, std::shared_ptr<Character> target, std::shared_ptr<Spell>& spell);
+	bool chooseSpell(Weapon& weapon, std::vector<std::shared_ptr<Character>> enemyTargets, std::vector<std::shared_ptr<Character>> allyTargets, 
+		std::shared_ptr<Spell>& spell, std::shared_ptr<Character>& target));
 
 	void viewSpells();
 
 	void viewSpellsBrief();
 
-	void castSpell(Spell& spell, std::shared_ptr<Character> target, float playerMovement);
+	//DESC: Removes a spell from the characters attuned spells/known spells
+	//PRE: The spell must be valid and in the characters attuned spells/known spells
+	//POST: The spell will be removed from the characters attuned spells/known spells
+	void removeSpell(std::shared_ptr<Spell> spellToRemove);
+
+	void castSpell(Spell& spell, std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target);
 
 	void attackWithMelee(std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target);
 
@@ -199,6 +205,11 @@ public:
 	//PRE: The consumable must be valid and have effects
 	//POST: The consumable's effects will be applied to the character, quantity will be decremented and item removed if necessary
 	void useConsumable(std::shared_ptr<Consumable> consumable);
+
+	//DESC: A weapon art is performed and all effects contained with it are applied to the target
+	//PRE: A valid weapon and weapon art should be selected and used on the proper target. This function does not chose the target
+	//POST: All effects contained within the weaopn art will be applied to their relevant targets
+	void attackWithWeaponArt(std::shared_ptr<Weapon> weapon, std::shared_ptr<Character> target);
 
 	//DESC: A consumable is used on the target, applying its effects
 	//PRE: The consumable must be valid and have effects

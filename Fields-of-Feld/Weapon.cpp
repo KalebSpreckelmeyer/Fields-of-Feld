@@ -6,11 +6,10 @@
 #include "IDManager.h"
 #include "HelperFunctions.h"
 
-Weapon::Weapon(bool specialDamage, std::string name, std::string description, float stability, float reach, 
-	float attackSpeed, float weight, float value, bool twohanded, bool needsAmmo, float magicAdjust,
-	WeaponType weaponType, EquipSlots slot) : Item(name, description, value, weight, 1.0f, slot), id(IDManager::getNextId()),
+Weapon::Weapon(bool specialDamage, std::string name, std::string description, float stability, float reach, float attackSpeed, float weight, float value,
+	bool twohanded, bool needsAmmo, float magicAdjust, float distanceTraveled, WeaponType weaponType, EquipSlots slot) : Item(name, description, value, weight, 1.0f, slot), id(IDManager::getNextId()),
 		specialDamage(specialDamage), reach(reach), 
-		attackSpeed(attackSpeed), twoHanded(twohanded), needsAmmo(needsAmmo), magicAdjust(magicAdjust),
+	attackSpeed(attackSpeed), twoHanded(twohanded), needsAmmo(needsAmmo), magicAdjust(magicAdjust), distanceTraveled(distanceTraveled),
 	weaponType(weaponType), stability(stability)
 {
 }
@@ -37,6 +36,7 @@ nlohmann::json Weapon::toJson() const {
 	j["needsAmmo"] = needsAmmo;
 	j["weaponType"] = weaponTypeToString(weaponType);
 	j["magicAdjust"] = magicAdjust;
+	j["distanceTraveled"] = distanceTraveled;
 
 	// Damage and resistances
 	nlohmann::json dmg, def, scale, reqs;
@@ -54,6 +54,11 @@ nlohmann::json Weapon::toJson() const {
 	j["enchantments"] = nlohmann::json::array();
 	for (const auto& ench : enchantments) {
 		j["enchantments"].push_back(ench->toJson());
+	}
+
+	j["weaponArts"] = nlohmann::json::array();
+	for (const auto& art : weaponArts) {
+		j["weaponArts"].push_back(art->toJson());
 	}
 
 	return j;
@@ -80,6 +85,7 @@ std::shared_ptr<Item> Weapon::fromJson(const nlohmann::json& j) {
 	if (j.contains("needsAmmo")) weapon->needsAmmo = j["needsAmmo"];
 	if (j.contains("weaponType")) weapon->weaponType = stringToWeaponType(j["weaponType"]);
 	if (j.contains("magicAdjust")) weapon->magicAdjust = j["magicAdjust"];
+	if (j.contains("distanceTraveled")) weapon->distanceTraveled = j["distanceTraveled"];
 
 	if (j.contains("damageTypes") && j["damageTypes"].is_object()) {
 		for (auto& [key, value] : j["damageTypes"].items()) {
@@ -101,10 +107,14 @@ std::shared_ptr<Item> Weapon::fromJson(const nlohmann::json& j) {
 			weapon->statRequirements[stringToStatScaling(key)] = value;
 		}
 	}
-
 	if (j.contains("enchantments") && j["enchantments"].is_array()) {
 		for (const auto& enchantJson : j["enchantments"]) {
 			weapon->enchantments.push_back(Enchantment::fromJson(enchantJson));
+		}
+	}
+	if (j.contains("weaponArts") && j["weaponArts"].is_array()) {
+		for (const auto& artJson : j["weaponArts"]) {
+			weapon->weaponArts.push_back(WeaponArt::fromJson(artJson));
 		}
 	}
 	return weapon;
@@ -355,4 +365,10 @@ void Weapon::setWeaponScalingValue(StatScaling scalingStat, float scalingValue)
 void Weapon::setWeaponRequirementValue(StatScaling statRequirement, float requirementValue)
 {
 	statRequirements[statRequirement] = requirementValue;
+}
+
+float Weapon::getWeaponRange()
+{
+	if (this) return reach;
+	else return -1.0f;
 }

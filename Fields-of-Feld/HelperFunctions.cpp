@@ -78,15 +78,9 @@ Weapon::WeaponType stringToWeaponType(const std::string& str) {
     if (str == "MINICROSSBOW") return Weapon::WeaponType::MINICROSSBOW;
     if (str == "CROSSBOW") return Weapon::WeaponType::CROSSBOW;
     if (str == "BALLISTA") return Weapon::WeaponType::BALLISTA;
-    if (str == "TALISMAN") return Weapon::WeaponType::TALISMAN;
-    if (str == "CHIME") return Weapon::WeaponType::CHIME;
-    if (str == "TOME") return Weapon::WeaponType::TOME;
     if (str == "WAND") return Weapon::WeaponType::WAND;
     if (str == "STAFF") return Weapon::WeaponType::STAFF;
-    if (str == "ORB") return Weapon::WeaponType::ORB;
-	if (str == "CANDLE") return Weapon::WeaponType::CANDLE;
-	if (str == "CANDLESTICK") return Weapon::WeaponType::CANDLESTICK;
-	if (str == "TOTEM") return Weapon::WeaponType::TOTEM;
+	if (str == "INSTRUMENT") return Weapon::WeaponType::INSTRUMENT;
     throw std::invalid_argument("Invalid WeaponType string: " + str);
 }
 
@@ -320,15 +314,9 @@ std::string weaponTypeToString(Weapon::WeaponType type) {
     case Weapon::WeaponType::MINICROSSBOW: return "MINICROSSBOW";
     case Weapon::WeaponType::CROSSBOW: return "CROSSBOW";
     case Weapon::WeaponType::BALLISTA: return "BALLISTA";
-    case Weapon::WeaponType::TALISMAN: return "TALISMAN";
-    case Weapon::WeaponType::CHIME: return "CHIME";
-    case Weapon::WeaponType::TOME: return "TOME";
     case Weapon::WeaponType::WAND: return "WAND";
     case Weapon::WeaponType::STAFF: return "STAFF";
-    case Weapon::WeaponType::ORB: return "ORB";
-	case Weapon::WeaponType::CANDLE: return "CANDLE";
-	case Weapon::WeaponType::CANDLESTICK: return "CANDLESTICK";
-	case Weapon::WeaponType::TOTEM: return "TOTEM";
+	case Weapon::WeaponType::INSTRUMENT: return "INSTRUMENT";
     default: throw std::invalid_argument("Invalid WeaponType enum");
     }
 }

@@ -12,7 +12,7 @@ public:
     TimedEffect(int duration, float magnitude, bool stackable, int stacks, int maxStacks);
     virtual ~TimedEffect() override = default;
 
-    virtual void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) = 0;
+    virtual void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override = 0;
     void tick(std::shared_ptr<Character> wielder) override;
 	void burst(std::shared_ptr<Character> target) override;
 

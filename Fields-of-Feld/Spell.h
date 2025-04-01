@@ -42,6 +42,8 @@ public:
 
 	bool checkSpellRequirements(std::shared_ptr<Spell> spell, std::shared_ptr<Character> caster);
 
+	void evolveSpell(std::shared_ptr<Character> caster, std::shared_ptr<Spell> spellToEvolve);
+
 	//SORCERIES
 	//NECROMANCY
 	std::shared_ptr<Spell> getBonetrousleEffect(Character& caster);

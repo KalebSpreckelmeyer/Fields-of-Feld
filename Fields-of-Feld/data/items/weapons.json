@@ -69,7 +69,8 @@
     "type": "Weapon",
     "value": 20.0,
     "weaponType": "AXE",
-    "weight": 10.0
+    "weight": 10.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 20.0,
@@ -141,7 +142,8 @@
     "type": "Weapon",
     "value": 30.0,
     "weaponType": "MEDIUMSHIELD",
-    "weight": 8.0
+    "weight": 8.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 30.0,
@@ -232,7 +234,8 @@
     "type": "Weapon",
     "value": 100.0,
     "weaponType": "GREATSWORD",
-    "weight": 15.0
+    "weight": 15.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 70.0,
@@ -304,7 +307,8 @@
     "type": "Weapon",
     "value": 30.0,
     "weaponType": "HATCHET",
-    "weight": 4.0
+    "weight": 4.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -395,7 +399,8 @@
     "type": "Weapon",
     "value": 40.0,
     "weaponType": "MACE",
-    "weight": 5.0
+    "weight": 5.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 1.0,
@@ -467,79 +472,8 @@
     "type": "Weapon",
     "value": 40.0,
     "weaponType": "MEDIUMSHIELD",
-    "weight": 5.0
-  },
-  {
-    "attackSpeed": 1.0,
-    "damageTypes": {
-      "CHOP": 0.0,
-      "NONE": 0.0,
-      "MAGIC": 0.0,
-      "FIRE": 0.0,
-      "FROST": 0.0,
-      "SHOCK": 0.0,
-      "WIND": 0.0,
-      "POISON": 0.0,
-      "BLEED": 0.0,
-      "SLEEP": 0.0,
-      "DARK": 0.0,
-      "HOLY": 0.0,
-      "BLUNT": 0.0,
-      "SLASH": 0.0,
-      "PIERCE": 0.0
-    },
-    "defenseTypes": {
-      "CHOP": 0.0,
-      "NONE": 0.0,
-      "MAGIC": 0.0,
-      "FIRE": 0.0,
-      "FROST": 0.0,
-      "SHOCK": 0.0,
-      "WIND": 0.0,
-      "POISON": 0.0,
-      "BLEED": 0.0,
-      "SLEEP": 0.0,
-      "DARK": 0.0,
-      "HOLY": 0.0,
-      "BLUNT": 0.0,
-      "SLASH": 0.0,
-      "PIERCE": 0.0
-    },
-    "description": "A holy symbol wrapped up in soft linnens. Used to channel and cast faith-based magic.",
-    "enchantments": [],
-    "id": 0,
-    "name": "Faded Cloth Talisman",
-    "needsAmmo": false,
-    "quantity": 1.0,
-    "reach": 1.0,
-    "scalingStats": {
-      "NONE": 0.0,
-      "STRENGTH": 0.0,
-      "AGILITY": 0.0,
-      "CHARISMA": 0.0,
-      "INTELLIGENCE": 0.0,
-      "ARCANE": 0.0,
-      "FAITH": 100.0,
-      "LUCK": 0.0
-    },
-    "slot": "BACKPACK",
-    "specialDamage": false,
-    "stability": 1.0,
-    "statRequirements": {
-      "NONE": 0.0,
-      "STRENGTH": 0.0,
-      "AGILITY": 0.0,
-      "CHARISMA": 0.0,
-      "INTELLIGENCE": 0.0,
-      "ARCANE": 0.0,
-      "FAITH": 15.0,
-      "LUCK": 0.0
-    },
-    "twoHanded": false,
-    "type": "Weapon",
-    "value": 100.0,
-    "weaponType": "TALISMAN",
-    "weight": 1.0
+    "weight": 5.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 70.0,
@@ -611,7 +545,8 @@
     "type": "Weapon",
     "value": 50.0,
     "weaponType": "STRAIGHTSWORD",
-    "weight": 4.0
+    "weight": 4.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -683,7 +618,8 @@
     "type": "Weapon",
     "value": 50.0,
     "weaponType": "THRUSTINGSWORD",
-    "weight": 6.0
+    "weight": 6.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 1.0,
@@ -721,7 +657,7 @@
       "SLASH": 0.0,
       "PIERCE": 0.0
     },
-    "description": "A small wooden wand engraved with magical runes. Used to channel and cast intelligence-based magic.",
+    "description": "A small wooden wand engraved with magical runes. Used to channel and cast all kinds of magic. Wands project weaker versions of spells but allow for faster casting.",
     "enchantments": [],
     "id": 0,
     "name": "Wooden Wand",
@@ -730,13 +666,13 @@
     "reach": 1.0,
     "scalingStats": {
       "NONE": 0.0,
-      "STRENGTH": 0.0,
-      "AGILITY": 0.0,
-      "CHARISMA": 0.0,
-      "INTELLIGENCE": 100.0,
-      "ARCANE": 0.0,
-      "FAITH": 0.0,
-      "LUCK": 0.0
+      "STRENGTH": 1.0,
+      "AGILITY": 1.0,
+      "CHARISMA": 1.0,
+      "INTELLIGENCE": 31.0,
+      "ARCANE": 31.0,
+      "FAITH": 31.0,
+      "LUCK": 1.0
     },
     "slot": "BACKPACK",
     "specialDamage": false,
@@ -746,7 +682,7 @@
       "STRENGTH": 0.0,
       "AGILITY": 0.0,
       "CHARISMA": 0.0,
-      "INTELLIGENCE": 15.0,
+      "INTELLIGENCE": 0.0,
       "ARCANE": 0.0,
       "FAITH": 0.0,
       "LUCK": 0.0
@@ -755,7 +691,8 @@
     "type": "Weapon",
     "value": 100.0,
     "weaponType": "WAND",
-    "weight": 1.0
+    "weight": 1.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 1.0,
@@ -793,22 +730,22 @@
       "SLASH": 0.0,
       "PIERCE": 0.0
     },
-    "description": "A candle wrapped in linnen and composed of various natural ingredients that acts as a channel to cast arcane-based magic.",
+    "description": "A modestly-sized staff engraved with magical runes. Used to channel and cast all kinds of magic. Staffs project stronger versions of spells but cast those spells slower than wands.",
     "enchantments": [],
     "id": 0,
-    "name": "Arcane Candle",
+    "name": "Wooden Staff",
     "needsAmmo": false,
     "quantity": 1.0,
     "reach": 1.0,
     "scalingStats": {
       "NONE": 0.0,
-      "STRENGTH": 0.0,
-      "AGILITY": 0.0,
-      "CHARISMA": 0.0,
-      "INTELLIGENCE": 0.0,
-      "ARCANE": 100.0,
-      "FAITH": 0.0,
-      "LUCK": 0.0
+      "STRENGTH": 1.0,
+      "AGILITY": 1.0,
+      "CHARISMA": 1.0,
+      "INTELLIGENCE": 31.0,
+      "ARCANE": 31.0,
+      "FAITH": 31.0,
+      "LUCK": 1.0
     },
     "slot": "BACKPACK",
     "specialDamage": false,
@@ -819,15 +756,89 @@
       "AGILITY": 0.0,
       "CHARISMA": 0.0,
       "INTELLIGENCE": 0.0,
-      "ARCANE": 15.0,
+      "ARCANE": 0.0,
       "FAITH": 0.0,
       "LUCK": 0.0
     },
     "twoHanded": false,
     "type": "Weapon",
-    "value": 100.0,
-    "weaponType": "CANDLE",
-    "weight": 1.0
+    "value": 120.0,
+    "weaponType": "STAFF",
+    "weight": 1.0,
+    "weaponArts": []
+  },
+  {
+    "attackSpeed": 1.0,
+    "damageTypes": {
+      "CHOP": 0.0,
+      "NONE": 0.0,
+      "MAGIC": 0.0,
+      "FIRE": 0.0,
+      "FROST": 0.0,
+      "SHOCK": 0.0,
+      "WIND": 0.0,
+      "POISON": 0.0,
+      "BLEED": 0.0,
+      "SLEEP": 0.0,
+      "DARK": 0.0,
+      "HOLY": 0.0,
+      "BLUNT": 0.0,
+      "SLASH": 0.0,
+      "PIERCE": 0.0
+    },
+    "defenseTypes": {
+      "CHOP": 0.0,
+      "NONE": 0.0,
+      "MAGIC": 0.0,
+      "FIRE": 0.0,
+      "FROST": 0.0,
+      "SHOCK": 0.0,
+      "WIND": 0.0,
+      "POISON": 0.0,
+      "BLEED": 0.0,
+      "SLEEP": 0.0,
+      "DARK": 0.0,
+      "HOLY": 0.0,
+      "BLUNT": 0.0,
+      "SLASH": 0.0,
+      "PIERCE": 0.0
+    },
+    "description": "A flute engraved with magical runes allowing it to be used to cast spells. Spells cast with this tool will cast at a normal speel and scale with one's charisma.",
+    "enchantments": [],
+    "id": 0,
+    "name": "Engraved Flute",
+    "needsAmmo": false,
+    "quantity": 1.0,
+    "reach": 1.0,
+    "scalingStats": {
+      "NONE": 0.0,
+      "STRENGTH": 0.0,
+      "AGILITY": 0.0,
+      "CHARISMA": 60.0,
+      "INTELLIGENCE": 0.0,
+      "ARCANE": 0.0,
+      "FAITH": 0.0,
+      "LUCK": 0.0
+    },
+    "slot": "BACKPACK",
+    "specialDamage": false,
+    "stability": 1.0,
+    "statRequirements": {
+      "NONE": 0.0,
+      "STRENGTH": 0.0,
+      "AGILITY": 0.0,
+      "CHARISMA": 20.0,
+      "INTELLIGENCE": 0.0,
+      "ARCANE": 0.0,
+      "FAITH": 0.0,
+      "LUCK": 0.0
+    },
+    "twoHanded": false,
+    "type": "Weapon",
+    "value": 200.0,
+    "weaponType": "INSTRUMENT",
+    "weight": 1.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -899,7 +910,8 @@
     "type": "Weapon",
     "value": 50.0,
     "weaponType": "STRAIGHTSWORD",
-    "weight": 5.0
+    "weight": 5.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 1.0,
@@ -971,7 +983,8 @@
     "type": "Weapon",
     "value": 80.0,
     "weaponType": "GREATSHIELD",
-    "weight": 10.0
+    "weight": 10.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 80.0,
@@ -1043,7 +1056,8 @@
     "type": "Weapon",
     "value": 30.0,
     "weaponType": "DAGGER",
-    "weight": 1.0
+    "weight": 1.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -1115,7 +1129,8 @@
     "type": "Weapon",
     "value": 50.0,
     "weaponType": "LONGBOW",
-    "weight": 6.0
+    "weight": 6.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 60.0,
@@ -1187,7 +1202,8 @@
     "type": "Weapon",
     "value": 30.0,
     "weaponType": "STRAIGHTSWORD",
-    "weight": 4.0
+    "weight": 4.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 60.0,
@@ -1259,7 +1275,8 @@
     "type": "Weapon",
     "value": 40.0,
     "weaponType": "SPEAR",
-    "weight": 5.0
+    "weight": 5.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 40.0,
@@ -1331,7 +1348,8 @@
     "type": "Weapon",
     "value": 90.0,
     "weaponType": "SPEAR",
-    "weight": 10.0
+    "weight": 10.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 70.0,
@@ -1403,7 +1421,8 @@
     "type": "Weapon",
     "value": 30.0,
     "weaponType": "FIST",
-    "weight": 2.0
+    "weight": 2.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -1475,7 +1494,8 @@
     "type": "Weapon",
     "value": 110.0,
     "weaponType": "GREATSWORD",
-    "weight": 20.0
+    "weight": 20.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 20.0,
@@ -1547,7 +1567,8 @@
     "type": "Weapon",
     "value": 140.0,
     "weaponType": "GREATMACE",
-    "weight": 25.0
+    "weight": 25.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -1619,7 +1640,8 @@
     "type": "Weapon",
     "value": 120.0,
     "weaponType": "GREATSWORD",
-    "weight": 18.0
+    "weight": 18.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 30.0,
@@ -1691,7 +1713,8 @@
     "type": "Weapon",
     "value": 140.0,
     "weaponType": "GREATAXE",
-    "weight": 20.0
+    "weight": 20.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 30.0,
@@ -1763,7 +1786,8 @@
     "type": "Weapon",
     "value": 150.0,
     "weaponType": "GREATSPEAR",
-    "weight": 20.0
+    "weight": 20.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 40.0,
@@ -1835,7 +1859,8 @@
     "type": "Weapon",
     "value": 140.0,
     "weaponType": "HALBERD",
-    "weight": 20.0
+    "weight": 20.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -1907,7 +1932,8 @@
     "type": "Weapon",
     "value": 150.0,
     "weaponType": "POLEHAMMER",
-    "weight": 25.0
+    "weight": 25.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -1979,7 +2005,8 @@
     "type": "Weapon",
     "value": 90.0,
     "weaponType": "LONGBOW",
-    "weight": 10.0
+    "weight": 10.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -2051,7 +2078,8 @@
     "type": "Weapon",
     "value": 120.0,
     "weaponType": "COMPOUNDBOW",
-    "weight": 12.0
+    "weight": 12.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -2123,7 +2151,8 @@
     "type": "Weapon",
     "value": 110.0,
     "weaponType": "COMPOUNDBOW",
-    "weight": 10.0
+    "weight": 10.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -2195,7 +2224,8 @@
     "type": "Weapon",
     "value": 200.0,
     "weaponType": "GREATBOW",
-    "weight": 20.0
+    "weight": 20.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 20.0,
@@ -2267,7 +2297,8 @@
     "type": "Weapon",
     "value": 110.0,
     "weaponType": "CROSSBOW",
-    "weight": 15.0
+    "weight": 15.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 20.0,
@@ -2339,7 +2370,8 @@
     "type": "Weapon",
     "value": 150.0,
     "weaponType": "CROSSBOW",
-    "weight": 15.0
+    "weight": 15.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 30.0,
@@ -2411,7 +2443,8 @@
     "type": "Weapon",
     "value": 200.0,
     "weaponType": "CROSSBOW",
-    "weight": 16.0
+    "weight": 16.0,
+    "weaponArts": []
   },
   {
     "attackSpeed": 50.0,
@@ -2502,6 +2535,7 @@
     "type": "Weapon",
     "value": 200.0,
     "weaponType": "CROSSBOW",
-    "weight": 16.0
+    "weight": 16.0,
+    "weaponArts": []
   }
 ]

@@ -42,7 +42,7 @@ public:
 	virtual nlohmann::json toJson() const = 0;
 	static std::shared_ptr<Effect> fromJson(const nlohmann::json& j);
 
-	virtual void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) = 0;
+	virtual void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) = 0;
 	virtual void tick(std::shared_ptr<Character> wielder) = 0;
 	virtual void burst(std::shared_ptr<Character> target) = 0;
 	virtual bool isExpired() const = 0;

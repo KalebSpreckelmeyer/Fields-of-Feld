@@ -10,7 +10,7 @@ public:
 	DamageTypes damageType;
 	ThornsEffect(DamageTypes damageType, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
 
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 
@@ -26,7 +26,7 @@ public:
 	float range;
 	DamageTypes damageType;
 	AuraEffect(DamageTypes magicDamage, float range, int duration, float magnitude, bool stackable, int stacks, int maxStacks);
-	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target) override;
+	void apply(std::shared_ptr<Character> wielder, std::shared_ptr<Character> target, float modifier) override;
 	void tick(std::shared_ptr<Character> target) override;
 	void burst(std::shared_ptr<Character> target) override;
 
