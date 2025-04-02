@@ -186,7 +186,7 @@ public:
 	//POST: TakeDamage will be called with all relevant parameters to cast a spell and
 	// apply its effects
 	bool chooseSpell(Weapon& weapon, std::vector<std::shared_ptr<Character>> enemyTargets, std::vector<std::shared_ptr<Character>> allyTargets, 
-		std::shared_ptr<Spell>& spell, std::shared_ptr<Character>& target));
+		std::shared_ptr<Spell>& spell, std::shared_ptr<Character>& target);
 
 	void viewSpells();
 
