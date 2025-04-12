@@ -176,6 +176,7 @@
     <ClCompile Include="OffensiveEffect.cpp" />
     <ClCompile Include="PassiveEffect.cpp" />
     <ClCompile Include="Potion.cpp" />
+    <ClCompile Include="Recipe.cpp" />
     <ClCompile Include="Spell.cpp" />
     <ClCompile Include="ThrownConsumable.cpp" />
     <ClCompile Include="TimedEffect.cpp" />
@@ -220,6 +221,7 @@
     <ClInclude Include="OffensiveEffect.h" />
     <ClInclude Include="PassiveEffect.h" />
     <ClInclude Include="Potion.h" />
+    <ClInclude Include="Recipe.h" />
     <ClInclude Include="Spell.h" />
     <ClInclude Include="StatScaling.h" />
     <ClInclude Include="ThrownConsumable.h" />

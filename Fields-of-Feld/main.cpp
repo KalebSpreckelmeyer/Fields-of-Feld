@@ -1078,6 +1078,17 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 					cout << dye::light_yellow(" 2) Swing with " + weaponChoice->name) << endl;
 					//every weapon should have an art but this exists as a fallback just in case
 					if (weaponChoice->weaponArts[0]) cout << dye::light_yellow(" 3) Perform " + weaponChoice->weaponArts[0]->name) << endl;
+					else cout << dye::grey(" 3) Perform " + weaponChoice->weaponArts[0]->name) << endl;
+					cout << dye::light_yellow(" 4) Go back") << endl;
+				}
+				else if (weaponChoice->weaponType == Weapon::WeaponType::LONGBOW || weaponChoice->weaponType == Weapon::WeaponType::CROSSBOW
+					|| weaponChoice->weaponType == Weapon::WeaponType::GREATBOW)
+				{
+					cout << dye::light_yellow(" 1) Fire " + weaponChoice->name) << endl;
+					cout << dye::light_yellow(" 2) Swing with " + weaponChoice->name) << endl;
+					//every weapon should have an art but this exists as a fallback just in case
+					if (weaponChoice->weaponArts[0]) cout << dye::light_yellow(" 3) Perform " + weaponChoice->weaponArts[0]->name) << endl;
+					else cout << dye::grey(" 3) Perform " + weaponChoice->weaponArts[0]->name) << endl;
 					cout << dye::light_yellow(" 4) Go back") << endl;
 				}
 				else
@@ -1086,6 +1097,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 					cout << dye::light_yellow(" 2) Swing with " + weaponChoice->name) << endl;
 					//every weapon should have an art but this exists as a fallback just in case
 					if (weaponChoice->weaponArts[0]) cout << dye::light_yellow(" 3) Perform " + weaponChoice->weaponArts[0]->name) << endl;
+					else cout << dye::grey(" 3) Perform " + weaponChoice->weaponArts[0]->name) << endl;
 					cout << dye::light_yellow(" 4) Go back") << endl;
 				}
 
@@ -1152,6 +1164,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 							inputSelected = true;
 							weaponChoice = weaponChoice;
 							targetChoice = livingEnemies[swingChoice - 1];
+							attackType = "swing";
 							break;
 						}
 					}
@@ -1166,6 +1179,38 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 					}
 					default:
 					{
+						cout << dye::light_red(" Please enter a number from 1 - 4") << endl;
+						weaponChoice = nullptr;
+						break;
+					}
+					}
+				}
+				else if (weaponChoice->weaponType == Weapon::WeaponType::LONGBOW || weaponChoice->weaponType == Weapon::WeaponType::CROSSBOW
+					|| weaponChoice->weaponType == Weapon::WeaponType::GREATBOW)
+				{
+					switch (attackTypeChoice)
+					{
+					case 1: // FIRE
+					{
+						break;
+					}
+					case 2: // SWING
+					{
+						break;
+					}
+					case 3: // WEAPON ART
+					{
+						break;
+					}
+					case 4: // GO BACK
+					{
+						weaponChoice = nullptr;
+						break;
+					}
+					default:
+					{
+						cout << dye::light_red(" Please enter a number from 1 - 4") << endl;
+						weaponChoice = nullptr;
 						break;
 					}
 					}
@@ -1174,39 +1219,88 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 				{
 					switch (attackTypeChoice)
 					{
-					case 1:
+					case 1: // STAB
 					{
-						break; // STAB
+						//print all enemies in range of a stabbing  attack
+						int index = 1;
+						for (const auto& enemy : livingEnemies)
+						{
+							if (enemy->position[player->getId()] <= weaponChoice->reach * 1.2)
+							{
+								cout << dye::light_yellow(" " + to_string(index) + ") " + enemy->name) << to_string(enemy->healthPoints) + "/" + to_string(enemy->maxHealthPoints) << endl;
+								index++;
+							}
+						}
+						cout << dye::light_yellow(" " + to_string(index) + ") Go back...") << endl;
+
+						//Input validation
+						int swingChoice = validateInput(1, livingEnemies.size() + 1);
+
+						// Go back without selecting an option, reset weaponchoice
+						if (swingChoice == index)
+						{
+							weaponChoice = nullptr;
+							break;
+						}
+						else
+						{
+							inputSelected = true;
+							weaponChoice = weaponChoice;
+							targetChoice = livingEnemies[swingChoice - 1];
+							attackType = "swing";
+							break;
+						}
 					}
-					case 2:
+					case 2: // SWING
 					{
-						break; // SWING
+						//print all enemies in range of a swinging attack
+						int index = 1;
+						for (const auto& enemy : livingEnemies)
+						{
+							if (enemy->position[player->getId()] <= weaponChoice->reach)
+							{
+								cout << dye::light_yellow(" " + to_string(index) + ") " + enemy->name) << to_string(enemy->healthPoints) + "/" + to_string(enemy->maxHealthPoints) << endl;
+								index++;
+							}
+						}
+						cout << dye::light_yellow(" " + to_string(index) + ") Go back...") << endl;
+
+						//Input validation
+						int swingChoice = validateInput(1, livingEnemies.size() + 1);
+
+						// Go back without selecting an option, reset weaponchoice
+						if (swingChoice == index)
+						{
+							weaponChoice = nullptr;
+							break;
+						}
+						else
+						{
+							inputSelected = true;
+							weaponChoice = weaponChoice;
+							targetChoice = livingEnemies[swingChoice - 1];
+							attackType = "swing";
+							break;
+						}
 					}
-					case 3:
+					case 3: // WEAPON ART
 					{
-						break; // WEAPON ART
+						break; 
 					}
-					case 4:
+					case 4: // GO BACK
 					{
 						weaponChoice = nullptr;
-						break; // GO BACK
+						break; 
 					}
 					default:
 					{
+						cout << dye::light_red(" Please enter a number from 1 - 4") << endl;
+						weaponChoice = nullptr;
 						break;
 					}
 					}
-					cout << "\n=--->\n";
-					cout << dye::light_yellow(" Attack which enemy?") << endl;
-					//set up individual enemy range checks
-					bool inRangeWithSwing = false;
-					bool inRangeWithStab = false;
-					bool inRangeWithArt = false;
-					for (const auto& enemy : livingEnemies)
-					{
-						cout << dye::light_yellow(" ") << enemy->name << endl;
-					}
 				}
+			}
 			case 2: // MOVE
 			{
 				break;
@@ -1285,11 +1379,9 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 			//----print out detailed overview of enemies when selected (no stats, just descriptors of stats)
 			//OPTION 7: FLEE --
 			//--attempt to flee
-
 		} while (!exitFight);
-	} while(!exitCombat);
-}
-	//				case 1: // ATTACK
+	} while (!exitCombat);
+}	//				case 1: // ATTACK
 	//				{
 	//
 	//					if (!inRange || !spellsInRange)
@@ -3362,6 +3454,7 @@ void openCombat(shared_ptr<Human> player, shared_ptr<Character> enemy)
 	//
 	//	} while (exitFight == false);
 	//}
+
 	void playerTurn(std::shared_ptr<Human> player, shared_ptr<Weapon> weaponChoice, std::shared_ptr<Ammunition> ammoChoice, shared_ptr<Spell> spellChoice, shared_ptr<Character> targetChoice, std::shared_ptr<ThrownConsumable> thrownConsumableChoice,
 		std::shared_ptr<Consumable> consumableChoice, float playerMovement, bool onlyMove)
 	{
